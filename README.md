@@ -13,14 +13,13 @@ project
 │   ├── repository
 │   └── datasource
 └── ui
+    ├── splash
+    ├── login
     ├── home
     ├── report
     ├── pauze
     ├── curation
-    ├── mypage
-    ├── splash
-    ├── login
-    └── condition
+    └── mypage
 ```
 ___
 ### 📚 컨벤션 문서
