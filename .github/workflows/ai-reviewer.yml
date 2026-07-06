@@ -1,4 +1,4 @@
-name: Gemini PR Reviewer
+name: Gemini PR Reviewer (Direct API)
 
 on:
   pull_request:
@@ -14,9 +14,41 @@ jobs:
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v4
-
-      - name: Gemini AI Review
-        uses: amodeus-ai/action-amodeus@v1
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          api-key: ${{ secrets.GEMINI_API_KEY }}
+          fetch-depth: 0
+
+      - name: Get PR Diff
+        id: get_diff
+        run: |
+          git diff origin/${{ github.base_ref }}...HEAD > pr_diff.txt
+          echo "DIFF_EXIST=$([ -s pr_diff.txt ] && echo 'true' || echo 'false')" >> $GITHUB_ENV
+
+      - name: Call Gemini API via curl
+        if: env:DIFF_EXIST == 'true'
+        id: gemini_call
+        run: |
+          DIFF_CONTENT=$(cat pr_diff.txt | jq -sRr @json)
+          
+          RESPONSE=$(curl -s -X POST "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${{ secrets.GEMINI_API_KEY }}" \
+            -H "Content-Type: application/json" \
+            -d "{
+              \"contents\": [{
+                \"parts\": [{
+                  \"text\": \"너는 안드로이드 개발자야. 다음 Git Diff 내용을 보고, 개선할 점이나 버그 위험이 있는 부분을 한국어로 친절하게 리뷰해줘. 코드 내용: $DIFF_CONTENT\"
+                }]
+              }]
+            }")
+          
+          REVIEW_TEXT=$(echo "$RESPONSE" | jq -r '.candidates[0].content.parts[0].text')
+          
+          echo "$REVIEW_TEXT" > review_result.txt
+
+      - name: Comment PR
+        if: env:DIFF_EXIST == 'true'
+        run: |
+          COMMENT_BODY=$(cat review_result.txt | jq -sR .)
+          
+          curl -s -X POST "-H" "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Accept: application/vnd.github.v3+json" \
+            https://api.github.com/repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }}/comments \
+            -d "{\"body\": $COMMENT_BODY}"
