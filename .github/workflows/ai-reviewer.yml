@@ -15,10 +15,9 @@ jobs:
       - name: Checkout Repo
         uses: actions/checkout@v4
 
-      - name: Gemini AI PR Review
-        uses: google-gemini/pr-reviewer-action@v2.1.2
+      - name: Gemini AI Review
+        uses: mshick/google-gemini-action@v1.1.0
         with:
-          gemini_api_key: ${{ secrets.GEMINI_API_KEY }}
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          language: "Korean"
-          model: "gemini-1.5-flash"
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          api-key: ${{ secrets.GEMINI_API_KEY }}
+          prompt: "Please review the following code changes and provide constructive feedback in Korean language."
