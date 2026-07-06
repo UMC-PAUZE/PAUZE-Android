@@ -21,34 +21,49 @@ jobs:
         id: get_diff
         run: |
           git diff origin/${{ github.base_ref }}...HEAD > pr_diff.txt
-          echo "DIFF_EXIST=$([ -s pr_diff.txt ] && echo 'true' || echo 'false')" >> $GITHUB_ENV
+          if [ -s pr_diff.txt ]; then
+            echo "DIFF_EXIST=true" >> $GITHUB_ENV
+            echo "--- Git Diff Extraction Success ---"
+          else
+            echo "DIFF_EXIST=false" >> $GITHUB_ENV
+            echo "No changes found."
+          fi
 
       - name: Call Gemini API via curl
-        if: env:DIFF_EXIST == 'true'
-        id: gemini_call
+        if: ${{ env.DIFF_EXIST == 'true' }}
         run: |
           DIFF_CONTENT=$(cat pr_diff.txt | jq -sRr @json)
           
+          jq -n \
+            --arg text "너는 안드로이드 개발자야. 다음 안드로이드 프로젝트의 Git Diff 내용을 보고, 개선할 점이나 버그 위험이 있는 부분을 개발자 Daeun에게 친절하게 한국어로 리뷰해줘. 코드 내용: " \
+            --arg diff "$DIFF_CONTENT" \
+            '{contents: [{parts: [{text: ($text + $diff)}]}]}' > gemini_request.json
+          
           RESPONSE=$(curl -s -X POST "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${{ secrets.GEMINI_API_KEY }}" \
             -H "Content-Type: application/json" \
-            -d "{
-              \"contents\": [{
-                \"parts\": [{
-                  \"text\": \"너는 안드로이드 개발자야. 다음 Git Diff 내용을 보고, 개선할 점이나 버그 위험이 있는 부분을 한국어로 친절하게 리뷰해줘. 코드 내용: $DIFF_CONTENT\"
-                }]
-              }]
-            }")
+            --data-binary @gemini_request.json)
           
-          REVIEW_TEXT=$(echo "$RESPONSE" | jq -r '.candidates[0].content.parts[0].text')
+          echo "--- Gemini Response Raw Log ---"
+          echo "$RESPONSE" | head -n 30
+          
+          REVIEW_TEXT=$(echo "$RESPONSE" | jq -r '.candidates[0].content.parts[0].text // empty')
+          
+          if [ -z "$REVIEW_TEXT" ] || [ "$REVIEW_TEXT" = "null" ]; then
+            echo "Failed to extract review from Gemini response."
+            exit 1
+          fi
           
           echo "$REVIEW_TEXT" > review_result.txt
 
       - name: Comment PR
-        if: env:DIFF_EXIST == 'true'
+        if: ${{ env.DIFF_EXIST == 'true' }}
         run: |
-          COMMENT_BODY=$(cat review_result.txt | jq -sR .)
+          jq -n --rawfile body review_result.txt '{body: $body}' > github_comment.json
           
-          curl -s -X POST "-H" "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+          echo "--- Registering GitHub PR Comment ---"
+          curl -s -X POST \
+            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
             -H "Accept: application/vnd.github.v3+json" \
+            -H "Content-Type: application/json" \
             https://api.github.com/repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }}/comments \
-            -d "{\"body\": $COMMENT_BODY}"
+            --data-binary @github_comment.json
