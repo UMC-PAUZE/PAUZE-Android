@@ -2,6 +2,7 @@ package com.example.pauze.ui.pauze
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -32,7 +33,9 @@ import com.example.pauze.ui.theme.bodyTextXlBold
 import com.example.pauze.ui.theme.headingMdBold
 
 @Composable
-fun PauzeStartScreen() {
+fun PauzeStartScreen(
+    onStartBreathingClick: () -> Unit = {},
+) {
     Column {
         TopBar("Pauze")
 
@@ -65,6 +68,7 @@ fun PauzeStartScreen() {
                         shape = RoundedCornerShape(size = 20.dp)
                     )
                     .padding(16.dp)
+                    .clickable(onClick = onStartBreathingClick)
             ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -115,9 +119,24 @@ fun PauzeStartScreen() {
                 verticalArrangement = Arrangement.spacedBy(12.dp),
                 modifier = Modifier.padding(bottom = 24.dp)
             ) {
-                SelectionCard(iconRes = R.drawable.ic_headset, title = "청각", description = "자연소리와 ASMR로 \n청각 자극을 낮춰요")
-                SelectionCard(iconRes = R.drawable.ic_headset, title = "시각", description = "화면을 어둡게 하고 명상 또는 호흡에 집중해요")
-                SelectionCard(iconRes = R.drawable.ic_headset, title = "과한 에너지 소모", description = "쉼 가이드를 따르거나 HSP \n큐레이션 게시판으로 이동해요.")
+                SelectionCard(
+                    iconRes = R.drawable.ic_headset,
+                    title = "청각",
+                    description = "자연소리와 ASMR로 \n청각 자극을 낮춰요",
+                    onClick = { /* TODO: 청각 화면 연결 */ }
+                )
+                SelectionCard(
+                    iconRes = R.drawable.ic_headset,
+                    title = "시각",
+                    description = "화면을 어둡게 하고 명상 또는 호흡에 집중해요",
+                    onClick = { /* TODO: 시각 화면 연결 */ }
+                )
+                SelectionCard(
+                    iconRes = R.drawable.ic_headset,
+                    title = "과한 에너지 소모",
+                    description = "쉼 가이드를 따르거나 HSP \n큐레이션 게시판으로 이동해요.",
+                    onClick = { /* TODO: 큐레이션 게시판 연결 */ }
+                )
             }
         }
 
@@ -129,15 +148,17 @@ fun SelectionCard(
     iconRes: Int,
     title: String,
     description: String,
+    onClick: () -> Unit = {},
 ){
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .background(
-                color = AppTheme.palette.gray.getColor(8), // 0xFF2D2E28로 변경해야 됨
+                color = AppTheme.palette.gray.getColor(8),
                 shape = RoundedCornerShape(size = 20.dp)
             )
             .padding(16.dp)
+            .clickable(onClick = onClick)
     ){
         Row(
             modifier = Modifier.fillMaxWidth(),
