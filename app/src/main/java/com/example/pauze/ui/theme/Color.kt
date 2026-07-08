@@ -36,7 +36,7 @@ val MyGlobalPalette = AppPaletteSystem(
             Color(0xFFEBEBE5), Color(0xFFDBDBD1),
             Color(0xFFBEBFB0), Color(0xFF81826B),
             Color(0xFF5D5E50), Color(0xFF49493F),
-            Color(0xFF2D2328), Color(0xFF1D1E1A),
+            Color(0xFF2D2E28), Color(0xFF1D1E1A),
             )
     ),
     primary = ColorSet(
@@ -45,7 +45,7 @@ val MyGlobalPalette = AppPaletteSystem(
             Color(0xFFFAFBF9), Color(0xFFF2F4F0),
             Color(0xFFD9DFD2), Color(0xFFBFCAB4),
             Color(0xFFA6B596), Color(0xFF879F78),
-            Color(0xFF73B75F), Color(0xFF69694A),
+            Color(0xFF73875F), Color(0xFF59694A),
             Color(0xFF404B35), Color(0xFF262D20),
         )
     ),
@@ -54,7 +54,7 @@ val MyGlobalPalette = AppPaletteSystem(
         colors = listOf(
             Color(0xFFFDF7F7), Color(0xFFF9EBEB),
             Color(0xFFEEC3C3), Color(0xFFE39B9B),
-            Color(0xFFD97474), Color(0xFFCD4C4C),
+            Color(0xFFD87474), Color(0xFFCD4C4C),
             Color(0xFFB33232), Color(0xFF8B2727),
             Color(0xFF641C1C), Color(0xFF3C1111),
         )
@@ -62,7 +62,7 @@ val MyGlobalPalette = AppPaletteSystem(
     tertiary = ColorSet(
         id = "tertiary",
         colors = listOf(
-            Color(0xFFFEFBF6), Color(0xFFFDF527),
+            Color(0xFFFEFBF6), Color(0xFFFDF5E7),
             Color(0xFFF9E0B8), Color(0xFFF6CC89),
             Color(0xFFF2B85A), Color(0xFFEEA32A),
             Color(0xFFD58A11), Color(0xFFA56B0D),
@@ -80,8 +80,8 @@ val MyGlobalPalette = AppPaletteSystem(
     yellowWarning = ColorSet(
         id = "yellowWarning",
         colors = listOf(
-            Color(0xFFF2FCE8), Color(0xFFFEF9C3),
-            Color(0xFFFDE047), Color(0xFFEAB308),
+            Color(0xFFFEFCE8), Color(0xFFFEF9C3),
+            Color(0xFFFFE86C), Color(0xFFEAB308),
             Color(0xFF713F12),
         )
     ),
