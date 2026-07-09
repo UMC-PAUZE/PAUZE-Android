@@ -19,41 +19,45 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.AppBarRow
+import androidx.compose.material3.BasicAlertDialog
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldLabelPosition
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
 import com.example.pauze.R
 import com.example.pauze.ui.theme.AppTheme
 import com.example.pauze.ui.theme.MainPaletteTheme
 import com.example.pauze.ui.theme.PAUZEAndroidTheme
+import com.example.pauze.ui.theme.bodyTextLgBold
 import com.example.pauze.ui.theme.bodyTextLgMedium
 import com.example.pauze.ui.theme.bodyTextMdBold
 import com.example.pauze.ui.theme.bodyTextMdMedium
@@ -74,6 +78,7 @@ class LoginScreen : ComponentActivity() {
     }
 }
 
+
 @Composable
 fun LoginLayout(){
     val focusManager = LocalFocusManager.current
@@ -81,6 +86,7 @@ fun LoginLayout(){
     var password by remember { mutableStateOf("") }
     var isPwdVisible by remember { mutableStateOf(false) }
     var isFieldFocused by remember { mutableStateOf(false) }
+    var showDialog by rememberSaveable { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -228,9 +234,9 @@ fun LoginLayout(){
                         AppTheme.palette.gray.getColor(8)
                         else AppTheme.palette.gray.getColor(2),
                     shape = RoundedCornerShape(size = 100.dp))
-                .clickable{
-                    // todo: 백엔드와 연결해 결과에 따라 표시
-                }
+                .clickable(
+                    onClick = { showDialog = true }
+                )
                 .padding(horizontal = 28.dp, vertical = 18.dp),
             contentAlignment = Alignment.Center
         ){
@@ -316,6 +322,50 @@ fun LoginLayout(){
                 style = bodyTextMdBold,
                 color = AppTheme.palette.gray.getColor(2)
             )
+        }
+
+        if(showDialog){
+            Dialog(
+                onDismissRequest = { showDialog = false },
+            ) {
+                Column(
+                    modifier = Modifier.background(
+                        color = AppTheme.palette.gray.getColor(8),
+                        shape = RoundedCornerShape(24.dp),)
+                        .padding(top = 24.dp, start = 12.dp, end = 12.dp, bottom = 16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ){
+                    Text(
+                        "로그인 오류",
+                        style = bodyTextLgBold,
+                        color = AppTheme.palette.gray.getColor(2),
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        "이메일이나 비번이 일치하지 않습니다",
+                        style = bodyTextSmRegular,
+                        color = AppTheme.palette.gray.getColor(2)
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    HorizontalDivider(
+                        thickness = 1.dp,
+                        color = AppTheme.palette.gray.getColor(5),
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    TextButton(
+                        onClick = { showDialog = false },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(
+                            "다시 입력하기",
+                            style = bodyTextLgBold,
+                            color = AppTheme.palette.gray.getColor(2)
+                        )
+                    }
+                }
+            }
         }
     }
 }
