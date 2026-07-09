@@ -36,7 +36,6 @@ import com.example.pauze.ui.theme.bodyTextXlBold
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
@@ -47,6 +46,8 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
 import androidx.compose.foundation.layout.PaddingValues
 import kotlinx.coroutines.flow.filter
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
 
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.sp
@@ -231,6 +232,15 @@ fun PauzeVisualTimeSelectContent(
             onMinuteSelect = onMinuteSelect,
             onSecondSelect = onSecondSelect
         )
+
+        Spacer(modifier = Modifier.height(40.dp))
+
+        PauzeVisualQuickTimeRow(
+            selectedHour = selectedHour,
+            selectedMinute = selectedMinute,
+            selectedSecond = selectedSecond,
+            onQuickTimeSelect = onQuickTimeSelect
+        )
     }
 }
 
@@ -385,6 +395,86 @@ fun PauzeVisualWheelColon() {
         color = AppTheme.palette.gray.getColor(0)
     )
 }
+
+// 빠른 시간 선택 Row
+@Composable
+fun PauzeVisualQuickTimeRow(
+    selectedHour: Int,
+    selectedMinute: Int,
+    selectedSecond: Int,
+    onQuickTimeSelect: (Int, Int, Int) -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .horizontalScroll(rememberScrollState()),
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        PauzeVisualQuickTimeChip(
+            text = "00 : 05 : 00",
+            selected = selectedHour == 0 && selectedMinute == 5 && selectedSecond == 0,
+            onClick = { onQuickTimeSelect(0, 5, 0) }
+        )
+
+        PauzeVisualQuickTimeChip(
+            text = "00 : 10 : 00",
+            selected = selectedHour == 0 && selectedMinute == 10 && selectedSecond == 0,
+            onClick = { onQuickTimeSelect(0, 10, 0) }
+        )
+
+        PauzeVisualQuickTimeChip(
+            text = "00 : 15 : 00",
+            selected = selectedHour == 0 && selectedMinute == 15 && selectedSecond == 0,
+            onClick = { onQuickTimeSelect(0, 15, 0) }
+        )
+
+        PauzeVisualQuickTimeChip(
+            text = "00 : 20 : 00",
+            selected = selectedHour == 0 && selectedMinute == 20 && selectedSecond == 0,
+            onClick = { onQuickTimeSelect(0, 20, 0) }
+        )
+    }
+}
+
+// 빠른 시간 선택 칩
+@Composable
+fun PauzeVisualQuickTimeChip(
+    text: String,
+    selected: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = modifier
+            .width(102.dp)
+            .height(46.dp)
+            .background(
+                color = AppTheme.palette.gray.getColor(8),
+                shape = RoundedCornerShape(size = 16.dp)
+            )
+            .border(
+                width = if (selected) 1.5.dp else 0.dp,
+                color = if (selected) {
+                    AppTheme.palette.gray.getColor(4)
+                } else {
+                    Color.Transparent
+                },
+                shape = RoundedCornerShape(size = 16.dp)
+            )
+            .clickable(onClick = onClick)
+            .padding(start = 12.dp, top = 12.dp, end = 12.dp, bottom = 12.dp)
+    ) {
+        Text(
+            text = text,
+            style = bodyTextSmRegular,
+            color = AppTheme.palette.gray.getColor(4),
+            textAlign = TextAlign.Center
+        )
+    }
+}
+
 
 // 시각 안정 선택 화면 및 시간 선택 화면 공통 레이아웃 컴포넌트
 @Composable
