@@ -1,0 +1,256 @@
+package com.example.pauze.ui.login
+
+import android.os.Bundle
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldLabelPosition
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import com.example.pauze.R
+import com.example.pauze.ui.theme.AppTheme
+import com.example.pauze.ui.theme.MainPaletteTheme
+import com.example.pauze.ui.theme.PAUZEAndroidTheme
+import com.example.pauze.ui.theme.bodyTextLgMedium
+import com.example.pauze.ui.theme.bodyTextMdBold
+import com.example.pauze.ui.theme.bodyTextMdMedium
+import com.example.pauze.ui.theme.bodyTextMdRegular
+import com.example.pauze.ui.theme.bodyTextSmRegular
+import com.example.pauze.ui.theme.bodyTextXlBold
+
+class LoginScreen : ComponentActivity() {
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
+        setContent {
+            MainPaletteTheme {
+                LoginLayout()
+            }
+        }
+    }
+}
+
+@Composable
+fun LoginLayout(){
+    var emailText by remember { mutableStateOf("") }
+    var passwordText by remember { mutableStateOf("") }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(AppTheme.palette.gray.getColor(9))
+            .padding(horizontal = 24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+    ) {
+        Image(
+            painter = painterResource(id = R.drawable.pauze_logo),
+            contentDescription = "pauze app logo",
+        )
+        Spacer(modifier = Modifier.height(48.dp))
+        Column(
+            modifier = Modifier
+                .fillMaxWidth().border(
+                    width = 1.dp,
+                    color = AppTheme.palette.gray.getColor(6),
+                    shape = RoundedCornerShape(size = 16.dp)
+                ).padding(
+                    horizontal = 16.dp, vertical = 14.dp
+                )
+        ){
+            Text(
+                "이메일",
+                color = AppTheme.palette.gray.getColor(5),
+                style = bodyTextMdRegular,
+            )
+            BasicTextField(
+                value = emailText,
+                onValueChange = { newMail ->
+                    emailText = newMail
+                },
+                modifier = Modifier.fillMaxWidth(),
+                decorationBox = { innerTextField ->
+                    if(emailText.isEmpty()){
+                        Text(
+                            "텍스트",
+                            color = AppTheme.palette.gray.getColor(5),
+                            style = bodyTextLgMedium,
+                        )
+                    }
+                    innerTextField()
+                }
+            )
+        }
+        Spacer(modifier = Modifier.height(12.dp))
+        Column(
+            modifier = Modifier
+                .fillMaxWidth().border(
+                    width = 1.dp,
+                    color = AppTheme.palette.gray.getColor(6),
+                    shape = RoundedCornerShape(size = 16.dp)
+                ).padding(
+                    horizontal = 16.dp, vertical = 14.dp
+                )
+        ){
+            Text(
+                "비밀번호",
+                color = AppTheme.palette.gray.getColor(5),
+                style = bodyTextMdRegular,
+            )
+            BasicTextField(
+                value = passwordText,
+                onValueChange = { newPwd ->
+                    passwordText = newPwd
+                },
+                modifier = Modifier.fillMaxWidth(),
+                decorationBox = { innerTextField ->
+                    if(passwordText.isEmpty()){
+                        Text(
+                            "텍스트",
+                            color = AppTheme.palette.gray.getColor(5),
+                            style = bodyTextLgMedium,
+                        )
+                    }
+                    innerTextField()
+                }
+            )
+        }
+        Spacer(modifier = Modifier.height(32.dp))
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(
+                    color = AppTheme.palette.gray.getColor(8),
+                    shape = RoundedCornerShape(size = 100.dp))
+                .clickable{
+                    // implement later
+                }
+                .padding(horizontal = 28.dp, vertical = 18.dp),
+            contentAlignment = Alignment.Center
+        ){
+            Text("로그인", style = bodyTextXlBold, color = AppTheme.palette.gray.getColor(9))
+        }
+        Spacer(modifier = Modifier.height(12.dp))
+        Row(
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Spacer(
+                modifier = Modifier
+                    .background(color = AppTheme.palette.gray.getColor(5))
+                    .height(1.dp)
+                    .weight(1f)
+            )
+            Text(
+                "또는",
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+                style = bodyTextSmRegular,
+                color = AppTheme.palette.gray.getColor(5)
+            )
+            Spacer(
+                modifier = Modifier
+                    .background(color = AppTheme.palette.gray.getColor(5))
+                    .height(1.dp)
+                    .weight(1f)
+            )
+        }
+        Spacer(modifier = Modifier.height(12.dp))
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(
+                    color = Color(0xFFFEE500),
+                    shape = RoundedCornerShape(size = 100.dp))
+                .clickable{
+                    // 로그인 여부에 따라 홈화면으로 이동 or 다이얼로그 띄우기
+                }
+                .padding(horizontal = 28.dp, vertical = 18.dp),
+            contentAlignment = Alignment.Center
+        ){
+            Row(
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ){
+                Image(
+                    painter = painterResource(id = R.drawable.kakao_logo),
+                    contentDescription = "kakao logo",
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("카카오로 시작하기", style = bodyTextXlBold, color = Color(0xCC000000))
+            }
+
+        }
+        Spacer(modifier = Modifier.height(12.dp))
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(
+                    color = AppTheme.palette.gray.getColor(2),
+                    shape = RoundedCornerShape(size = 100.dp))
+                .clickable{
+                    // 홈화면으로 이동
+                }
+                .padding(horizontal = 28.dp, vertical = 18.dp),
+            contentAlignment = Alignment.Center
+        ){
+            Text("게스트로 둘러보기", style = bodyTextXlBold, color = AppTheme.palette.gray.getColor(9))
+        }
+        Spacer(modifier = Modifier.height(20.dp))
+        Row(
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
+        ){
+            Text("계정이 없으신가요?", style = bodyTextMdMedium, color = AppTheme.palette.gray.getColor(5))
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                "카카오로 시작하기",
+                modifier = Modifier.clickable{
+                    // 회원가입 스크린으로 이동
+                },
+                style = bodyTextMdBold,
+                color = AppTheme.palette.gray.getColor(2)
+            )
+        }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun LoginLayoutPreview(){
+    PAUZEAndroidTheme {
+        LoginLayout()
+    }
+}
