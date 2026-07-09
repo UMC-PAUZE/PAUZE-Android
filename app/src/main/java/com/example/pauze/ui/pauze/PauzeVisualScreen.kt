@@ -25,7 +25,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.pauze.ui.theme.AppTheme
 import com.example.pauze.ui.theme.bodyTextMdRegular
-import com.example.pauze.ui.theme.bodyTextMdRegular
 import com.example.pauze.ui.theme.headingMdBold
 import com.example.pauze.ui.theme.headingSmBold
 import androidx.compose.material3.Icon
@@ -34,11 +33,23 @@ import com.example.pauze.R
 import androidx.compose.foundation.layout.size
 import com.example.pauze.ui.theme.bodyTextSmRegular
 import com.example.pauze.ui.theme.bodyTextXlBold
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.ui.draw.alpha
+import com.example.pauze.ui.theme.headingLgBold
+import androidx.compose.runtime.snapshotFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
+import androidx.compose.foundation.layout.PaddingValues
+import kotlinx.coroutines.flow.filter
 
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.sp
 import com.example.pauze.ui.theme.PAUZEAndroidTheme
 import com.example.pauze.ui.theme.MainPaletteTheme
 
@@ -59,8 +70,13 @@ enum class PauzeVisualMethod {
 // 화면 상태에 따른 분기
 @Composable
 fun PauzeVisualScreen() {
-    var step by remember { mutableStateOf(PauzeVisualStep.SelectMethod) }
-    var selectedMethod by remember { mutableStateOf<PauzeVisualMethod?>(null) }
+    var step by remember { mutableStateOf(PauzeVisualStep.SelectMethod) } // 초기 화면
+
+    var selectedMethod by remember { mutableStateOf<PauzeVisualMethod?>(null) } // 호흡/명상 상태
+
+    var selectedHour by remember { mutableStateOf(0) }
+    var selectedMinute by remember { mutableStateOf(5) }
+    var selectedSecond by remember { mutableStateOf(0) }
 
     when (step) {
         PauzeVisualStep.SelectMethod -> {
@@ -72,7 +88,20 @@ fun PauzeVisualScreen() {
         }
 
         PauzeVisualStep.SelectTime -> {
-            Text(text = "시간 선택 화면")
+            PauzeVisualTimeSelectContent(
+                selectedHour = selectedHour,
+                selectedMinute = selectedMinute,
+                selectedSecond = selectedSecond,
+                onHourSelect = { selectedHour = it },
+                onMinuteSelect = { selectedMinute = it },
+                onSecondSelect = { selectedSecond = it },
+                onQuickTimeSelect = { hour, minute, second ->
+                    selectedHour = hour
+                    selectedMinute = minute
+                    selectedSecond = second
+                },
+                onStartClick = { step = PauzeVisualStep.Countdown }
+            )
         }
 
         PauzeVisualStep.Countdown -> {
@@ -85,40 +114,20 @@ fun PauzeVisualScreen() {
     }
 }
 
+// 시각 안정 방법 선택 화면
 @Composable
 fun PauzeVisualMethodSelectContent(
     selectedMethod: PauzeVisualMethod?,
     onMethodSelect: (PauzeVisualMethod) -> Unit,
     onNextClick: () -> Unit
 ) {
-    val isNextEnabled = selectedMethod != null
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(AppTheme.palette.gray.getColor(9))
-            .padding(horizontal = 24.dp, vertical = 24.dp)
+    PauzeVisualStepLayout(
+        title = "안정하고 싶은 방식을\n선택해주세요",
+        description = "시각적 자극이 심할 때는 눈을 쉬게 해주세요.\n화면이 꺼지고, 소리와 호흡만으로 집중할 수 있는 환경이 만들어집니다.",
+        buttonText = "다음",
+        buttonEnabled = selectedMethod != null,
+        onButtonClick = onNextClick
     ) {
-        PauzeVisualTopBar()
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Text(
-            text = "안정하고 싶은 방식을\n선택해주세요",
-            style = headingMdBold,
-            color = AppTheme.palette.gray.getColor(2)
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        Text(
-            text = "시각적 자극이 심할 때는 눈을 쉬게 해주세요.\n화면이 꺼지고, 소리와 호흡만으로 집중할 수 있는 환경이\n만들어집니다.",
-            style = bodyTextMdRegular,
-            color = AppTheme.palette.gray.getColor(5)
-        )
-
-        Spacer(modifier = Modifier.height(72.dp))
-
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(16.dp)
@@ -139,49 +148,10 @@ fun PauzeVisualMethodSelectContent(
                 modifier = Modifier.weight(1f)
             )
         }
-
-        Spacer(modifier = Modifier.weight(1f))
-
-        Box(
-            contentAlignment = Alignment.Center,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(56.dp)
-                .background(
-                    color = if (isNextEnabled) {
-                        AppTheme.palette.gray.getColor(2)
-                    } else {
-                        AppTheme.palette.gray.getColor(7)
-                    },
-                    shape = RoundedCornerShape(28.dp)
-                )
-                .clickable(
-                    enabled = isNextEnabled,
-                    onClick = onNextClick
-                )
-        ) {
-            Text(
-                text = "다음",
-                style = headingSmBold,
-                color = if (isNextEnabled) {
-                    AppTheme.palette.gray.getColor(9)
-                } else {
-                    AppTheme.palette.gray.getColor(4)
-                },
-                textAlign = TextAlign.Center
-            )
-        }
     }
 }
 
-@Composable
-fun PauzeVisualTopBar() {
-    Text(
-        text = "<    시각 안정",
-        color = AppTheme.palette.gray.getColor(0)
-    )
-}
-
+// 호흡 가이드 / 명상 선택 카드 컴포넌트
 @Composable
 fun PauzeVisualMethodCard(
     title: String,
@@ -232,6 +202,286 @@ fun PauzeVisualMethodCard(
     }
 }
 
+// 시간 선택 화면
+@Composable
+fun PauzeVisualTimeSelectContent(
+    selectedHour: Int,
+    selectedMinute: Int,
+    selectedSecond: Int,
+    onHourSelect: (Int) -> Unit,
+    onMinuteSelect: (Int) -> Unit,
+    onSecondSelect: (Int) -> Unit,
+    onQuickTimeSelect: (Int, Int, Int) -> Unit,
+    onStartClick: () -> Unit
+) {
+    val isStartEnabled = selectedHour != 0 || selectedMinute != 0 || selectedSecond != 0
+
+    PauzeVisualStepLayout(
+        title = "안정하고 싶은 시간을\n선택해주세요",
+        description = "시각적 자극이 심할 때는 눈을 쉬게 해주세요.\n화면이 꺼지고, 소리와 호흡만으로 집중할 수 있는 환경이 만들어집니다.",
+        buttonText = "시작하기",
+        buttonEnabled = isStartEnabled,
+        onButtonClick = onStartClick
+    ) {
+        PauzeVisualTimeWheel(
+            selectedHour = selectedHour,
+            selectedMinute = selectedMinute,
+            selectedSecond = selectedSecond,
+            onHourSelect = onHourSelect,
+            onMinuteSelect = onMinuteSelect,
+            onSecondSelect = onSecondSelect
+        )
+    }
+}
+
+// 시간 선택 휠 컴포넌트
+@Composable
+fun PauzeVisualTimeWheel(
+    selectedHour: Int,
+    selectedMinute: Int,
+    selectedSecond: Int,
+    onHourSelect: (Int) -> Unit,
+    onMinuteSelect: (Int) -> Unit,
+    onSecondSelect: (Int) -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(168.dp)
+            .padding(horizontal = 20.dp),
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        PauzeVisualWheelColumn(
+            values = (0..23).toList(),
+            selectedValue = selectedHour,
+            onValueChange = onHourSelect
+        )
+
+        PauzeVisualWheelColon()
+
+        PauzeVisualWheelColumn(
+            values = (0..59).toList(),
+            selectedValue = selectedMinute,
+            onValueChange = onMinuteSelect
+        )
+
+        PauzeVisualWheelColon()
+
+        PauzeVisualWheelColumn(
+            values = (0..59).toList(),
+            selectedValue = selectedSecond,
+            onValueChange = onSecondSelect
+        )
+    }
+}
+
+// 휠 숫자 컬럼
+@Composable
+fun PauzeVisualWheelColumn(
+    values: List<Int>,
+    selectedValue: Int,
+    onValueChange: (Int) -> Unit
+) {
+    val loopCount = 100
+    val middleLoop = loopCount / 2
+    val valueSize = values.size
+
+    val startIndex = remember(values, selectedValue) {
+        val selectedIndex = values.indexOf(selectedValue).coerceAtLeast(0)
+        middleLoop * valueSize + selectedIndex
+    }
+
+    val listState = rememberLazyListState(
+        initialFirstVisibleItemIndex = startIndex
+    )
+
+    val flingBehavior = rememberSnapFlingBehavior(
+        lazyListState = listState
+    )
+
+    val centeredIndex by remember {
+        derivedStateOf {
+            listState.firstVisibleItemIndex
+        }
+    }
+
+    LaunchedEffect(selectedValue) {
+        val currentValue = values[centeredIndex % valueSize]
+
+        if (currentValue != selectedValue && !listState.isScrollInProgress) {
+            val selectedIndex = values.indexOf(selectedValue).coerceAtLeast(0)
+            val currentLoop = centeredIndex / valueSize
+            val targetIndex = currentLoop * valueSize + selectedIndex
+
+            listState.animateScrollToItem(targetIndex)
+        }
+    }
+
+    LaunchedEffect(listState, values) {
+        snapshotFlow { listState.isScrollInProgress }
+            .filter { isScrollInProgress -> !isScrollInProgress }
+            .distinctUntilChanged()
+            .collect {
+                val value = values[listState.firstVisibleItemIndex % valueSize]
+
+                if (value != selectedValue) {
+                    onValueChange(value)
+                }
+            }
+    }
+
+    LazyColumn(
+        state = listState,
+        flingBehavior = flingBehavior,
+        contentPadding = PaddingValues(vertical = 64.dp),
+        modifier = Modifier
+            .width(62.dp)
+            .height(168.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(24.dp)
+    ) {
+        items(loopCount * valueSize) { index ->
+            val value = values[index % valueSize]
+
+            PauzeVisualWheelNumber(
+                text = "%02d".format(value),
+                selected = index == centeredIndex
+            )
+        }
+    }
+}
+
+// 휠 숫자 컴포넌트
+@Composable
+fun PauzeVisualWheelNumber(
+    text: String,
+    selected: Boolean
+) {
+    Text(
+        text = text,
+        style = headingLgBold.copy(
+            fontSize = 40.sp,
+            lineHeight = 40.sp
+        ),
+        color = AppTheme.palette.gray.getColor(0),
+        textAlign = TextAlign.Center,
+        modifier = Modifier
+            .width(62.dp)
+            .height(40.dp)
+            .alpha(if (selected) 1f else 0.18f)
+    )
+}
+
+// 휠 콜론
+@Composable
+fun PauzeVisualWheelColon() {
+    Text(
+        text = " : ",
+        style = headingLgBold.copy(
+            fontSize = 40.sp,
+            lineHeight = 40.sp
+        ),
+        color = AppTheme.palette.gray.getColor(0)
+    )
+}
+
+// 시각 안정 선택 화면 및 시간 선택 화면 공통 레이아웃 컴포넌트
+@Composable
+fun PauzeVisualStepLayout(
+    title: String,
+    description: String,
+    buttonText: String,
+    buttonEnabled: Boolean,
+    onButtonClick: () -> Unit,
+    content: @Composable () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(AppTheme.palette.gray.getColor(9))
+            .padding(horizontal = 24.dp, vertical = 24.dp)
+    ) {
+        PauzeVisualTopBar()
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Text(
+            text = title,
+            style = headingMdBold,
+            color = AppTheme.palette.gray.getColor(2)
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Text(
+            text = description,
+            style = bodyTextMdRegular,
+            color = AppTheme.palette.gray.getColor(5)
+        )
+
+        Spacer(modifier = Modifier.height(72.dp))
+
+        content()
+
+        Spacer(modifier = Modifier.weight(1f))
+
+        PauzeVisualBottomButton(
+            text = buttonText,
+            enabled = buttonEnabled,
+            onClick = onButtonClick
+        )
+    }
+}
+
+// 버튼 공통 컴포넌트
+@Composable
+fun PauzeVisualBottomButton(
+    text: String,
+    enabled: Boolean,
+    onClick: () -> Unit
+) {
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(56.dp)
+            .background(
+                color = if (enabled) {
+                    AppTheme.palette.gray.getColor(2)
+                } else {
+                    AppTheme.palette.gray.getColor(7)
+                },
+                shape = RoundedCornerShape(28.dp)
+            )
+            .clickable(
+                enabled = enabled,
+                onClick = onClick
+            )
+    ) {
+        Text(
+            text = text,
+            style = headingSmBold,
+            color = if (enabled) {
+                AppTheme.palette.gray.getColor(9)
+            } else {
+                AppTheme.palette.gray.getColor(4)
+            },
+            textAlign = TextAlign.Center
+        )
+    }
+}
+
+// 공통 TopHeader(공통 컴포넌트 병합시 대체 예정)
+@Composable
+fun PauzeVisualTopBar() {
+    Text(
+        text = "<    시각 안정",
+        color = AppTheme.palette.gray.getColor(0)
+    )
+}
+
+// 시각 안정 선택 화면 Preview(미선택)
 @Preview(showBackground = true, widthDp = 360, heightDp = 800)
 @Composable
 fun PauzeVisualScreenPreview() {
@@ -241,6 +491,59 @@ fun PauzeVisualScreenPreview() {
     ) {
         MainPaletteTheme {
             PauzeVisualScreen()
+        }
+    }
+}
+
+// 시각 안정 선택 화면 Preview(호흡 가이드 선택)
+@Preview(showBackground = true, widthDp = 360, heightDp = 800)
+@Composable
+fun PauzeVisualMethodSelectBreathingPreview() {
+    PAUZEAndroidTheme(darkTheme = true, dynamicColor = false) {
+        MainPaletteTheme {
+            PauzeVisualMethodSelectContent(
+                selectedMethod = PauzeVisualMethod.BreathingGuide,
+                onMethodSelect = {},
+                onNextClick = {}
+            )
+        }
+    }
+}
+
+// 시각 안정 선택 화면 Preview(명상 선택)
+@Preview(showBackground = true, widthDp = 360, heightDp = 800)
+@Composable
+fun PauzeVisualMethodSelectMeditationPreview() {
+    PAUZEAndroidTheme(darkTheme = true, dynamicColor = false) {
+        MainPaletteTheme {
+            PauzeVisualMethodSelectContent(
+                selectedMethod = PauzeVisualMethod.Meditation,
+                onMethodSelect = {},
+                onNextClick = {}
+            )
+        }
+    }
+}
+
+// 시각 안정 시간 선택 화면 Preview
+@Preview(showBackground = true, widthDp = 360, heightDp = 800)
+@Composable
+fun PauzeVisualTimeSelectPreview() {
+    PAUZEAndroidTheme(
+        darkTheme = true,
+        dynamicColor = false
+    ) {
+        MainPaletteTheme {
+            PauzeVisualTimeSelectContent(
+                selectedHour = 0,
+                selectedMinute = 5,
+                selectedSecond = 0,
+                onHourSelect = {},
+                onMinuteSelect = {},
+                onSecondSelect = {},
+                onQuickTimeSelect = { _, _, _ -> },
+                onStartClick = {}
+            )
         }
     }
 }
