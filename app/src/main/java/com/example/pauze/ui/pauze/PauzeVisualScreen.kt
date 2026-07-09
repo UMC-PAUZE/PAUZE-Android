@@ -535,7 +535,7 @@ fun PauzeVisualBottomButton(
         contentAlignment = Alignment.Center,
         modifier = Modifier
             .fillMaxWidth()
-            .height(56.dp)
+            .height(64.dp)
             .background(
                 color = if (enabled) {
                     AppTheme.palette.gray.getColor(2)
