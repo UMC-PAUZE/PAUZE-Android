@@ -9,6 +9,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -22,8 +23,11 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -35,8 +39,15 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.pauze.R
@@ -65,13 +76,22 @@ class LoginScreen : ComponentActivity() {
 
 @Composable
 fun LoginLayout(){
-    var emailText by remember { mutableStateOf("") }
-    var passwordText by remember { mutableStateOf("") }
+    val focusManager = LocalFocusManager.current
+    var email by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
+    var isPwdVisible by remember { mutableStateOf(false) }
+    var isFieldFocused by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(AppTheme.palette.gray.getColor(9))
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null
+            ){
+                focusManager.clearFocus()
+            }
             .padding(horizontal = 24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
@@ -85,9 +105,12 @@ fun LoginLayout(){
             modifier = Modifier
                 .fillMaxWidth().border(
                     width = 1.dp,
-                    color = AppTheme.palette.gray.getColor(6),
+                    color = if (isFieldFocused) AppTheme.palette.gray.getColor(3)
+                            else AppTheme.palette.gray.getColor(6),
                     shape = RoundedCornerShape(size = 16.dp)
-                ).padding(
+                ).onFocusChanged {
+                    isFieldFocused = it.isFocused
+                }.padding(
                     horizontal = 16.dp, vertical = 14.dp
                 )
         ){
@@ -97,21 +120,40 @@ fun LoginLayout(){
                 style = bodyTextMdRegular,
             )
             BasicTextField(
-                value = emailText,
-                onValueChange = { newMail ->
-                    emailText = newMail
-                },
+                value = email,
+                onValueChange = { email = it },
                 modifier = Modifier.fillMaxWidth(),
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Email,
+                    imeAction = ImeAction.Done
+                ),
+                keyboardActions = KeyboardActions(
+                    onDone = { focusManager.clearFocus() }
+                ),
                 decorationBox = { innerTextField ->
-                    if(emailText.isEmpty()){
+                    if(email.isEmpty()){
                         Text(
                             "텍스트",
                             color = AppTheme.palette.gray.getColor(5),
                             style = bodyTextLgMedium,
                         )
+                    } else {
+                        Row(
+                            horizontalArrangement = Arrangement.Center,
+                            verticalAlignment = Alignment.CenterVertically
+                        ){
+                            Row(modifier = Modifier.weight(1f)){
+                                innerTextField()
+                            }
+                            IconButton(onClick = {
+                                email = ""
+                            }) {
+                                Image(painter = painterResource(R.drawable.cancel_circle), contentDescription = "cancel")
+                            }
+                        }
                     }
-                    innerTextField()
-                }
+                },
+                textStyle = bodyTextLgMedium.copy(color = AppTheme.palette.gray.getColor(2))
             )
         }
         Spacer(modifier = Modifier.height(12.dp))
@@ -119,11 +161,15 @@ fun LoginLayout(){
             modifier = Modifier
                 .fillMaxWidth().border(
                     width = 1.dp,
-                    color = AppTheme.palette.gray.getColor(6),
+                    color = if (isFieldFocused) AppTheme.palette.gray.getColor(3)
+                            else AppTheme.palette.gray.getColor(6),
                     shape = RoundedCornerShape(size = 16.dp)
-                ).padding(
+                ).onFocusChanged {
+                    isFieldFocused = it.isFocused
+                }.padding(
                     horizontal = 16.dp, vertical = 14.dp
                 )
+
         ){
             Text(
                 "비밀번호",
@@ -131,21 +177,46 @@ fun LoginLayout(){
                 style = bodyTextMdRegular,
             )
             BasicTextField(
-                value = passwordText,
-                onValueChange = { newPwd ->
-                    passwordText = newPwd
-                },
+                value = password,
+                onValueChange = { password = it },
                 modifier = Modifier.fillMaxWidth(),
+                visualTransformation = if (isPwdVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Password,
+                    imeAction = ImeAction.Done
+                ),
+                keyboardActions = KeyboardActions(
+                    onDone = { focusManager.clearFocus() }
+                ),
                 decorationBox = { innerTextField ->
-                    if(passwordText.isEmpty()){
+                    if(password.isEmpty()){
                         Text(
                             "텍스트",
                             color = AppTheme.palette.gray.getColor(5),
                             style = bodyTextLgMedium,
                         )
                     }
-                    innerTextField()
-                }
+                    else {
+                        Row(
+                            horizontalArrangement = Arrangement.Center,
+                            verticalAlignment = Alignment.CenterVertically
+                        ){
+                            Row(modifier = Modifier.weight(1f)){
+                                innerTextField()
+                            }
+                            IconButton(onClick = {
+                                isPwdVisible = !isPwdVisible
+                            }) {
+                                // todo: 추후 비밀번호 표시 아이콘 나오면 수정
+                                Image(
+                                    painter = painterResource(R.drawable.pwd_eye),
+                                    contentDescription = "cancel"
+                                )
+                            }
+                        }
+                    }
+                },
+                textStyle = bodyTextLgMedium.copy(color = AppTheme.palette.gray.getColor(2))
             )
         }
         Spacer(modifier = Modifier.height(32.dp))
@@ -153,10 +224,12 @@ fun LoginLayout(){
             modifier = Modifier
                 .fillMaxWidth()
                 .background(
-                    color = AppTheme.palette.gray.getColor(8),
+                    color = if(email.isEmpty() || password.isEmpty())
+                        AppTheme.palette.gray.getColor(8)
+                        else AppTheme.palette.gray.getColor(2),
                     shape = RoundedCornerShape(size = 100.dp))
                 .clickable{
-                    // implement later
+                    // todo: 백엔드와 연결해 결과에 따라 표시
                 }
                 .padding(horizontal = 28.dp, vertical = 18.dp),
             contentAlignment = Alignment.Center
@@ -195,7 +268,7 @@ fun LoginLayout(){
                     color = Color(0xFFFEE500),
                     shape = RoundedCornerShape(size = 100.dp))
                 .clickable{
-                    // 로그인 여부에 따라 홈화면으로 이동 or 다이얼로그 띄우기
+                    // todo: 카카오 로그인 구현
                 }
                 .padding(horizontal = 28.dp, vertical = 18.dp),
             contentAlignment = Alignment.Center
@@ -221,7 +294,7 @@ fun LoginLayout(){
                     color = AppTheme.palette.gray.getColor(2),
                     shape = RoundedCornerShape(size = 100.dp))
                 .clickable{
-                    // 홈화면으로 이동
+                    // todo: 홈화면으로 이동
                 }
                 .padding(horizontal = 28.dp, vertical = 18.dp),
             contentAlignment = Alignment.Center
@@ -238,7 +311,7 @@ fun LoginLayout(){
             Text(
                 "카카오로 시작하기",
                 modifier = Modifier.clickable{
-                    // 회원가입 스크린으로 이동
+                    // todo: 회원가입 스크린으로 이동
                 },
                 style = bodyTextMdBold,
                 color = AppTheme.palette.gray.getColor(2)
