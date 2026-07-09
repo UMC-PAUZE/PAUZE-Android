@@ -309,7 +309,7 @@ fun LoginLayout(){
             Text("계정이 없으신가요?", style = bodyTextMdMedium, color = AppTheme.palette.gray.getColor(5))
             Spacer(modifier = Modifier.width(8.dp))
             Text(
-                "카카오로 시작하기",
+                "회원가입",
                 modifier = Modifier.clickable{
                     // todo: 회원가입 스크린으로 이동
                 },
