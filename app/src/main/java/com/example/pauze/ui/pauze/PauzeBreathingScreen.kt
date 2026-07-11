@@ -1,6 +1,7 @@
 package com.example.pauze.ui.pauze
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -15,10 +16,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -27,14 +24,45 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.pauze.R
 import com.example.pauze.ui.component.Tab
 import com.example.pauze.ui.component.TopBar
 import com.example.pauze.ui.theme.*
-@Composable
-fun PauzeBreathingScreen() {
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.unit.lerp
 
-    var selectedTabIndex by remember { mutableStateOf(0) } //처음 478 호흡으로 선택
+@Composable
+fun PauzeBreathingScreen(
+    viewModel: PauzeBreathingViewModel = viewModel()
+) {
+
+    val pattern = viewModel.patterns[viewModel.selectedTabIndex]
+
+    // 애니메이션
+    val progress = when (viewModel.breathState.phase) {
+        BreathPhase.INHALE -> {
+            if (viewModel.currentCycle == 0) {
+                1f   // 첫 사이클의 들숨은 아직 내쉰 적이 없으니 처음부터 꽉 찬 크기
+            } else {
+                viewModel.breathState.second.toFloat() / pattern.inhale
+            }
+        }
+        BreathPhase.HOLD -> 1f
+        BreathPhase.EXHALE -> 1f - (viewModel.breathState.second.toFloat() / pattern.exhale)
+    }
+
+    val outerSize by animateDpAsState(
+        targetValue = lerp(220.dp, 312.dp, progress),
+        animationSpec = tween(durationMillis = 1000, easing = LinearEasing)
+    )
+    val middleSize by animateDpAsState(
+        targetValue = lerp(180.dp, 218.dp, progress),
+        animationSpec = tween(durationMillis = 1000, easing = LinearEasing)
+    )
 
     Column(
         modifier = Modifier
@@ -49,20 +77,20 @@ fun PauzeBreathingScreen() {
         ){
             Tab(
                 text = "478 호흡",
-                selected = selectedTabIndex == 0,
-                onClick = { selectedTabIndex = 0 },
+                selected = viewModel.selectedTabIndex == 0,
+                onClick = { viewModel.selectTab(0) },
                 modifier = Modifier.weight(1f)
             )
             Tab(
                 text = "박스 호흡",
-                selected = selectedTabIndex == 1,
-                onClick = { selectedTabIndex = 1 },
+                selected = viewModel.selectedTabIndex == 1,
+                onClick = { viewModel.selectTab(1) },
                 modifier = Modifier.weight(1f)
             )
             Tab(
                 text = "간단 호흡",
-                selected = selectedTabIndex == 2,
-                onClick = { selectedTabIndex = 2 },
+                selected = viewModel.selectedTabIndex == 2,
+                onClick = { viewModel.selectTab(2) },
                 modifier = Modifier.weight(1f)
             )
         }
@@ -77,14 +105,16 @@ fun PauzeBreathingScreen() {
             verticalAlignment = Alignment.CenterVertically
         ){
             Text(
-                text = "0/3", //변수 처리
+                text = "${viewModel.currentCycle}/3",
                 color = AppTheme.palette.gray.getColor(4),
                 style = bodyTextXlMedium
             )
             Icon(
                 painter = painterResource(R.drawable.ic_replay),
                 contentDescription = "다시 시작",
-                modifier = Modifier.size(28.dp),
+                modifier = Modifier
+                    .size(28.dp)
+                    .clickable { viewModel.reset() },
                 tint = AppTheme.palette.gray.getColor(4)
             )
         }
@@ -92,12 +122,14 @@ fun PauzeBreathingScreen() {
         Spacer(modifier = Modifier.height(16.dp))
 
         Box(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(312.dp),
             contentAlignment = Alignment.Center
         ){
             Box(
                 modifier = Modifier
-                    .size(312.dp)
+                    .size(outerSize)
                     .background(
                         color = AppTheme.palette.gray.getColor(8),
                         shape = CircleShape
@@ -105,7 +137,7 @@ fun PauzeBreathingScreen() {
             )
             Box(
                 modifier = Modifier
-                    .size(218.dp)
+                    .size(middleSize)
                     .background(
                         color = AppTheme.palette.gray.getColor(7),
                         shape = CircleShape
@@ -121,7 +153,7 @@ fun PauzeBreathingScreen() {
             )
 
             Text(
-                text = "1",
+                text = "${viewModel.breathState.second}",
                 color = AppTheme.palette.gray.getColor(2),
                 fontSize = 64.sp,
                 fontWeight = FontWeight.Medium,
@@ -139,7 +171,11 @@ fun PauzeBreathingScreen() {
             verticalArrangement = Arrangement.spacedBy(48.dp)
         ) {
             Text(
-                text = "들이쉬세요",
+                text = when(viewModel.breathState.phase){
+                    BreathPhase.INHALE -> "들이쉬세요"
+                    BreathPhase.HOLD -> "참으세요"
+                    BreathPhase.EXHALE -> "내쉬세요"
+                },
                 style = headingLgBold,
                 color = AppTheme.palette.gray.getColor(2),
                 textAlign = TextAlign.Center
@@ -148,32 +184,43 @@ fun PauzeBreathingScreen() {
             Row(
                 horizontalArrangement = Arrangement.spacedBy(24.dp)
             ) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
-                ) {
-                    Text(text = "들숨", style = bodyTextXlBold, color = AppTheme.palette.gray.getColor(2))
-                    Text(text = "4초", style = bodyTextMdMedium, color = AppTheme.palette.gray.getColor(4))
-                }
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
-                ) {
-                    Text(text = "참기", style = bodyTextXlBold, color = AppTheme.palette.gray.getColor(6))
-                    Text(text = "7초", style = bodyTextMdMedium, color = AppTheme.palette.gray.getColor(7))
-                }
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
-                ) {
-                    Text(text = "날숨", style = bodyTextXlBold, color = AppTheme.palette.gray.getColor(6))
-                    Text(text = "8초", style = bodyTextMdMedium, color = AppTheme.palette.gray.getColor(7))
-                }
+                BreathStepText(
+                    label = "들숨",
+                    seconds = pattern.inhale,
+                    isActive = viewModel.breathState.phase == BreathPhase.INHALE
+                )
+                BreathStepText(
+                    label = "참기",
+                    seconds = pattern.hold,
+                    isActive = viewModel.breathState.phase == BreathPhase.HOLD
+                )
+                BreathStepText(
+                    label = "날숨",
+                    seconds = pattern.exhale,
+                    isActive = viewModel.breathState.phase == BreathPhase.EXHALE
+                )
             }
         }
+    }
+}
+
+@Composable
+private fun BreathStepText(label: String, seconds: Int, isActive: Boolean){
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+        modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
+    ) {
+        Text(
+            text = label,
+            style = bodyTextXlBold,
+            color = AppTheme.palette.gray.getColor(if (isActive) 2 else 6)
+        )
+        Text(
+            text = "${seconds}초",
+            style = bodyTextMdMedium,
+            color = AppTheme.palette.gray.getColor(if (isActive) 4 else 7)
+        )
     }
 }
 
@@ -181,12 +228,6 @@ fun PauzeBreathingScreen() {
 @Composable
 private fun PauzeBreathingPreview(){
     PAUZEAndroidTheme(darkTheme = true, dynamicColor = false){
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(AppTheme.palette.gray.getColor(9))
-        ) {
-            PauzeBreathingScreen()
-        }
+        PauzeBreathingScreen()
     }
 }
