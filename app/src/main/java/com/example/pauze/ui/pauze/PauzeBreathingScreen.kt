@@ -44,13 +44,7 @@ fun PauzeBreathingScreen(
 
     // 애니메이션
     val progress = when (viewModel.breathState.phase) {
-        BreathPhase.INHALE -> {
-            if (viewModel.currentCycle == 0) {
-                1f   // 첫 사이클의 들숨은 아직 내쉰 적이 없으니 처음부터 꽉 찬 크기
-            } else {
-                viewModel.breathState.second.toFloat() / pattern.inhale
-            }
-        }
+        BreathPhase.INHALE -> viewModel.breathState.second.toFloat() / pattern.inhale
         BreathPhase.HOLD -> 1f
         BreathPhase.EXHALE -> 1f - (viewModel.breathState.second.toFloat() / pattern.exhale)
     }
