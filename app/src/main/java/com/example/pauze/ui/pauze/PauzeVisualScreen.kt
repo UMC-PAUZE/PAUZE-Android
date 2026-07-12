@@ -49,11 +49,15 @@ import kotlinx.coroutines.flow.filter
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.rememberScrollState
 import com.example.pauze.ui.component.TopBar
+import androidx.compose.foundation.layout.Box
+import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.delay
 
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.sp
 import com.example.pauze.ui.theme.PAUZEAndroidTheme
 import com.example.pauze.ui.theme.MainPaletteTheme
+import com.example.pauze.ui.theme.bodyTextLgRegular
 
 // 시각 진정 화면 상태
 enum class PauzeVisualStep {
@@ -79,6 +83,8 @@ fun PauzeVisualScreen() {
     var selectedHour by remember { mutableStateOf(0) }
     var selectedMinute by remember { mutableStateOf(5) }
     var selectedSecond by remember { mutableStateOf(0) }
+
+    var countdownNumber by remember { mutableStateOf(3) }
 
     when (step) {
         PauzeVisualStep.SelectMethod -> {
@@ -107,7 +113,30 @@ fun PauzeVisualScreen() {
         }
 
         PauzeVisualStep.Countdown -> {
-            Text(text = "카운트다운 화면")
+            Box(modifier = Modifier.fillMaxSize()) {
+                PauzeVisualTimeSelectContent(
+                    selectedHour = selectedHour,
+                    selectedMinute = selectedMinute,
+                    selectedSecond = selectedSecond,
+                    onHourSelect = { selectedHour = it },
+                    onMinuteSelect = { selectedMinute = it },
+                    onSecondSelect = { selectedSecond = it },
+                    onQuickTimeSelect = { hour, minute, second ->
+                        selectedHour = hour
+                        selectedMinute = minute
+                        selectedSecond = second
+                    },
+                    onStartClick = {}
+                )
+
+                PauzeVisualCountdownOverlay(
+                    countdownNumber = countdownNumber,
+                    onCountdownChange = { countdownNumber = it },
+                    onCountdownFinish = {
+                        step = PauzeVisualStep.Running
+                    }
+                )
+            }
         }
 
         PauzeVisualStep.Running -> {
@@ -125,7 +154,7 @@ fun PauzeVisualMethodSelectContent(
 ) {
     PauzeVisualStepLayout(
         title = "안정하고 싶은 방식을\n선택해주세요",
-        description = "시각적 자극이 심할 때는 눈을 쉬게 해주세요.\n화면이 꺼지고, 소리와 호흡만으로 집중할 수 있는 환경이 만들어집니다.",
+        description = "시각적 자극이 심할 때는 눈을 쉬게 해주세요.\n화면이 꺼지고, 소리와 호흡만으로 집중할 수 있는 환경이\n만들어집니다.",
         buttonText = "다음",
         buttonEnabled = selectedMethod != null,
         onButtonClick = onNextClick
@@ -220,7 +249,7 @@ fun PauzeVisualTimeSelectContent(
 
     PauzeVisualStepLayout(
         title = "안정하고 싶은 시간을\n선택해주세요",
-        description = "시각적 자극이 심할 때는 눈을 쉬게 해주세요.\n화면이 꺼지고, 소리와 호흡만으로 집중할 수 있는 환경이 만들어집니다.",
+        description = "시각적 자극이 심할 때는 눈을 쉬게 해주세요.\n화면이 꺼지고, 소리와 호흡만으로 집중할 수 있는 환경이\n만들어집니다.",
         buttonText = "시작하기",
         buttonEnabled = isStartEnabled,
         onButtonClick = onStartClick
@@ -473,6 +502,53 @@ fun PauzeVisualQuickTimeChip(
             color = AppTheme.palette.gray.getColor(4),
             textAlign = TextAlign.Center
         )
+    }
+}
+
+// 카운트다운 화면
+@Composable
+fun PauzeVisualCountdownOverlay(
+    countdownNumber: Int,
+    onCountdownChange: (Int) -> Unit,
+    onCountdownFinish: () -> Unit
+) {
+    LaunchedEffect(Unit) {
+        for (number in 3 downTo 1) {
+            onCountdownChange(number)
+            delay(1000L)
+        }
+
+        onCountdownFinish()
+    }
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black.copy(alpha = 0.72f)),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = countdownNumber.toString(),
+                style = headingLgBold.copy(
+                    fontSize = 64.sp,
+                    lineHeight = 64.sp
+                ),
+                color = AppTheme.palette.gray.getColor(2),
+                textAlign = TextAlign.Center
+            )
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            Text(
+                text = "잠시 후 시작됩니다\n편안한 자세를 잡아주세요",
+                style = bodyTextLgRegular,
+                color = AppTheme.palette.gray.getColor(4),
+                textAlign = TextAlign.Center
+            )
+        }
     }
 }
 
