@@ -25,6 +25,7 @@ import com.example.pauze.ui.theme.bodyTextLgBold
 fun TopBar(
     title: String,
     modifier: Modifier = Modifier,
+    showBackButton: Boolean = true,
     onBackClick: () -> Unit = {},
     rightIcon: (@Composable () -> Unit)? = null,
 ) {
@@ -40,16 +41,18 @@ fun TopBar(
                 .fillMaxWidth()
                 .height(56.dp)
         ) {
-            Icon(
-                painter = painterResource(R.drawable.ic_arrow_back),
-                contentDescription = "뒤로가기",
-                tint = AppTheme.palette.gray.getColor(2),
-                modifier = Modifier
-                    .align(Alignment.CenterStart)
-                    .padding(start = 17.dp)
-                    .size(24.dp)
-                    .clickable(onClick = onBackClick)
-            )
+            if (showBackButton) {
+                Icon(
+                    painter = painterResource(R.drawable.ic_arrow_back),
+                    contentDescription = "뒤로가기",
+                    tint = AppTheme.palette.gray.getColor(2),
+                    modifier = Modifier
+                        .align(Alignment.CenterStart)
+                        .padding(start = 17.dp)
+                        .size(24.dp)
+                        .clickable(onClick = onBackClick)
+                )
+            }
 
             Text(
                 text = title,
