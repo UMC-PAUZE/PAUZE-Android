@@ -48,6 +48,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import kotlinx.coroutines.flow.filter
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.rememberScrollState
+import com.example.pauze.ui.component.TopBar
 
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.sp
@@ -475,7 +476,6 @@ fun PauzeVisualQuickTimeChip(
     }
 }
 
-
 // 시각 안정 선택 화면 및 시간 선택 화면 공통 레이아웃 컴포넌트
 @Composable
 fun PauzeVisualStepLayout(
@@ -490,37 +490,48 @@ fun PauzeVisualStepLayout(
         modifier = Modifier
             .fillMaxSize()
             .background(AppTheme.palette.gray.getColor(9))
-            .padding(horizontal = 24.dp, vertical = 24.dp)
     ) {
-        PauzeVisualTopBar()
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Text(
-            text = title,
-            style = headingMdBold,
-            color = AppTheme.palette.gray.getColor(2)
+        TopBar(
+            title = "시각 안정",
+            modifier = Modifier.padding(horizontal = 7.dp)
         )
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f)
+                .padding(horizontal = 24.dp)
+        ) {
+            Spacer(modifier = Modifier.height(16.dp))
 
-        Text(
-            text = description,
-            style = bodyTextMdRegular,
-            color = AppTheme.palette.gray.getColor(5)
-        )
+            Text(
+                text = title,
+                style = headingMdBold,
+                color = AppTheme.palette.gray.getColor(2)
+            )
 
-        Spacer(modifier = Modifier.height(72.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
-        content()
+            Text(
+                text = description,
+                style = bodyTextMdRegular,
+                color = AppTheme.palette.gray.getColor(5)
+            )
 
-        Spacer(modifier = Modifier.weight(1f))
+            Spacer(modifier = Modifier.height(72.dp))
 
-        PauzeVisualBottomButton(
-            text = buttonText,
-            enabled = buttonEnabled,
-            onClick = onButtonClick
-        )
+            content()
+
+            Spacer(modifier = Modifier.weight(1f))
+
+            PauzeVisualBottomButton(
+                text = buttonText,
+                enabled = buttonEnabled,
+                onClick = onButtonClick
+            )
+
+            Spacer(modifier = Modifier.height(24.dp))
+        }
     }
 }
 
@@ -560,15 +571,6 @@ fun PauzeVisualBottomButton(
             textAlign = TextAlign.Center
         )
     }
-}
-
-// 공통 TopHeader(공통 컴포넌트 병합시 대체 예정)
-@Composable
-fun PauzeVisualTopBar() {
-    Text(
-        text = "<    시각 안정",
-        color = AppTheme.palette.gray.getColor(0)
-    )
 }
 
 // 시각 안정 선택 화면 Preview(미선택)
