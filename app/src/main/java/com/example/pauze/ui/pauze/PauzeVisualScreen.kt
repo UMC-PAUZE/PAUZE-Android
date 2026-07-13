@@ -42,18 +42,13 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.ui.draw.alpha
 import com.example.pauze.ui.theme.headingLgBold
 import androidx.compose.runtime.snapshotFlow
-import kotlinx.coroutines.flow.distinctUntilChanged
 import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
 import androidx.compose.foundation.layout.PaddingValues
-import kotlinx.coroutines.flow.filter
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.rememberScrollState
 import com.example.pauze.ui.component.TopBar
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
-
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.sp
 import com.example.pauze.ui.theme.PAUZEAndroidTheme
 import com.example.pauze.ui.theme.MainPaletteTheme
 import com.example.pauze.ui.theme.bodyTextLgBold
@@ -594,7 +589,6 @@ fun PauzeVisualStepLayout(
     ) {
         TopBar(
             title = "시각 안정",
-            modifier = Modifier.padding(horizontal = 7.dp),
             onBackClick = onBackClick
         )
 
@@ -837,16 +831,3 @@ fun PauzeVisualBottomButton(
     }
 }
 
-// 시각 안정 선택 화면 Preview(미선택)
-@Preview(showBackground = true, widthDp = 360, heightDp = 800)
-@Composable
-fun PauzeVisualScreenPreview() {
-    PAUZEAndroidTheme(
-        darkTheme = true,
-        dynamicColor = false
-    ) {
-        MainPaletteTheme {
-            PauzeVisualScreen()
-        }
-    }
-}
