@@ -11,8 +11,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.ui.res.painterResource
 import com.example.pauze.R
 import androidx.compose.material3.Icon
@@ -198,7 +196,7 @@ fun PauzeSoundScreen(
                     }
                 )
                 Icon(
-                    imageVector = Icons.Default.Search,
+                    painter = painterResource(id = android.R.drawable.ic_menu_search), // 내장 리소스 직접 참조
                     contentDescription = "검색",
                     tint = AppTheme.palette.gray.getColor(5),
                     modifier = Modifier.size(24.dp)
