@@ -84,8 +84,8 @@ fun ReportScreen(isGuest: Boolean = true) {
             Spacer(modifier = Modifier.height(83.dp))
             GuestContent()
         } else {
-            Spacer(modifier = Modifier.height(16.dp))
-            
+            Spacer(modifier = Modifier.height(32.dp))
+
             Column(
                 modifier = Modifier.padding(horizontal = 24.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
@@ -277,7 +277,7 @@ private fun Button(
     }
 }
 
-@Preview(showBackground = true)
+@Preview(showBackground = true, widthDp = 360, heightDp = 800)
 @Composable
 private fun ReportScreenGuestPreview() {
     PAUZEAndroidTheme(darkTheme = true, dynamicColor = false) {
