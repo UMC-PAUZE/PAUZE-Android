@@ -3,87 +3,83 @@ package com.example.pauze.ui.pauze
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.example.pauze.ui.theme.AppTheme
-import com.example.pauze.ui.theme.bodyTextMdRegular
-import com.example.pauze.ui.theme.headingMdBold
-import com.example.pauze.ui.theme.headingSmBold
-import androidx.compose.material3.Icon
-import androidx.compose.ui.res.painterResource
-import com.example.pauze.R
-import androidx.compose.foundation.layout.size
-import com.example.pauze.ui.theme.bodyTextSmRegular
-import com.example.pauze.ui.theme.bodyTextXlBold
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.derivedStateOf
-import androidx.compose.ui.draw.alpha
-import com.example.pauze.ui.theme.headingLgBold
-import androidx.compose.runtime.snapshotFlow
-import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.horizontalScroll
-import androidx.compose.foundation.rememberScrollState
-import com.example.pauze.ui.component.TopBar
 import androidx.compose.ui.unit.sp
-import kotlinx.coroutines.delay
-import com.example.pauze.ui.theme.PAUZEAndroidTheme
-import com.example.pauze.ui.theme.MainPaletteTheme
+import com.example.pauze.R
+import com.example.pauze.ui.component.TopBar
+import com.example.pauze.ui.theme.AppTheme
 import com.example.pauze.ui.theme.bodyTextLgBold
 import com.example.pauze.ui.theme.bodyTextLgRegular
+import com.example.pauze.ui.theme.bodyTextMdRegular
+import com.example.pauze.ui.theme.bodyTextSmRegular
+import com.example.pauze.ui.theme.bodyTextXlBold
+import com.example.pauze.ui.theme.headingLgBold
+import com.example.pauze.ui.theme.headingMdBold
+import com.example.pauze.ui.theme.headingSmBold
+import kotlinx.coroutines.delay
 
-// 시각 진정 화면 상태
+// 시각 안정 화면 단계
 enum class PauzeVisualStep {
-    Start, // PauzeStartScreen 연결
-    SelectMethod, // 호흡법, 명상 선택 화면
-    SelectTime, // 시간 선택
-    Countdown, // 시작 카운트다운
-    Running // 호흡법 및 명상
+    Start,
+    SelectMethod,
+    SelectTime,
+    Countdown,
+    Running
 }
 
-// 시각 진정 상태
+// 시각 안정 방식
 enum class PauzeVisualMethod {
-    BreathingGuide, // 호흡법
-    Meditation, // 명상
+    BreathingGuide,
+    Meditation
 }
 
-// 화면 상태에 따른 분기
 @Composable
 fun PauzeVisualScreen() {
-    var step by remember { mutableStateOf(PauzeVisualStep.SelectMethod) } // 초기 화면
+    var step by remember { mutableStateOf(PauzeVisualStep.SelectMethod) }
 
-    var selectedMethod by remember { mutableStateOf<PauzeVisualMethod?>(null) } // 호흡/명상 상태
+    var selectedMethod by remember { mutableStateOf<PauzeVisualMethod?>(null) }
 
-    var selectedHour by remember { mutableStateOf(0) } // 초기 시간 상태 0시간 5분 0초
+    var selectedHour by remember { mutableStateOf(0) }
     var selectedMinute by remember { mutableStateOf(5) }
     var selectedSecond by remember { mutableStateOf(0) }
 
-    var countdownNumber by remember { mutableStateOf(3) } // 카운트 다운, 3초부터
+    var countdownNumber by remember { mutableStateOf(3) }
 
     val totalSeconds = selectedHour * 60 * 60 + selectedMinute * 60 + selectedSecond
-    var showStopDialog by remember { mutableStateOf(false) }
 
     when (step) {
         PauzeVisualStep.Start -> {
@@ -159,7 +155,7 @@ fun PauzeVisualScreen() {
     }
 }
 
-// 시각 안정 방법 선택 화면
+// 방식 선택 화면
 @Composable
 fun PauzeVisualMethodSelectContent(
     selectedMethod: PauzeVisualMethod?,
@@ -198,7 +194,7 @@ fun PauzeVisualMethodSelectContent(
     }
 }
 
-// 호흡 가이드 / 명상 선택 카드 컴포넌트
+// 방식 선택 카드
 @Composable
 fun PauzeVisualMethodCard(
     title: String,
@@ -292,7 +288,7 @@ fun PauzeVisualTimeSelectContent(
     }
 }
 
-// 시간 선택 휠 컴포넌트
+// 시간 선택 휠
 @Composable
 fun PauzeVisualTimeWheel(
     selectedHour: Int,
@@ -334,7 +330,7 @@ fun PauzeVisualTimeWheel(
     }
 }
 
-// 휠 숫자 컬럼
+// 휠 컬럼
 @Composable
 fun PauzeVisualWheelColumn(
     values: List<Int>,
@@ -411,7 +407,7 @@ fun PauzeVisualWheelColumn(
     }
 }
 
-// 휠 숫자 컴포넌트
+// 휠 숫자
 @Composable
 fun PauzeVisualWheelNumber(
     text: String,
@@ -432,7 +428,7 @@ fun PauzeVisualWheelNumber(
     )
 }
 
-// 휠 콜론
+// 휠 구분자
 @Composable
 fun PauzeVisualWheelColon() {
     Text(
@@ -445,7 +441,7 @@ fun PauzeVisualWheelColon() {
     )
 }
 
-// 빠른 시간 선택 Row
+// 빠른 시간 선택 영역
 @Composable
 fun PauzeVisualQuickTimeRow(
     selectedHour: Int,
@@ -524,7 +520,7 @@ fun PauzeVisualQuickTimeChip(
     }
 }
 
-// 카운트다운 화면
+// 시작 전 카운트다운 오버레이
 @Composable
 fun PauzeVisualCountdownOverlay(
     countdownNumber: Int,
@@ -571,7 +567,7 @@ fun PauzeVisualCountdownOverlay(
     }
 }
 
-// 시각 안정 선택 화면 및 시간 선택 화면 공통 레이아웃 컴포넌트
+// 선택/시간 설정 공통 레이아웃
 @Composable
 fun PauzeVisualStepLayout(
     title: String,
@@ -631,7 +627,7 @@ fun PauzeVisualStepLayout(
     }
 }
 
-//진행 중 화면
+// 진행 중 화면
 @Composable
 fun PauzeVisualRunningContent(
     totalSeconds: Int,
@@ -647,14 +643,13 @@ fun PauzeVisualRunningContent(
     }
 
     LaunchedEffect(totalSeconds, showStopDialog) {
-        while (remainingSeconds > 0) {
+        while (remainingSeconds > 0 && !showStopDialog) {
             delay(1000L)
-
-            if (!showStopDialog) {
-                remainingSeconds = (remainingSeconds - 1).coerceAtLeast(0)
-            }
+            remainingSeconds = (remainingSeconds - 1).coerceAtLeast(0)
         }
+    }
 
+    LaunchedEffect(remainingSeconds) {
         if (remainingSeconds == 0) {
             onFinish()
         }
@@ -704,7 +699,7 @@ fun PauzeVisualRunningContent(
     }
 }
 
-// 진행 중 중단 모달 컴포넌트
+// 중단 확인 모달
 @Composable
 fun PauzeVisualStopDialog(
     onStopClick: () -> Unit,
@@ -793,7 +788,7 @@ fun PauzeVisualStopDialog(
         }
     }
 }
-// 버튼 공통 컴포넌트
+// 하단 CTA 버튼
 @Composable
 fun PauzeVisualBottomButton(
     text: String,
@@ -830,4 +825,3 @@ fun PauzeVisualBottomButton(
         )
     }
 }
-
