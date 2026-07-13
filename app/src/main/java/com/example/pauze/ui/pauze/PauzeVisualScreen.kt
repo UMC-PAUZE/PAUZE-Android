@@ -56,10 +56,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.sp
 import com.example.pauze.ui.theme.PAUZEAndroidTheme
 import com.example.pauze.ui.theme.MainPaletteTheme
+import com.example.pauze.ui.theme.bodyTextLgBold
 import com.example.pauze.ui.theme.bodyTextLgRegular
 
 // 시각 진정 화면 상태
 enum class PauzeVisualStep {
+    Start, // PauzeStartScreen 연결
     SelectMethod, // 호흡법, 명상 선택 화면
     SelectTime, // 시간 선택
     Countdown, // 시작 카운트다운
@@ -89,11 +91,16 @@ fun PauzeVisualScreen() {
     var showStopDialog by remember { mutableStateOf(false) }
 
     when (step) {
+        PauzeVisualStep.Start -> {
+            PauzeStartScreen()
+        }
+
         PauzeVisualStep.SelectMethod -> {
             PauzeVisualMethodSelectContent(
                 selectedMethod = selectedMethod,
                 onMethodSelect = { selectedMethod = it },
-                onNextClick = { step = PauzeVisualStep.SelectTime }
+                onNextClick = { step = PauzeVisualStep.SelectTime },
+                onBackClick = { step = PauzeVisualStep.Start }
             )
         }
 
@@ -110,7 +117,8 @@ fun PauzeVisualScreen() {
                     selectedMinute = minute
                     selectedSecond = second
                 },
-                onStartClick = { step = PauzeVisualStep.Countdown }
+                onStartClick = { step = PauzeVisualStep.Countdown },
+                onBackClick = { step = PauzeVisualStep.SelectMethod }
             )
         }
 
@@ -128,7 +136,8 @@ fun PauzeVisualScreen() {
                         selectedMinute = minute
                         selectedSecond = second
                     },
-                    onStartClick = {}
+                    onStartClick = {},
+                    onBackClick = { step = PauzeVisualStep.SelectMethod }
                 )
 
                 PauzeVisualCountdownOverlay(
@@ -145,7 +154,10 @@ fun PauzeVisualScreen() {
             PauzeVisualRunningContent(
                 totalSeconds = totalSeconds,
                 onStopClick = {
-                    step = PauzeVisualStep.SelectTime
+                    step = PauzeVisualStep.Start
+                },
+                onFinish = {
+                    step = PauzeVisualStep.Start
                 }
             )
         }
@@ -157,14 +169,16 @@ fun PauzeVisualScreen() {
 fun PauzeVisualMethodSelectContent(
     selectedMethod: PauzeVisualMethod?,
     onMethodSelect: (PauzeVisualMethod) -> Unit,
-    onNextClick: () -> Unit
+    onNextClick: () -> Unit,
+    onBackClick: () -> Unit
 ) {
     PauzeVisualStepLayout(
         title = "안정하고 싶은 방식을\n선택해주세요",
         description = "시각적 자극이 심할 때는 눈을 쉬게 해주세요.\n화면이 꺼지고, 소리와 호흡만으로 집중할 수 있는 환경이\n만들어집니다.",
         buttonText = "다음",
         buttonEnabled = selectedMethod != null,
-        onButtonClick = onNextClick
+        onButtonClick = onNextClick,
+        onBackClick = onBackClick
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -250,7 +264,8 @@ fun PauzeVisualTimeSelectContent(
     onMinuteSelect: (Int) -> Unit,
     onSecondSelect: (Int) -> Unit,
     onQuickTimeSelect: (Int, Int, Int) -> Unit,
-    onStartClick: () -> Unit
+    onStartClick: () -> Unit,
+    onBackClick: () -> Unit
 ) {
     val isStartEnabled = selectedHour != 0 || selectedMinute != 0 || selectedSecond != 0
 
@@ -259,7 +274,8 @@ fun PauzeVisualTimeSelectContent(
         description = "시각적 자극이 심할 때는 눈을 쉬게 해주세요.\n화면이 꺼지고, 소리와 호흡만으로 집중할 수 있는 환경이\n만들어집니다.",
         buttonText = "시작하기",
         buttonEnabled = isStartEnabled,
-        onButtonClick = onStartClick
+        onButtonClick = onStartClick,
+        onBackClick = onBackClick
     ) {
         PauzeVisualTimeWheel(
             selectedHour = selectedHour,
@@ -568,6 +584,7 @@ fun PauzeVisualStepLayout(
     buttonText: String,
     buttonEnabled: Boolean,
     onButtonClick: () -> Unit,
+    onBackClick: () -> Unit,
     content: @Composable () -> Unit
 ) {
     Column(
@@ -577,7 +594,8 @@ fun PauzeVisualStepLayout(
     ) {
         TopBar(
             title = "시각 안정",
-            modifier = Modifier.padding(horizontal = 7.dp)
+            modifier = Modifier.padding(horizontal = 7.dp),
+            onBackClick = onBackClick
         )
 
         Column(
@@ -623,27 +641,46 @@ fun PauzeVisualStepLayout(
 @Composable
 fun PauzeVisualRunningContent(
     totalSeconds: Int,
-    onStopClick: () -> Unit
+    onStopClick: () -> Unit,
+    onFinish: () -> Unit,
 ) {
-    var remainingSeconds by remember(totalSeconds) {mutableStateOf(totalSeconds)}
+    var remainingSeconds by remember(totalSeconds) {
+        mutableStateOf(totalSeconds)
+    }
 
-    LaunchedEffect(totalSeconds) {
+    var showStopDialog by remember {
+        mutableStateOf(false)
+    }
+
+    LaunchedEffect(totalSeconds, showStopDialog) {
         while (remainingSeconds > 0) {
             delay(1000L)
-            remainingSeconds = (remainingSeconds - 1).coerceAtLeast(0)
+
+            if (!showStopDialog) {
+                remainingSeconds = (remainingSeconds - 1).coerceAtLeast(0)
+            }
+        }
+
+        if (remainingSeconds == 0) {
+            onFinish()
         }
     }
 
-    var minute = remainingSeconds / 60
-    var second = remainingSeconds % 60
+    val minute = remainingSeconds / 60
+    val second = remainingSeconds % 60
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Black),
+            .background(Color.Black)
+            .clickable(enabled = !showStopDialog) {
+                showStopDialog = true
+            },
         contentAlignment = Alignment.Center
     ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
             Text(
                 text = "%02d : %02d".format(minute, second),
                 style = headingLgBold.copy(
@@ -661,10 +698,107 @@ fun PauzeVisualRunningContent(
                 color = AppTheme.palette.gray.getColor(8)
             )
         }
+
+        if (showStopDialog) {
+            PauzeVisualStopDialog(
+                onStopClick = onStopClick,
+                onContinueClick = {
+                    showStopDialog = false
+                }
+            )
+        }
     }
 }
 
+// 진행 중 중단 모달 컴포넌트
+@Composable
+fun PauzeVisualStopDialog(
+    onStopClick: () -> Unit,
+    onContinueClick: () -> Unit
+) {
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            modifier = Modifier
+                .width(292.dp)
+                .background(
+                    color = AppTheme.palette.gray.getColor(8),
+                    shape = RoundedCornerShape(20.dp)
+                ),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Spacer(modifier = Modifier.height(24.dp))
 
+            Text(
+                text = "명상을 중단하시겠어요?",
+                style = bodyTextXlBold,
+                color = AppTheme.palette.gray.getColor(2),
+                textAlign = TextAlign.Center
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Text(
+                text = "남은 시간은 저장되지 않습니다.",
+                style = bodyTextSmRegular,
+                color = AppTheme.palette.gray.getColor(2),
+                textAlign = TextAlign.Center
+            )
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(1.dp)
+                    .background(AppTheme.palette.gray.getColor(7))
+            )
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxSize()
+                        .clickable(onClick = onStopClick),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "중단하기",
+                        style = bodyTextLgBold,
+                        color = AppTheme.palette.gray.getColor(2)
+                    )
+                }
+
+                Box(
+                    modifier = Modifier
+                        .width(1.dp)
+                        .fillMaxSize()
+                        .background(AppTheme.palette.gray.getColor(7))
+                )
+
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxSize()
+                        .clickable(onClick = onContinueClick),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "계속하기",
+                        style = bodyTextLgBold,
+                        color = AppTheme.palette.gray.getColor(2)
+                    )
+                }
+            }
+        }
+    }
+}
 // 버튼 공통 컴포넌트
 @Composable
 fun PauzeVisualBottomButton(
