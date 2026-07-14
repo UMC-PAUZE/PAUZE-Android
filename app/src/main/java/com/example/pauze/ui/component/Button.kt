@@ -52,18 +52,11 @@ fun Button(
         ButtonSize.Sm -> Triple(20.dp, 12.dp, bodyTextMdBold)
     }
 
-    val sizeModifier = when (size) {
-        ButtonSize.Lg -> Modifier.fillMaxWidth()
-        ButtonSize.Md -> Modifier.width(152.dp)
-        ButtonSize.Sm -> Modifier
-    }
-
     val shape = RoundedCornerShape(percent = 50)
     val currentColor = if (isPressed) pressedColor else color
 
     Box(
         modifier = modifier
-            .then(sizeModifier)
             .let {
                 when (variant) {
                     ButtonVariant.Solid -> it.background(
@@ -110,8 +103,8 @@ private fun ButtonPreview() {
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             // 사이즈별
-            Button(label = "Lg", size = ButtonSize.Lg)
-            Button(label = "Md", size = ButtonSize.Md)
+            Button(label = "Lg", size = ButtonSize.Lg, modifier = Modifier.fillMaxWidth())
+            Button(label = "Md", size = ButtonSize.Md, modifier = Modifier.width(152.dp))
             Button(label = "Sm", size = ButtonSize.Sm)
 
             // 비활성
