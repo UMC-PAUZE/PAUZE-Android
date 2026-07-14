@@ -11,8 +11,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.ui.res.painterResource
-import com.example.pauze.R
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
@@ -23,8 +21,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.pauze.R
+import com.example.pauze.ui.component.TopBar
 import com.example.pauze.ui.theme.*
 
 // 소리 아이템 데이터 구조 (이미지 리소스 ID 필수 적용)
@@ -118,52 +119,29 @@ fun PauzeSoundScreen(
             modifier = modifier
                 .fillMaxSize()
                 .background(AppTheme.palette.base.getColor(0)) // theme 배경색 (어두운 회색)
-                .statusBarsPadding()
         ) {
-            // =================--- 1. 헤더 영역 ---=================
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(56.dp)
-                    .padding(horizontal = 8.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                IconButton(
-                    onClick = {
-                        if (currentScreen == "stash") {
-                            currentScreen = "list" // 보관함 상태에서 뒤로가기 누르면 메인으로
-                        } else {
-                            onBackClick() // 메인 리스트 상태면 외부 뒤로가기 동작 실행
-                        }
+            // =================--- 1. 헤더 영역 (공통 TopBar 컴포넌트 사용) ---=================
+            TopBar(
+                title = if (currentScreen == "list") "청각 안정" else "보관함",
+                showBackButton = true,
+                onBackClick = {
+                    if (currentScreen == "stash") {
+                        currentScreen = "list" // 보관함 상태에서 뒤로가기 누르면 메인으로
+                    } else {
+                        onBackClick() // 메인 리스트 상태면 외부 뒤로가기 동작 실행
                     }
-                ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_back),
-                        contentDescription = "뒤로가기",
-                        tint = AppTheme.palette.gray.getColor(0)
-                    )
-                }
-                Spacer(modifier = Modifier.weight(1f))
-                Text(
-                    text = if (currentScreen == "list") "청각 안정" else "보관함",
-                    style = headingSmBold,
-                    color = AppTheme.palette.gray.getColor(0)
-                )
-                Spacer(modifier = Modifier.weight(1f))
-
-                // 메인 화면일 때만 우측에 보관함 상자 아이콘 표시
-                if (currentScreen == "list") {
-                    IconButton(onClick = { currentScreen = "stash" }) { // 보관함 화면으로 이동
+                },
+                rightIcon = if (currentScreen == "list") {
+                    {
                         Icon(
                             painter = painterResource(id = R.drawable.ic_box),
                             contentDescription = "보관함",
-                            tint = AppTheme.palette.gray.getColor(0)
+                            tint = AppTheme.palette.gray.getColor(2),
+                            modifier = Modifier.clickable { currentScreen = "stash" }
                         )
                     }
-                } else {
-                    Spacer(modifier = Modifier.size(48.dp)) // 보관함 화면일 때 밸런스를 맞추기 위한 공백 더미
-                }
-            }
+                } else null
+            )
 
             // =================--- 2. 검색창 영역 ---=================
             Box(

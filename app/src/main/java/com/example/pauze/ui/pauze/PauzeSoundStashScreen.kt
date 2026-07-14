@@ -24,6 +24,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.example.pauze.R
+import com.example.pauze.ui.component.TopBar
 import com.example.pauze.ui.theme.*
 
 @Composable
@@ -48,43 +49,15 @@ fun PauzeSoundStashScreen(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .background(AppTheme.palette.base.getColor(0))
-            .statusBarsPadding(),
+            .background(AppTheme.palette.base.getColor(0)),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // --- 1. 헤더 영역 ---
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(64.dp)
-        ) {
-            IconButton(
-                onClick = onBackClick,
-                modifier = Modifier
-                    .padding(start = 17.dp, top = 40.dp)
-                    .size(24.dp)
-            ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_back),
-                    contentDescription = "뒤로가기",
-                    tint = AppTheme.palette.gray.getColor(0),
-                    modifier = Modifier.size(24.dp)
-                )
-            }
-
-            Box(
-                modifier = Modifier
-                    .padding(start = 149.dp, top = 40.dp)
-                    .size(62.dp, 24.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "보관함",
-                    style = headingSmBold,
-                    color = AppTheme.palette.gray.getColor(0)
-                )
-            }
-        }
+        // --- 1. 헤더 영역 (공통 TopBar 컴포넌트 사용) ---
+        TopBar(
+            title = "보관함",
+            showBackButton = true,
+            onBackClick = onBackClick
+        )
 
         Spacer(modifier = Modifier.height(12.dp))
 
@@ -143,7 +116,7 @@ fun PauzeSoundStashScreen(
                         .size(148.dp, 40.dp) // 균등 분할 배치 크기
                         .clip(RoundedCornerShape(20.dp))
                         .background(
-                            if (isSelected) AppTheme.palette.gray.getColor(8) // 스크런샷의 선택된 회색 배경 적용
+                            if (isSelected) AppTheme.palette.gray.getColor(8) // 스크린샷의 선택된 회색 배경 적용
                             else Color.Transparent
                         )
                         .clickable { selectedTab = tab },

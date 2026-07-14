@@ -18,6 +18,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.pauze.R
+import com.example.pauze.ui.component.TopBar
 import com.example.pauze.ui.theme.*
 
 @Composable
@@ -33,30 +34,13 @@ fun PauzeSoundDetailScreen(
             .fillMaxSize()
             .background(Color.Black) // 이미지 로드 전 기본 배경색
     ) {
-        // 1. 상단 여백 바 (디자인 기준 80dp 고정 회색 영역)
-        // 상태바 영역 위에 별도로 80dp 높이의 회색 바를 두고, 그 안에 뒤로가기 버튼을 배치한다.
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(80.dp) // 상태바 포함 총 80dp 고정 (디자인 기준)
-                .background(AppTheme.palette.gray.getColor(9)) // 디자인의 어두운 회색 톤
-        ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize() // 80dp 바 중 상태바를 제외한 나머지 영역을 전부 채워야 CenterStart가 실제로 수직 중앙 정렬됨
-                    .statusBarsPadding() // 바 안에서 상태바 아래로 아이콘을 내려줌
-                    .padding(horizontal = 8.dp),
-                contentAlignment = Alignment.CenterStart
-            ) {
-                IconButton(onClick = onBackClick) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_back),
-                        contentDescription = "뒤로가기",
-                        tint = Color.White
-                    )
-                }
-            }
-        }
+        // 1. 상단 여백/헤더 영역 (공통 TopBar 컴포넌트 사용)
+        // TopBar 자체가 80dp 고정 높이 + 상태바 여백을 포함하고 있어 별도 statusBarsPadding()이 필요 없다.
+        TopBar(
+            title = "",
+            showBackButton = true,
+            onBackClick = onBackClick
+        )
 
         // 2. 나머지 영역 (배경 이미지 + 하단 카드)
         Box(
@@ -87,7 +71,7 @@ fun PauzeSoundDetailScreen(
                     .padding(horizontal = 20.dp, vertical = 24.dp)
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(32.dp))
-                    .background(Color(0xFF1B1C18).copy(alpha = 0.9f)) // 레퍼런스 이미지의 다크 테마 카드 배경색 적용
+                    .background(Color(0xFF1B1C18)) // 레퍼런스 이미지의 다크 테마 카드 배경색 적용 (불투명)
                     .padding(horizontal = 24.dp, vertical = 28.dp)
             ) {
                 Column(
@@ -163,7 +147,7 @@ fun PauzeSoundDetailScreen(
                             modifier = Modifier.size(48.dp)
                         ) {
                             Icon(
-                                painter = painterResource(id = android.R.drawable.ic_media_previous),
+                                painter = painterResource(id = R.drawable.sound_back),
                                 contentDescription = "이전곡",
                                 tint = Color.White,
                                 modifier = Modifier.size(32.dp)
@@ -185,7 +169,7 @@ fun PauzeSoundDetailScreen(
                                 modifier = Modifier.fillMaxSize()
                             ) {
                                 Icon(
-                                    painter = painterResource(id = android.R.drawable.ic_media_play),
+                                    painter = painterResource(id = R.drawable.sound_play),
                                     contentDescription = "재생",
                                     tint = Color.White,
                                     modifier = Modifier.size(32.dp)
@@ -201,7 +185,7 @@ fun PauzeSoundDetailScreen(
                             modifier = Modifier.size(48.dp)
                         ) {
                             Icon(
-                                painter = painterResource(id = android.R.drawable.ic_media_next),
+                                painter = painterResource(id = R.drawable.sound_next),
                                 contentDescription = "다음곡",
                                 tint = Color.White,
                                 modifier = Modifier.size(32.dp)
