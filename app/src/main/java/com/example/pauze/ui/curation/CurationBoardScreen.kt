@@ -25,6 +25,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.pauze.R
 import com.example.pauze.data.model.CurationPost
+import com.example.pauze.data.model.CurationCategory
 import com.example.pauze.ui.theme.AppTheme
 import com.example.pauze.ui.theme.PAUZEAndroidTheme
 import com.example.pauze.ui.theme.bodyTextLgRegular
@@ -35,9 +36,411 @@ import com.example.pauze.ui.theme.bodyTextSmRegular
 import com.example.pauze.ui.theme.bodyTextXlBold
 import androidx.compose.ui.res.painterResource
 import com.example.pauze.ui.theme.bodyTextLgBold
+import com.example.pauze.ui.theme.bodyTextLgMedium
 import java.text.SimpleDateFormat
 import java.util.Locale
 import java.util.TimeZone
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
+import com.example.pauze.ui.theme.PAUZEAndroidTheme
+import com.example.pauze.ui.theme.bodyTextLgBold
+import com.example.pauze.ui.theme.bodyTextLgMedium
+import com.example.pauze.ui.theme.bodyTextMdMedium
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.focus.FocusManager
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import com.example.pauze.ui.component.TopBar
+
+private val curationCategories = listOf(
+    CurationCategory(
+        categoryId = null,
+        categoryName = "전체",
+    ),
+    CurationCategory(
+        categoryId = 1L,
+        categoryName = "연구",
+    ),
+    CurationCategory(
+        categoryId = 2L,
+        categoryName = "진정법",
+    ),
+    CurationCategory(
+        categoryId = 3L,
+        categoryName = "일상팁",
+    ),
+    CurationCategory(
+        categoryId = 4L,
+        categoryName = "기타",
+    ),
+)
+
+private val dummyCurationPosts = listOf(
+    CurationPost(
+        postId = 1L,
+        categoryId = 3L,
+        categoryName = "일상팁",
+        title = "퇴근길 감각 과부하 대처법 5가지",
+        summary = "매일 퇴근길 지하철에서 너무 지쳐서 집에 오면 아무것도 못 하겠더라고요.",
+        thumbnailUrl = null,
+        viewCount = 147,
+        likeCount = 147,
+        readingTimeMinutes = 5,
+        isLiked = false,
+        isBookmarked = false,
+        createdAt = "2026-07-14T10:30:00",
+    ),
+    CurationPost(
+        postId = 2L,
+        categoryId = 1L,
+        categoryName = "연구",
+        title = "초민감자의 신경계와 감정 처리 방식 - 최신 연구",
+        summary = "Elaine Aron의 연구에 따르면 HSP는 뇌의 처리 과정이 더 깊고 섬세하게 이루어집니다.",
+        thumbnailUrl = null,
+        viewCount = 342,
+        likeCount = 342,
+        readingTimeMinutes = 7,
+        isLiked = true,
+        isBookmarked = true,
+        createdAt = "2026-07-13T10:30:00",
+    ),
+    CurationPost(
+        postId = 3L,
+        categoryId = 2L,
+        categoryName = "진정법",
+        title = "4-7-8 호흡법, 정말 효과 있나요?",
+        summary = "반신반의하며 시작한 4-7-8 호흡법을 2주간 매일 실천해 보았습니다.",
+        thumbnailUrl = null,
+        viewCount = 198,
+        likeCount = 198,
+        readingTimeMinutes = 3,
+        isLiked = false,
+        isBookmarked = false,
+        createdAt = "2026-07-11T10:30:00",
+    ),
+)
+
+@Composable
+fun CurationBoardScreen(
+    onPostClick: (Long) -> Unit = {},
+    onBookmarkListClick: () -> Unit = {},
+) {
+    var keyword by rememberSaveable {
+        mutableStateOf("")
+    }
+
+    var submittedKeyword by rememberSaveable {
+        mutableStateOf("")
+    }
+
+    var selectedCategoryId by rememberSaveable {
+        mutableStateOf<Long?>(null)
+    }
+
+    var posts by remember {
+        mutableStateOf(dummyCurationPosts)
+    }
+
+    val filteredPosts = remember(
+        posts,
+        submittedKeyword,
+        selectedCategoryId,
+    ) {
+        posts.filter { post ->
+            val matchesCategory =
+                selectedCategoryId == null ||
+                        post.categoryId == selectedCategoryId
+
+            val matchesKeyword =
+                submittedKeyword.isBlank() ||
+                        post.title.contains(
+                            submittedKeyword,
+                            ignoreCase = true,
+                        ) ||
+                        post.summary.contains(
+                            submittedKeyword,
+                            ignoreCase = true,
+                        )
+
+            matchesCategory && matchesKeyword
+        }
+    }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(AppTheme.palette.gray.getColor(9)),
+    ) {
+        TopBar(
+            title = "발견",
+            showBackButton = false,
+            rightIcon = {
+                Image(
+                    painter = painterResource(
+                        id = R.drawable.ic_bookmark_off_curation
+                    ),
+                    contentDescription = "북마크 목록",
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clickable {
+                            onBookmarkListClick()
+                        },
+                )
+            },
+        )
+
+        CurationSearchFilter(
+            keyword = keyword,
+            categories = curationCategories,
+            selectedCategoryId = selectedCategoryId,
+            onKeywordChange = {
+                keyword = it
+            },
+            onSearch = {
+                submittedKeyword = keyword.trim()
+            },
+            onCategorySelected = {
+                selectedCategoryId = it
+            },
+            modifier = Modifier.padding(
+                horizontal = 20.dp,
+                vertical = 16.dp,
+            ),
+        )
+
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f),
+            contentPadding = PaddingValues(
+                start = 20.dp,
+                end = 20.dp,
+                bottom = 24.dp,
+            ),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            items(
+                items = filteredPosts,
+                key = { post ->
+                    post.postId
+                },
+            ) { post ->
+                CurationPostCard(
+                    post = post,
+                    onPostClick = onPostClick,
+                    onLikeClick = { postId ->
+                        posts = posts.map { currentPost ->
+                            if (currentPost.postId == postId) {
+                                val willBeLiked = !currentPost.isLiked
+
+                                currentPost.copy(
+                                    isLiked = willBeLiked,
+                                    likeCount = (
+                                            currentPost.likeCount +
+                                                    if (willBeLiked) 1 else -1
+                                            ).coerceAtLeast(0),
+                                )
+                            } else {
+                                currentPost
+                            }
+                        }
+                    },
+                    onBookmarkClick = { postId ->
+                        posts = posts.map { currentPost ->
+                            if (currentPost.postId == postId) {
+                                currentPost.copy(
+                                    isBookmarked =
+                                        !currentPost.isBookmarked,
+                                )
+                            } else {
+                                currentPost
+                            }
+                        }
+                    },
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun CurationSearchFilter(
+    keyword: String,
+    categories: List<CurationCategory>,
+    selectedCategoryId: Long?,
+    onKeywordChange: (String) -> Unit,
+    onSearch: () -> Unit,
+    onCategorySelected: (Long?) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val focusManager = LocalFocusManager.current
+
+    Column(
+        modifier = modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+    ) {
+        BasicTextField(
+            value = keyword,
+            onValueChange = onKeywordChange,
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true,
+            textStyle = bodyTextLgRegular.copy(
+                color = AppTheme.palette.gray.getColor(2),
+            ),
+            cursorBrush = SolidColor(
+                AppTheme.palette.primary.getColor(4)
+            ),
+            keyboardOptions = KeyboardOptions(
+                imeAction = ImeAction.Search,
+            ),
+            keyboardActions = KeyboardActions(
+                onSearch = {
+                    focusManager.clearFocus()
+                    onSearch()
+                },
+            ),
+            decorationBox = { innerTextField ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(48.dp)
+                        .clip(RoundedCornerShape(24.dp))
+                        .background(AppTheme.palette.gray.getColor(8))
+                        .padding(
+                            start = 16.dp,
+                            end = 4.dp,
+                        ),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Box(
+                        modifier = Modifier.weight(1f),
+                        contentAlignment = Alignment.CenterStart,
+                    ) {
+                        if (keyword.isEmpty()) {
+                            Text(
+                                text = "검색어를 입력해주세요",
+                                style = bodyTextMdMedium,
+                                color = AppTheme.palette.gray.getColor(6),
+                            )
+                        }
+
+                        innerTextField()
+                    }
+
+                    IconButton(
+                        onClick = {
+                            focusManager.clearFocus()
+                            onSearch()
+                        },
+                        modifier = Modifier.size(40.dp),
+                    ) {
+                        Icon(
+                            painter = painterResource(
+                                id = R.drawable.ic_search_curation
+                            ),
+                            contentDescription = "검색",
+                            modifier = Modifier.size(24.dp),
+                            tint = AppTheme.palette.gray.getColor(5),
+                        )
+                    }
+                }
+            },
+        )
+
+        LazyRow(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(
+                space = 8.dp,
+                alignment = Alignment.CenterHorizontally,
+            ),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            items(
+                items = categories,
+                key = { category ->
+                    category.categoryId ?: -1L
+                },
+            ) { category ->
+                CurationCategoryChip(
+                    category = category,
+                    isSelected = (
+                            selectedCategoryId == category.categoryId
+                            ),
+                    onClick = onCategorySelected,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun CurationCategoryChip(
+    category: CurationCategory,
+    isSelected: Boolean,
+    onClick: (Long?) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Surface(
+        onClick = {
+            onClick(category.categoryId)
+        },
+        modifier = modifier,
+        shape = RoundedCornerShape(50.dp),
+        color = if (isSelected) {
+            AppTheme.palette.primary.getColor(4)
+        } else {
+            Color.Transparent
+        },
+        border = if (isSelected) {
+            null
+        } else {
+            BorderStroke(
+                width = 1.5.dp,
+                color = AppTheme.palette.gray.getColor(7),
+            )
+        },
+    ) {
+        Text(
+            text = category.categoryName,
+            modifier = Modifier.padding(
+                horizontal = 12.dp,
+                vertical = 6.dp,
+            ),
+            style = bodyTextMdMedium,
+            color = if (isSelected) {
+                AppTheme.palette.gray.getColor(9)
+            } else {
+                AppTheme.palette.gray.getColor(4)
+            },
+        )
+    }
+}
 
 private const val MINUTE_MILLIS = 60_000L
 private const val HOUR_MILLIS = 60 * MINUTE_MILLIS
@@ -135,7 +538,7 @@ private fun CurationPostCard(
                 onClick = { onBookmarkClick(post.postId) },
                 modifier = Modifier.size(32.dp),
             ) {
-                Icon(
+                Image(
                     painter = painterResource(
                         id = if (post.isBookmarked) {
                             R.drawable.ic_bookmark_on_curation
@@ -148,7 +551,7 @@ private fun CurationPostCard(
                     } else {
                         "북마크 추가"
                     },
-                    tint = AppTheme.palette.gray.getColor(2),
+                    modifier = Modifier.size(20.dp),
                 )
             }
         }
@@ -195,7 +598,7 @@ private fun CurationPostCard(
                 onClick = { onLikeClick(post.postId) },
                 modifier = Modifier.size(32.dp),
             ) {
-                Icon(
+                Image(
                     painter = painterResource(
                         id = if (post.isLiked) {
                             R.drawable.ic_heart_on_curation
@@ -208,7 +611,7 @@ private fun CurationPostCard(
                     } else {
                         "좋아요 추가"
                     },
-                    tint = AppTheme.palette.secondary.getColor(3),
+                    modifier = Modifier.size(20.dp),
                 )
             }
 
@@ -254,11 +657,119 @@ private fun CurationPostCardPreview() {
                     viewCount = 147,
                     likeCount = 147,
                     readingTimeMinutes = 5,
-                    isLiked = false,
-                    isBookmarked = false,
+                    isLiked = true,
+                    isBookmarked = true,
                     createdAt = "2026-07-02T10:30:00",
                 ),
             )
         }
     }
 }
+
+@Preview(showBackground = true)
+@Composable
+private fun CurationCategoryChipPreview() {
+    PAUZEAndroidTheme(
+        darkTheme = true,
+        dynamicColor = false,
+    ) {
+        Row(
+            modifier = Modifier
+                .background(AppTheme.palette.gray.getColor(9))
+                .padding(20.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            CurationCategoryChip(
+                category = CurationCategory(
+                    categoryId = null,
+                    categoryName = "전체",
+                ),
+                isSelected = true,
+                onClick = {},
+            )
+
+            CurationCategoryChip(
+                category = CurationCategory(
+                    categoryId = 1L,
+                    categoryName = "연구법",
+                ),
+                isSelected = false,
+                onClick = {},
+            )
+        }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun CurationSearchFilterPreview() {
+    var keyword by remember {
+        mutableStateOf("")
+    }
+
+    var selectedCategoryId by remember {
+        mutableStateOf<Long?>(null)
+    }
+
+    val categories = listOf(
+        CurationCategory(
+            categoryId = null,
+            categoryName = "전체",
+        ),
+        CurationCategory(
+            categoryId = 1L,
+            categoryName = "연구",
+        ),
+        CurationCategory(
+            categoryId = 2L,
+            categoryName = "진정법",
+        ),
+        CurationCategory(
+            categoryId = 3L,
+            categoryName = "일상팁",
+        ),
+        CurationCategory(
+            categoryId = 4L,
+            categoryName = "기타",
+        ),
+    )
+
+    PAUZEAndroidTheme(
+        darkTheme = true,
+        dynamicColor = false,
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(AppTheme.palette.gray.getColor(9))
+                .padding(20.dp),
+        ) {
+            CurationSearchFilter(
+                keyword = keyword,
+                categories = categories,
+                selectedCategoryId = selectedCategoryId,
+                onKeywordChange = {
+                    keyword = it
+                },
+                onSearch = {
+                    // TODO: 검색 요청
+                },
+                onCategorySelected = {
+                    selectedCategoryId = it
+                },
+            )
+        }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun CurationBoardScreenPreview() {
+    PAUZEAndroidTheme(
+        darkTheme = true,
+        dynamicColor = false,
+    ) {
+        CurationBoardScreen()
+    }
+}
+
