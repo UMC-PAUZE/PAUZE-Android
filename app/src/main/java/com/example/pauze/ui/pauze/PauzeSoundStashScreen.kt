@@ -1,4 +1,4 @@
-package com.example.pauze.ui.sound
+package com.example.pauze.ui.pauze
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
@@ -140,7 +140,7 @@ fun PauzeSoundStashScreen(
                 val isSelected = selectedTab == tab
                 Box(
                     modifier = Modifier
-                        .size(150.dp, 40.dp) // 균등 분할 배치 크기
+                        .size(148.dp, 40.dp) // 균등 분할 배치 크기
                         .clip(RoundedCornerShape(20.dp))
                         .background(
                             if (isSelected) AppTheme.palette.gray.getColor(8) // 스크런샷의 선택된 회색 배경 적용

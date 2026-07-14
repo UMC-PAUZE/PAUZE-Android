@@ -4,7 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import com.example.pauze.ui.sound.PauzeSoundScreen
+import com.example.pauze.ui.pauze.PauzeSoundScreen
 import com.example.pauze.ui.theme.MainPaletteTheme
 
 class MainActivity : ComponentActivity() {
