@@ -27,6 +27,8 @@ import androidx.compose.ui.unit.dp
 import com.example.pauze.R
 import com.example.pauze.ui.component.TopBar
 import com.example.pauze.ui.theme.*
+// [해결포인트] 다른 패키지(com.example.pauze.ui.sound)에 정의된 상세화면 컴포저블을 올바르게 import합니다.
+import com.example.pauze.ui.pauze.PauzeSoundDetailScreen
 
 // 소리 아이템 데이터 구조 (이미지 리소스 ID 필수 적용)
 data class SoundItem(
@@ -59,10 +61,7 @@ fun PauzeSoundScreen(
     val categories = listOf("전체", "자연소리", "ASMR", "노이즈")
     var selectedCategory by remember { mutableStateOf("전체") }
 
-    // 5. 보관함 탭 상태 관리 ("좋아요" 또는 "스크랩")
-    var selectedStashTab by remember { mutableStateOf("좋아요") }
-
-    // 6. 음원 데이터 리스트 상태 관리 (공통 원천 데이터)
+    // 5. 음원 데이터 리스트 상태 관리 (공통 원천 데이터)
     var soundList by remember {
         mutableStateOf(
             listOf(
@@ -77,62 +76,70 @@ fun PauzeSoundScreen(
         )
     }
 
-    // 7. 현재 화면 구분에 따른 필터링 로직 분기
-    val filteredSounds = soundList.filter { item ->
-        val matchesSearch = item.title.contains(searchQuery, ignoreCase = true)
-        if (currentScreen == "list" || (currentScreen == "detail" && previousScreen == "list")) {
-            // 메인 리스트 기준: 카테고리 매칭 + 검색어
-            val matchesCategory = (selectedCategory == "전체" || item.category == selectedCategory)
-            matchesCategory && matchesSearch
-        } else {
-            // 보관함 기준: 탭 분류(좋아요/스크랩) + 검색어
-            val matchesTab = if (selectedStashTab == "좋아요") item.isLiked else item.isBookmarked
-            matchesTab && matchesSearch
-        }
-    }
-
     // =================--- 화면 전환 조건 분기 ---=================
-    if (currentScreen == "detail" && selectedSound != null) {
-        // 상세 화면 상태일 때, 실시간 동기화된 원본 리스트의 최신 데이터 획득
-        val currentDetailSound = soundList.firstOrNull { it.id == selectedSound!!.id } ?: selectedSound!!
+    when (currentScreen) {
+        "detail" -> {
+            if (selectedSound != null) {
+                // 상세 화면 상태일 때, 실시간 동기화된 원본 리스트의 최신 데이터 획득
+                val currentDetailSound = soundList.firstOrNull { it.id == selectedSound!!.id } ?: selectedSound!!
 
-        PauzeSoundDetailScreen(
-            sound = currentDetailSound,
-            onToggleLike = { id ->
-                soundList = soundList.map {
-                    if (it.id == id) it.copy(isLiked = !it.isLiked) else it
-                }
-            },
-            onToggleBookmark = { id ->
-                soundList = soundList.map {
-                    if (it.id == id) it.copy(isBookmarked = !it.isBookmarked) else it
-                }
-            },
-            onBackClick = {
-                currentScreen = previousScreen // 상세 화면에서 빠져나갈 때 직전 화면 상태로 복원
-            },
-            modifier = modifier
-        )
-    } else {
-        // 기존 메인 리스트 및 보관함 화면 레이아웃
-        Column(
-            modifier = modifier
-                .fillMaxSize()
-                .background(AppTheme.palette.base.getColor(0)) // theme 배경색 (어두운 회색)
-        ) {
-            // =================--- 1. 헤더 영역 (공통 TopBar 컴포넌트 사용) ---=================
-            TopBar(
-                title = if (currentScreen == "list") "청각 안정" else "보관함",
-                showBackButton = true,
-                onBackClick = {
-                    if (currentScreen == "stash") {
-                        currentScreen = "list" // 보관함 상태에서 뒤로가기 누르면 메인으로
-                    } else {
-                        onBackClick() // 메인 리스트 상태면 외부 뒤로가기 동작 실행
+                PauzeSoundDetailScreen(
+                    sound = currentDetailSound,
+                    onToggleLike = { id ->
+                        soundList = soundList.map {
+                            if (it.id == id) it.copy(isLiked = !it.isLiked) else it
+                        }
+                    },
+                    onToggleBookmark = { id ->
+                        soundList = soundList.map {
+                            if (it.id == id) it.copy(isBookmarked = !it.isBookmarked) else it
+                        }
+                    },
+                    onBackClick = {
+                        currentScreen = previousScreen // 상세 화면에서 빠져나갈 때 직전 화면 상태로 복원
+                    },
+                    modifier = modifier
+                )
+            }
+        }
+        "stash" -> {
+            PauzeSoundStashScreen(
+                soundList = soundList,
+                onToggleLike = { id ->
+                    soundList = soundList.map {
+                        if (it.id == id) it.copy(isLiked = !it.isLiked) else it
                     }
                 },
-                rightIcon = if (currentScreen == "list") {
-                    {
+                onToggleBookmark = { id ->
+                    soundList = soundList.map {
+                        if (it.id == id) it.copy(isBookmarked = !it.isBookmarked) else it
+                    }
+                },
+                onBackClick = {
+                    currentScreen = "list" // 보관함에서 뒤로가기 누르면 메인 리스트로 복귀
+                },
+                modifier = modifier
+            )
+        }
+        else -> {
+            // "list" -> 기본 청각안정 메인 리스트 화면
+            val filteredSounds = soundList.filter { item ->
+                val matchesCategory = (selectedCategory == "전체" || item.category == selectedCategory)
+                val matchesSearch = item.title.contains(searchQuery, ignoreCase = true)
+                matchesCategory && matchesSearch
+            }
+
+            Column(
+                modifier = modifier
+                    .fillMaxSize()
+                    .background(AppTheme.palette.base.getColor(0))
+            ) {
+                // =================--- 1. 헤더 영역 (공통 TopBar 컴포넌트 사용) ---=================
+                TopBar(
+                    title = "청각 안정",
+                    showBackButton = true,
+                    onBackClick = { onBackClick() }, // 메인 리스트 상태면 외부 뒤로가기 동작 실행
+                    rightIcon = {
                         Icon(
                             painter = painterResource(id = R.drawable.ic_box),
                             contentDescription = "보관함",
@@ -140,55 +147,52 @@ fun PauzeSoundScreen(
                             modifier = Modifier.clickable { currentScreen = "stash" }
                         )
                     }
-                } else null
-            )
+                )
 
-            // =================--- 2. 검색창 영역 ---=================
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 16.dp, end = 16.dp, top = 16.dp)
-                    .height(48.dp)
-                    .clip(CircleShape)
-                    .background(AppTheme.palette.gray.getColor(9))
-                    .border(BorderStroke(1.dp, AppTheme.palette.gray.getColor(8)), CircleShape)
-                    .padding(horizontal = 16.dp),
-                contentAlignment = Alignment.CenterStart
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.fillMaxWidth()
+                // =================--- 2. 검색창 영역 ---=================
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 16.dp, end = 16.dp, top = 16.dp)
+                        .height(48.dp)
+                        .clip(CircleShape)
+                        .background(AppTheme.palette.gray.getColor(9))
+                        .border(BorderStroke(1.dp, AppTheme.palette.gray.getColor(8)), CircleShape)
+                        .padding(horizontal = 16.dp),
+                    contentAlignment = Alignment.CenterStart
                 ) {
-                    BasicTextField(
-                        value = searchQuery,
-                        onValueChange = { searchQuery = it },
-                        textStyle = bodyTextMdRegular.copy(color = AppTheme.palette.gray.getColor(0)),
-                        cursorBrush = SolidColor(AppTheme.palette.gray.getColor(0)),
-                        singleLine = true,
-                        modifier = Modifier.weight(1f),
-                        decorationBox = { innerTextField ->
-                            if (searchQuery.isEmpty()) {
-                                Text(
-                                    text = "원하는 소리를 검색해보세요",
-                                    style = bodyTextMdRegular,
-                                    color = AppTheme.palette.gray.getColor(5)
-                                )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        BasicTextField(
+                            value = searchQuery,
+                            onValueChange = { searchQuery = it },
+                            textStyle = bodyTextMdRegular.copy(color = AppTheme.palette.gray.getColor(0)),
+                            cursorBrush = SolidColor(AppTheme.palette.gray.getColor(0)),
+                            singleLine = true,
+                            modifier = Modifier.weight(1f),
+                            decorationBox = { innerTextField ->
+                                if (searchQuery.isEmpty()) {
+                                    Text(
+                                        text = "원하는 소리를 검색해보세요",
+                                        style = bodyTextMdRegular,
+                                        color = AppTheme.palette.gray.getColor(5)
+                                    )
+                                }
+                                innerTextField()
                             }
-                            innerTextField()
-                        }
-                    )
-                    Icon(
-                        painter = painterResource(id = android.R.drawable.ic_menu_search),
-                        contentDescription = "검색",
-                        tint = AppTheme.palette.gray.getColor(5),
-                        modifier = Modifier.size(24.dp)
-                    )
+                        )
+                        Icon(
+                            painter = painterResource(id = android.R.drawable.ic_menu_search),
+                            contentDescription = "검색",
+                            tint = AppTheme.palette.gray.getColor(5),
+                            modifier = Modifier.size(24.dp)
+                        )
+                    }
                 }
-            }
 
-            // =================--- 3. 조건별 서브 필터/탭 영역 ---=================
-            if (currentScreen == "list") {
-                // [메인 리스트 모드] 카테고리 칩 목록
+                // =================--- 3. 조건별 서브 필터/칩 영역 ---=================
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -222,130 +226,96 @@ fun PauzeSoundScreen(
                         }
                     }
                 }
-            } else {
-                // [보관함 모드] 가로분할 좋아요 / 스크랩 탭 목록
-                Row(
+
+                Spacer(modifier = Modifier.height(32.dp))
+
+                // =================--- 4. 소리 리스트 출력 영역 ---=================
+                LazyColumn(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 8.dp),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        .weight(1f),
+                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    listOf("좋아요", "스크랩").forEach { tab ->
-                        val isSelected = selectedStashTab == tab
-                        Box(
+                    items(filteredSounds, key = { it.id }) { sound ->
+                        Row(
                             modifier = Modifier
-                                .weight(1f)
-                                .height(40.dp)
-                                .clip(RoundedCornerShape(20.dp))
-                                .background(
-                                    if (isSelected) AppTheme.palette.gray.getColor(8)
-                                    else Color.Transparent
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(24.dp))
+                                .background(AppTheme.palette.gray.getColor(8))
+                                .clickable {
+                                    previousScreen = "list"
+                                    selectedSound = sound
+                                    currentScreen = "detail"
+                                }
+                                .padding(16.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(60.dp)
+                                    .clip(RoundedCornerShape(12.dp)),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Image(
+                                    painter = painterResource(id = sound.imageResId),
+                                    contentDescription = sound.title,
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentScale = ContentScale.Crop
                                 )
-                                .clickable { selectedStashTab = tab },
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = tab,
-                                style = bodyTextMdMedium,
-                                color = if (isSelected) AppTheme.palette.gray.getColor(0)
-                                else AppTheme.palette.gray.getColor(4)
-                            )
-                        }
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(36.dp))
-
-            // =================--- 4. 소리 리스트 출력 영역 ---=================
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f),
-                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                items(filteredSounds, key = { it.id }) { sound ->
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(24.dp))
-                            .background(AppTheme.palette.gray.getColor(8))
-                            // 리스트 카드 영역 클릭 시 상세 화면으로 이동하는 로직 추가
-                            .clickable {
-                                previousScreen = currentScreen // 현재 화면 상태 백업 ("list" 또는 "stash")
-                                selectedSound = sound
-                                currentScreen = "detail"
                             }
-                            .padding(16.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .size(60.dp)
-                                .clip(RoundedCornerShape(12.dp)),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Image(
-                                painter = painterResource(id = sound.imageResId),
-                                contentDescription = sound.title,
-                                modifier = Modifier.fillMaxSize(),
-                                contentScale = ContentScale.Crop
-                            )
-                        }
 
-                        Spacer(modifier = Modifier.width(16.dp))
+                            Spacer(modifier = Modifier.width(16.dp))
 
-                        Column(
-                            modifier = Modifier.weight(1f)
-                        ) {
-                            Text(
-                                text = sound.title,
-                                style = bodyTextLgBold,
-                                color = AppTheme.palette.gray.getColor(0)
-                            )
-                            Spacer(modifier = Modifier.height(4.dp))
-                            Text(
-                                text = sound.category,
-                                style = bodyTextSmRegular,
-                                color = AppTheme.palette.gray.getColor(5)
-                            )
-                        }
+                            Column(
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Text(
+                                    text = sound.title,
+                                    style = bodyTextLgBold,
+                                    color = AppTheme.palette.gray.getColor(0)
+                                )
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    text = sound.category,
+                                    style = bodyTextSmRegular,
+                                    color = AppTheme.palette.gray.getColor(5)
+                                )
+                            }
 
-                        // 하트 (좋아요) 토글 버튼
-                        IconButton(
-                            onClick = {
-                                soundList = soundList.map {
-                                    if (it.id == sound.id) it.copy(isLiked = !it.isLiked) else it
+                            // 하트 (좋아요) 토글 버튼
+                            IconButton(
+                                onClick = {
+                                    soundList = soundList.map {
+                                        if (it.id == sound.id) it.copy(isLiked = !it.isLiked) else it
+                                    }
                                 }
+                            ) {
+                                Icon(
+                                    painter = painterResource(
+                                        id = if (sound.isLiked) R.drawable.ic_heart_on else R.drawable.ic_heart_off
+                                    ),
+                                    contentDescription = "좋아요",
+                                    tint = Color.Unspecified,
+                                    modifier = Modifier.size(24.dp)
+                                )
                             }
-                        ) {
-                            Icon(
-                                painter = painterResource(
-                                    id = if (sound.isLiked) R.drawable.ic_heart_on else R.drawable.ic_heart_off
-                                ),
-                                contentDescription = "좋아요",
-                                tint = Color.Unspecified,
-                                modifier = Modifier.size(24.dp)
-                            )
-                        }
 
-                        // 북마크 토글 버튼
-                        IconButton(
-                            onClick = {
-                                soundList = soundList.map {
-                                    if (it.id == sound.id) it.copy(isBookmarked = !it.isBookmarked) else it
+                            // 북마크 토글 버튼
+                            IconButton(
+                                onClick = {
+                                    soundList = soundList.map {
+                                        if (it.id == sound.id) it.copy(isBookmarked = !it.isBookmarked) else it
+                                    }
                                 }
+                            ) {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.ic_download),
+                                    contentDescription = "북마크",
+                                    tint = Color.Unspecified,
+                                    modifier = Modifier.size(24.dp)
+                                )
                             }
-                        ) {
-                            Icon(
-                                painter = painterResource(
-                                    id = if (sound.isBookmarked) R.drawable.ic_bookmark_on else R.drawable.ic_bookmark_off
-                                ),
-                                contentDescription = "북마크",
-                                tint = Color.Unspecified,
-                                modifier = Modifier.size(24.dp)
-                            )
                         }
                     }
                 }

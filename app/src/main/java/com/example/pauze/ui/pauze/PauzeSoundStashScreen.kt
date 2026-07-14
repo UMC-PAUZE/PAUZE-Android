@@ -36,7 +36,7 @@ fun PauzeSoundStashScreen(
     modifier: Modifier = Modifier
 ) {
     var searchQuery by remember { mutableStateOf("") }
-    // 탭 상태 관리: "좋아요" 또는 "스크랩"
+    // 탭 상태 관리: "좋아요" 또는 "저장"
     var selectedTab by remember { mutableStateOf("좋아요") }
 
     // 선택된 탭과 검색어에 따른 필터링 로직
@@ -59,7 +59,7 @@ fun PauzeSoundStashScreen(
             onBackClick = onBackClick
         )
 
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
         // --- 2. 검색창 영역 ---
         Box(
@@ -102,15 +102,17 @@ fun PauzeSoundStashScreen(
             }
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(12.dp))
 
-        // --- 3. 상단 탭 영역 (좋아요 / 스크랩 고정 분할 비율 반영) ---
+        // --- 3. 상단 탭 영역 (좋아요 / 저장 고정 분할 비율 반영) ---
         Row(
             modifier = Modifier.width(312.dp),
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            listOf("좋아요", "스크랩").forEach { tab ->
+            listOf("좋아요", "저장").forEach { tab ->
                 val isSelected = selectedTab == tab
+                val tabColor = if (isSelected) AppTheme.palette.gray.getColor(0)
+                else AppTheme.palette.gray.getColor(4)
                 Box(
                     modifier = Modifier
                         .size(148.dp, 40.dp) // 균등 분할 배치 크기
@@ -122,17 +124,29 @@ fun PauzeSoundStashScreen(
                         .clickable { selectedTab = tab },
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(
-                        text = tab,
-                        style = bodyTextMdMedium,
-                        color = if (isSelected) AppTheme.palette.gray.getColor(0)
-                        else AppTheme.palette.gray.getColor(4)
-                    )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        Icon(
+                            painter = painterResource(
+                                id = if (tab == "좋아요") R.drawable.ic_heart_off else R.drawable.ic_download
+                            ),
+                            contentDescription = null,
+                            tint = tabColor,
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Text(
+                            text = tab,
+                            style = bodyTextMdMedium,
+                            color = tabColor
+                        )
+                    }
                 }
             }
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(32.dp))
 
         // --- 4. 필터링된 보관함 소리 목록 리스트 ---
         LazyColumn(
@@ -205,9 +219,7 @@ fun PauzeSoundStashScreen(
                         modifier = Modifier.size(24.dp)
                     ) {
                         Icon(
-                            painter = painterResource(
-                                id = if (sound.isBookmarked) R.drawable.ic_bookmark_on else R.drawable.ic_bookmark_off
-                            ),
+                            painter = painterResource(id = R.drawable.ic_download),
                             contentDescription = "북마크",
                             tint = Color.Unspecified,
                             modifier = Modifier.size(24.dp)

@@ -123,9 +123,7 @@ fun PauzeSoundDetailScreen(
                             modifier = Modifier.size(32.dp)
                         ) {
                             Icon(
-                                painter = painterResource(
-                                    id = if (sound.isBookmarked) R.drawable.ic_bookmark_on else R.drawable.ic_bookmark_off
-                                ),
+                                painter = painterResource(id = R.drawable.ic_download),
                                 contentDescription = "북마크",
                                 tint = Color.Unspecified,
                                 modifier = Modifier.size(24.dp)
