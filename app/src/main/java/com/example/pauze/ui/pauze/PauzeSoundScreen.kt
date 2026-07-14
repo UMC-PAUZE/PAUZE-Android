@@ -147,7 +147,7 @@ fun PauzeSoundScreen(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 12.dp)
+                    .padding(start = 16.dp, end = 16.dp, top = 16.dp)
                     .height(48.dp)
                     .clip(CircleShape)
                     .background(AppTheme.palette.gray.getColor(9))
@@ -192,7 +192,7 @@ fun PauzeSoundScreen(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                        .padding(start = 16.dp, end = 16.dp, top = 12.dp),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     categories.forEach { category ->
@@ -255,7 +255,7 @@ fun PauzeSoundScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(36.dp))
 
             // =================--- 4. 소리 리스트 출력 영역 ---=================
             LazyColumn(
