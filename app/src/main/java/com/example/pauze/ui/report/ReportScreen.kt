@@ -2,9 +2,6 @@ package com.example.pauze.ui.report
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -22,8 +19,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -35,14 +30,17 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.pauze.R
+import com.example.pauze.ui.component.Button
+import com.example.pauze.ui.component.ButtonSize
 import com.example.pauze.ui.component.Tab
 import com.example.pauze.ui.component.TopBar
 import com.example.pauze.ui.theme.AppTheme
 import com.example.pauze.ui.theme.PAUZEAndroidTheme
 import com.example.pauze.ui.theme.bodyTextLgBold
+import com.example.pauze.ui.theme.bodyTextLgRegular
 import com.example.pauze.ui.theme.bodyTextMdBold
 import com.example.pauze.ui.theme.bodyTextMdRegular
-import com.example.pauze.ui.theme.bodyTextXlBold
+import com.example.pauze.ui.theme.bodyTextSmRegular
 import com.example.pauze.ui.theme.bodyTextXlMedium
 import com.example.pauze.ui.theme.fontFamily
 import com.example.pauze.ui.theme.headingMdRegular
@@ -91,7 +89,78 @@ fun ReportScreen(isGuest: Boolean = true) {
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 TodayConditionCard()
-                // 다음 카드들 여기 이어서 추가
+                AverageScoreCard()
+            }
+        }
+    }
+}
+
+@Composable
+private fun AverageScoreCard(){
+    ReportCard() {
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)){
+            Text(
+                text = "이번 달 평균 민감 지수",
+                color = AppTheme.palette.gray.getColor(2),
+                style = bodyTextLgRegular
+            )
+            Text(
+                text = "56점",
+                color = AppTheme.palette.tertiary.getColor(3),
+                style = bodyTextLgBold
+            )
+        }
+        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)){
+            Column(
+                modifier = Modifier.height(165.dp),
+                verticalArrangement = Arrangement.SpaceBetween
+            ) {
+                listOf("100", "75", "50", "25", "0").forEach { label ->
+                    Text(
+                        text = label,
+                        style = bodyTextSmRegular,
+                        color = AppTheme.palette.gray.getColor(2)
+                    )
+                }
+            }
+
+            Row(
+                modifier = Modifier.weight(1f),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                verticalAlignment = Alignment.Bottom
+            ) {
+                val bars = listOf("1주" to 73, "2주" to 123, "3주" to 153, "4주" to 113, "5주" to 123)
+                bars.forEach { (label, barHeight) ->
+                    Column(
+                        modifier = Modifier.weight(1f),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(barHeight.dp)
+                                .background(
+                                    brush = Brush.verticalGradient(
+                                        colors = listOf(AppTheme.palette.tertiary.getColor(3), Color(0xFFC3D7B6))
+                                    ),
+                                    shape = RoundedCornerShape(topStartPercent = 50, topEndPercent = 50)
+                                )
+                        )
+                        Text(text = label, style = bodyTextSmRegular, color = AppTheme.palette.gray.getColor(2))
+                    }
+                }
+            }
+        }
+
+        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)){
+                Text(text = "최고 민감 요일", color = AppTheme.palette.gray.getColor(2), style = bodyTextMdRegular)
+                Text(text = "금요일", color= AppTheme.palette.secondary.getColor(4), style = bodyTextMdBold)
+            }
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)){
+                Text(text = "출석", color = AppTheme.palette.gray.getColor(2), style = bodyTextMdRegular)
+                Text(text = "7회", color= AppTheme.palette.primary.getColor(4), style = bodyTextMdBold)
             }
         }
     }
@@ -200,6 +269,7 @@ private fun TodayConditionCard() {
 
         Button(
             label = "오늘의 컨디션 입력하기",
+            size = ButtonSize.Md,
             modifier = Modifier.fillMaxWidth()
         )
     }
@@ -229,52 +299,6 @@ private fun ReportCard(
         verticalArrangement = Arrangement.spacedBy(32.dp),
         content = content
     )
-}
-
-// 공용 컴포넌트로 따로 빼기
-enum class ButtonSize { Lg, Md, Sm }
-
-@Composable
-private fun Button(
-    label: String,
-    onClick: () -> Unit = {},
-    modifier: Modifier = Modifier,
-    size: ButtonSize = ButtonSize.Lg,
-    backgroundColor: Color = AppTheme.palette.gray.getColor(2),
-    pressedColor: Color = AppTheme.palette.gray.getColor(4),
-    contentColor: Color = AppTheme.palette.gray.getColor(9),
-    enabled: Boolean = true,
-) {
-    val interactionSource = remember { MutableInteractionSource() }
-    val isPressed by interactionSource.collectIsPressedAsState()
-
-    val (horizontalPadding, verticalPadding, textStyle) = when (size) {
-        ButtonSize.Lg -> Triple(28.dp, 18.dp, bodyTextXlBold)
-        ButtonSize.Md -> Triple(24.dp, 16.dp, bodyTextLgBold)
-        ButtonSize.Sm -> Triple(20.dp, 12.dp, bodyTextMdBold)
-    }
-
-    Box(
-        modifier = modifier
-            .background(
-                color = when {
-                    !enabled -> AppTheme.palette.gray.getColor(8)
-                    isPressed -> pressedColor
-                    else -> backgroundColor
-                },
-                shape = RoundedCornerShape(percent = 50)
-            )
-            .clickable(
-                enabled = enabled,
-                interactionSource = interactionSource,
-                indication = null,
-                onClick = onClick
-            )
-            .padding(horizontal = horizontalPadding, vertical = verticalPadding),
-        contentAlignment = Alignment.Center
-    ) {
-        Text(text = label, style = textStyle, color = contentColor)
-    }
 }
 
 @Preview(showBackground = true, widthDp = 360, heightDp = 800)
