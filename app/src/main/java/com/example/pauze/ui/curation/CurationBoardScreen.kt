@@ -1,82 +1,70 @@
 package com.example.pauze.ui.curation
+
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.SmallFloatingActionButton
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.pauze.R
-import com.example.pauze.data.model.CurationPost
 import com.example.pauze.data.model.CurationCategory
+import com.example.pauze.data.model.CurationPost
+import com.example.pauze.ui.component.TopBar
 import com.example.pauze.ui.theme.AppTheme
 import com.example.pauze.ui.theme.PAUZEAndroidTheme
+import com.example.pauze.ui.theme.bodyTextLgBold
 import com.example.pauze.ui.theme.bodyTextLgRegular
-import com.example.pauze.ui.theme.bodyTextMdBold
+import com.example.pauze.ui.theme.bodyTextMdMedium
 import com.example.pauze.ui.theme.bodyTextMdRegular
 import com.example.pauze.ui.theme.bodyTextSmMedium
 import com.example.pauze.ui.theme.bodyTextSmRegular
-import com.example.pauze.ui.theme.bodyTextXlBold
-import androidx.compose.ui.res.painterResource
-import com.example.pauze.ui.theme.bodyTextLgBold
-import com.example.pauze.ui.theme.bodyTextLgMedium
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Locale
 import java.util.TimeZone
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.dp
-import com.example.pauze.ui.theme.PAUZEAndroidTheme
-import com.example.pauze.ui.theme.bodyTextLgBold
-import com.example.pauze.ui.theme.bodyTextLgMedium
-import com.example.pauze.ui.theme.bodyTextMdMedium
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.focus.FocusManager
-import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
-import com.example.pauze.ui.component.TopBar
 
 private val curationCategories = listOf(
     CurationCategory(
@@ -167,6 +155,16 @@ fun CurationBoardScreen(
         mutableStateOf(dummyCurationPosts)
     }
 
+    val listState = rememberLazyListState()
+    val coroutineScope = rememberCoroutineScope()
+
+    val showScrollToTopButton by remember {
+        derivedStateOf {
+            listState.firstVisibleItemIndex > 0 ||
+                    listState.firstVisibleItemScrollOffset > 0
+        }
+    }
+
     val filteredPosts = remember(
         posts,
         submittedKeyword,
@@ -192,97 +190,140 @@ fun CurationBoardScreen(
         }
     }
 
-    Column(
+    Box(
         modifier = Modifier
             .fillMaxSize()
             .background(AppTheme.palette.gray.getColor(9)),
     ) {
-        TopBar(
-            title = "발견",
-            showBackButton = false,
-            rightIcon = {
-                Image(
-                    painter = painterResource(
-                        id = R.drawable.ic_bookmark_off_curation
-                    ),
-                    contentDescription = "북마크 목록",
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .clickable {
-                            onBookmarkListClick()
-                        },
-                )
-            },
-        )
-
-        CurationSearchFilter(
-            keyword = keyword,
-            categories = curationCategories,
-            selectedCategoryId = selectedCategoryId,
-            onKeywordChange = {
-                keyword = it
-            },
-            onSearch = {
-                submittedKeyword = keyword.trim()
-            },
-            onCategorySelected = {
-                selectedCategoryId = it
-            },
-            modifier = Modifier.padding(
-                horizontal = 20.dp,
-                vertical = 16.dp,
-            ),
-        )
-
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f),
-            contentPadding = PaddingValues(
-                start = 20.dp,
-                end = 20.dp,
-                bottom = 24.dp,
-            ),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
+        Column(
+            modifier = Modifier.fillMaxSize(),
         ) {
-            items(
-                items = filteredPosts,
-                key = { post ->
-                    post.postId
+            TopBar(
+                title = "발견",
+                showBackButton = false,
+                rightIcon = {
+                    Image(
+                        painter = painterResource(
+                            id = R.drawable.ic_bookmark_off_curation,
+                        ),
+                        contentDescription = "북마크 목록",
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .clickable {
+                                onBookmarkListClick()
+                            },
+                    )
                 },
-            ) { post ->
-                CurationPostCard(
-                    post = post,
-                    onPostClick = onPostClick,
-                    onLikeClick = { postId ->
-                        posts = posts.map { currentPost ->
-                            if (currentPost.postId == postId) {
-                                val willBeLiked = !currentPost.isLiked
+            )
 
-                                currentPost.copy(
-                                    isLiked = willBeLiked,
-                                    likeCount = (
-                                            currentPost.likeCount +
-                                                    if (willBeLiked) 1 else -1
-                                            ).coerceAtLeast(0),
-                                )
-                            } else {
-                                currentPost
-                            }
-                        }
+            CurationSearchFilter(
+                keyword = keyword,
+                categories = curationCategories,
+                selectedCategoryId = selectedCategoryId,
+                onKeywordChange = {
+                    keyword = it
+                },
+                onSearch = {
+                    submittedKeyword = keyword.trim()
+                },
+                onCategorySelected = {
+                    selectedCategoryId = it
+                },
+                modifier = Modifier.padding(
+                    horizontal = 20.dp,
+                    vertical = 16.dp,
+                ),
+            )
+
+            LazyColumn(
+                state = listState,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f),
+                contentPadding = PaddingValues(
+                    start = 20.dp,
+                    end = 20.dp,
+                    bottom = 88.dp,
+                ),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
+                items(
+                    items = filteredPosts,
+                    key = { post ->
+                        post.postId
                     },
-                    onBookmarkClick = { postId ->
-                        posts = posts.map { currentPost ->
-                            if (currentPost.postId == postId) {
-                                currentPost.copy(
-                                    isBookmarked =
-                                        !currentPost.isBookmarked,
-                                )
-                            } else {
-                                currentPost
+                ) { post ->
+                    CurationPostCard(
+                        post = post,
+                        onPostClick = onPostClick,
+                        onLikeClick = { postId ->
+                            posts = posts.map { currentPost ->
+                                if (currentPost.postId == postId) {
+                                    val willBeLiked =
+                                        !currentPost.isLiked
+
+                                    currentPost.copy(
+                                        isLiked = willBeLiked,
+                                        likeCount = (
+                                                currentPost.likeCount +
+                                                        if (willBeLiked) {
+                                                            1
+                                                        } else {
+                                                            -1
+                                                        }
+                                                ).coerceAtLeast(0),
+                                    )
+                                } else {
+                                    currentPost
+                                }
                             }
-                        }
-                    },
+                        },
+                        onBookmarkClick = { postId ->
+                            posts = posts.map { currentPost ->
+                                if (currentPost.postId == postId) {
+                                    currentPost.copy(
+                                        isBookmarked =
+                                            !currentPost.isBookmarked,
+                                    )
+                                } else {
+                                    currentPost
+                                }
+                            }
+                        },
+                    )
+                }
+            }
+        }
+
+        if (showScrollToTopButton) {
+            SmallFloatingActionButton(
+                onClick = {
+                    coroutineScope.launch {
+                        listState.animateScrollToItem(0)
+                    }
+                },
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(
+                        end = 20.dp,
+                        bottom = 20.dp,
+                    )
+                    .size(48.dp),
+                shape = CircleShape,
+                containerColor =
+                    AppTheme.palette.primary.getColor(3),
+                contentColor =
+                    AppTheme.palette.gray.getColor(9),
+            ) {
+                Icon(
+                    painter = painterResource(
+                        id = R.drawable.ic_arrow_back,
+                    ),
+                    contentDescription = "목록 맨 위로 이동",
+                    modifier = Modifier
+                        .size(24.dp)
+                        .rotate(90f),
+                    tint = AppTheme.palette.gray.getColor(9),
                 )
             }
         }
@@ -314,7 +355,7 @@ private fun CurationSearchFilter(
                 color = AppTheme.palette.gray.getColor(2),
             ),
             cursorBrush = SolidColor(
-                AppTheme.palette.primary.getColor(4)
+                AppTheme.palette.primary.getColor(4),
             ),
             keyboardOptions = KeyboardOptions(
                 imeAction = ImeAction.Search,
@@ -331,7 +372,9 @@ private fun CurationSearchFilter(
                         .fillMaxWidth()
                         .height(48.dp)
                         .clip(RoundedCornerShape(24.dp))
-                        .background(AppTheme.palette.gray.getColor(8))
+                        .background(
+                            AppTheme.palette.gray.getColor(8),
+                        )
                         .padding(
                             start = 16.dp,
                             end = 4.dp,
@@ -362,7 +405,7 @@ private fun CurationSearchFilter(
                     ) {
                         Icon(
                             painter = painterResource(
-                                id = R.drawable.ic_search_curation
+                                id = R.drawable.ic_search_curation,
                             ),
                             contentDescription = "검색",
                             modifier = Modifier.size(24.dp),
@@ -373,27 +416,24 @@ private fun CurationSearchFilter(
             },
         )
 
-        LazyRow(
+        Box(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(
-                space = 8.dp,
-                alignment = Alignment.CenterHorizontally,
-            ),
-            verticalAlignment = Alignment.CenterVertically,
+            contentAlignment = Alignment.Center,
         ) {
-            items(
-                items = categories,
-                key = { category ->
-                    category.categoryId ?: -1L
-                },
-            ) { category ->
-                CurationCategoryChip(
-                    category = category,
-                    isSelected = (
-                            selectedCategoryId == category.categoryId
-                            ),
-                    onClick = onCategorySelected,
-                )
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                categories.forEach { category ->
+                    CurationCategoryChip(
+                        category = category,
+                        isSelected = (
+                                selectedCategoryId ==
+                                        category.categoryId
+                                ),
+                        onClick = onCategorySelected,
+                    )
+                }
             }
         }
     }
@@ -442,51 +482,6 @@ private fun CurationCategoryChip(
     }
 }
 
-private const val MINUTE_MILLIS = 60_000L
-private const val HOUR_MILLIS = 60 * MINUTE_MILLIS
-private const val DAY_MILLIS = 24 * HOUR_MILLIS
-private const val MONTH_MILLIS = 30 * DAY_MILLIS
-private const val YEAR_MILLIS = 365 * DAY_MILLIS
-
-private fun formatRelativeTime(
-    createdAt: String,
-    currentTimeMillis: Long = System.currentTimeMillis(),
-): String {
-    val dateFormat = SimpleDateFormat(
-        "yyyy-MM-dd'T'HH:mm:ss",
-        Locale.getDefault(),
-    ).apply {
-        isLenient = false
-        timeZone = TimeZone.getTimeZone("Asia/Seoul")
-    }
-
-    val createdAtMillis = runCatching {
-        dateFormat.parse(createdAt)?.time
-    }.getOrNull() ?: return createdAt
-
-    val difference = (currentTimeMillis - createdAtMillis)
-        .coerceAtLeast(0L)
-
-    return when {
-        difference < MINUTE_MILLIS -> "방금 전"
-
-        difference < HOUR_MILLIS ->
-            "${difference / MINUTE_MILLIS}분 전"
-
-        difference < DAY_MILLIS ->
-            "${difference / HOUR_MILLIS}시간 전"
-
-        difference < MONTH_MILLIS ->
-            "${difference / DAY_MILLIS}일 전"
-
-        difference < YEAR_MILLIS ->
-            "${difference / MONTH_MILLIS}개월 전"
-
-        else ->
-            "${difference / YEAR_MILLIS}년 전"
-    }
-}
-
 @Composable
 private fun CurationPostCard(
     post: CurationPost,
@@ -500,7 +495,9 @@ private fun CurationPostCard(
             .fillMaxWidth()
             .clip(RoundedCornerShape(16.dp))
             .background(AppTheme.palette.gray.getColor(8))
-            .clickable { onPostClick(post.postId) }
+            .clickable {
+                onPostClick(post.postId)
+            }
             .padding(20.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
@@ -511,7 +508,9 @@ private fun CurationPostCard(
             Box(
                 modifier = Modifier
                     .clip(RoundedCornerShape(16.dp))
-                    .background(AppTheme.palette.gray.getColor(6))
+                    .background(
+                        AppTheme.palette.gray.getColor(6),
+                    )
                     .padding(
                         horizontal = 12.dp,
                         vertical = 4.dp,
@@ -535,7 +534,9 @@ private fun CurationPostCard(
             Spacer(modifier = Modifier.weight(1f))
 
             IconButton(
-                onClick = { onBookmarkClick(post.postId) },
+                onClick = {
+                    onBookmarkClick(post.postId)
+                },
                 modifier = Modifier.size(32.dp),
             ) {
                 Image(
@@ -544,7 +545,7 @@ private fun CurationPostCard(
                             R.drawable.ic_bookmark_on_curation
                         } else {
                             R.drawable.ic_bookmark_off_curation
-                        }
+                        },
                     ),
                     contentDescription = if (post.isBookmarked) {
                         "북마크 취소"
@@ -565,10 +566,12 @@ private fun CurationPostCard(
                 modifier = Modifier
                     .size(54.dp)
                     .clip(RoundedCornerShape(8.dp))
-                    .background(AppTheme.palette.gray.getColor(7)),
+                    .background(
+                        AppTheme.palette.gray.getColor(7),
+                    ),
                 contentAlignment = Alignment.Center,
             ) {
-                // TODO: 이미지 로더 추가 후 thumbnailUrl 이미지 표시
+                // TODO: 이미지 로더 추가 후 thumbnailUrl 표시
             }
 
             Text(
@@ -595,7 +598,9 @@ private fun CurationPostCard(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             IconButton(
-                onClick = { onLikeClick(post.postId) },
+                onClick = {
+                    onLikeClick(post.postId)
+                },
                 modifier = Modifier.size(32.dp),
             ) {
                 Image(
@@ -604,7 +609,7 @@ private fun CurationPostCard(
                             R.drawable.ic_heart_on_curation
                         } else {
                             R.drawable.ic_heart_off_curation
-                        }
+                        },
                     ),
                     contentDescription = if (post.isLiked) {
                         "좋아요 취소"
@@ -634,135 +639,57 @@ private fun CurationPostCard(
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-private fun CurationPostCardPreview() {
-    PAUZEAndroidTheme(
-        darkTheme = true,
-        dynamicColor = false,
-    ) {
-        Box(
-            modifier = Modifier
-                .background(AppTheme.palette.gray.getColor(9))
-                .padding(20.dp),
-        ) {
-            CurationPostCard(
-                post = CurationPost(
-                    postId = 1L,
-                    categoryId = 3L,
-                    categoryName = "일상팁",
-                    title = "퇴근길 감각 과부하 대처법 5가지",
-                    summary = "매일 퇴근길 지하철에서 너무 지쳐서 집에 오면 아무것도 못 하겠더라고요.",
-                    thumbnailUrl = null,
-                    viewCount = 147,
-                    likeCount = 147,
-                    readingTimeMinutes = 5,
-                    isLiked = true,
-                    isBookmarked = true,
-                    createdAt = "2026-07-02T10:30:00",
-                ),
-            )
-        }
+private const val MINUTE_MILLIS = 60_000L
+private const val HOUR_MILLIS = 60 * MINUTE_MILLIS
+private const val DAY_MILLIS = 24 * HOUR_MILLIS
+private const val MONTH_MILLIS = 30 * DAY_MILLIS
+private const val YEAR_MILLIS = 365 * DAY_MILLIS
+
+private fun formatRelativeTime(
+    createdAt: String,
+    currentTimeMillis: Long = System.currentTimeMillis(),
+): String {
+    val dateFormat = SimpleDateFormat(
+        "yyyy-MM-dd'T'HH:mm:ss",
+        Locale.getDefault(),
+    ).apply {
+        isLenient = false
+        timeZone = TimeZone.getTimeZone("Asia/Seoul")
+    }
+
+    val createdAtMillis = runCatching {
+        dateFormat.parse(createdAt)?.time
+    }.getOrNull() ?: return createdAt
+
+    val difference = (
+            currentTimeMillis - createdAtMillis
+            ).coerceAtLeast(0L)
+
+    return when {
+        difference < MINUTE_MILLIS ->
+            "방금 전"
+
+        difference < HOUR_MILLIS ->
+            "${difference / MINUTE_MILLIS}분 전"
+
+        difference < DAY_MILLIS ->
+            "${difference / HOUR_MILLIS}시간 전"
+
+        difference < MONTH_MILLIS ->
+            "${difference / DAY_MILLIS}일 전"
+
+        difference < YEAR_MILLIS ->
+            "${difference / MONTH_MILLIS}개월 전"
+
+        else ->
+            "${difference / YEAR_MILLIS}년 전"
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-private fun CurationCategoryChipPreview() {
-    PAUZEAndroidTheme(
-        darkTheme = true,
-        dynamicColor = false,
-    ) {
-        Row(
-            modifier = Modifier
-                .background(AppTheme.palette.gray.getColor(9))
-                .padding(20.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            CurationCategoryChip(
-                category = CurationCategory(
-                    categoryId = null,
-                    categoryName = "전체",
-                ),
-                isSelected = true,
-                onClick = {},
-            )
-
-            CurationCategoryChip(
-                category = CurationCategory(
-                    categoryId = 1L,
-                    categoryName = "연구법",
-                ),
-                isSelected = false,
-                onClick = {},
-            )
-        }
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-private fun CurationSearchFilterPreview() {
-    var keyword by remember {
-        mutableStateOf("")
-    }
-
-    var selectedCategoryId by remember {
-        mutableStateOf<Long?>(null)
-    }
-
-    val categories = listOf(
-        CurationCategory(
-            categoryId = null,
-            categoryName = "전체",
-        ),
-        CurationCategory(
-            categoryId = 1L,
-            categoryName = "연구",
-        ),
-        CurationCategory(
-            categoryId = 2L,
-            categoryName = "진정법",
-        ),
-        CurationCategory(
-            categoryId = 3L,
-            categoryName = "일상팁",
-        ),
-        CurationCategory(
-            categoryId = 4L,
-            categoryName = "기타",
-        ),
-    )
-
-    PAUZEAndroidTheme(
-        darkTheme = true,
-        dynamicColor = false,
-    ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(AppTheme.palette.gray.getColor(9))
-                .padding(20.dp),
-        ) {
-            CurationSearchFilter(
-                keyword = keyword,
-                categories = categories,
-                selectedCategoryId = selectedCategoryId,
-                onKeywordChange = {
-                    keyword = it
-                },
-                onSearch = {
-                    // TODO: 검색 요청
-                },
-                onCategorySelected = {
-                    selectedCategoryId = it
-                },
-            )
-        }
-    }
-}
-
-@Preview(showBackground = true)
+@Preview(
+    name = "큐레이션 게시판",
+    showBackground = true,
+)
 @Composable
 private fun CurationBoardScreenPreview() {
     PAUZEAndroidTheme(
@@ -772,4 +699,3 @@ private fun CurationBoardScreenPreview() {
         CurationBoardScreen()
     }
 }
-
