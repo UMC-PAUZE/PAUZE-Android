@@ -35,6 +35,54 @@ import com.example.pauze.ui.theme.bodyTextSmRegular
 import com.example.pauze.ui.theme.bodyTextXlBold
 import androidx.compose.ui.res.painterResource
 import com.example.pauze.ui.theme.bodyTextLgBold
+import java.text.SimpleDateFormat
+import java.util.Locale
+import java.util.TimeZone
+
+private const val MINUTE_MILLIS = 60_000L
+private const val HOUR_MILLIS = 60 * MINUTE_MILLIS
+private const val DAY_MILLIS = 24 * HOUR_MILLIS
+private const val MONTH_MILLIS = 30 * DAY_MILLIS
+private const val YEAR_MILLIS = 365 * DAY_MILLIS
+
+private fun formatRelativeTime(
+    createdAt: String,
+    currentTimeMillis: Long = System.currentTimeMillis(),
+): String {
+    val dateFormat = SimpleDateFormat(
+        "yyyy-MM-dd'T'HH:mm:ss",
+        Locale.getDefault(),
+    ).apply {
+        isLenient = false
+        timeZone = TimeZone.getTimeZone("Asia/Seoul")
+    }
+
+    val createdAtMillis = runCatching {
+        dateFormat.parse(createdAt)?.time
+    }.getOrNull() ?: return createdAt
+
+    val difference = (currentTimeMillis - createdAtMillis)
+        .coerceAtLeast(0L)
+
+    return when {
+        difference < MINUTE_MILLIS -> "방금 전"
+
+        difference < HOUR_MILLIS ->
+            "${difference / MINUTE_MILLIS}분 전"
+
+        difference < DAY_MILLIS ->
+            "${difference / HOUR_MILLIS}시간 전"
+
+        difference < MONTH_MILLIS ->
+            "${difference / DAY_MILLIS}일 전"
+
+        difference < YEAR_MILLIS ->
+            "${difference / MONTH_MILLIS}개월 전"
+
+        else ->
+            "${difference / YEAR_MILLIS}년 전"
+    }
+}
 
 @Composable
 private fun CurationPostCard(
@@ -175,7 +223,7 @@ private fun CurationPostCard(
             Spacer(modifier = Modifier.width(12.dp))
 
             Text(
-                text = post.createdAt,
+                text = formatRelativeTime(post.createdAt),
                 style = bodyTextMdRegular,
                 color = AppTheme.palette.gray.getColor(4),
             )
@@ -208,7 +256,7 @@ private fun CurationPostCardPreview() {
                     readingTimeMinutes = 5,
                     isLiked = false,
                     isBookmarked = false,
-                    createdAt = "2시간 전",
+                    createdAt = "2026-07-02T10:30:00",
                 ),
             )
         }
