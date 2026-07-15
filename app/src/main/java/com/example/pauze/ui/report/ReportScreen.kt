@@ -23,6 +23,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import android.graphics.Paint
@@ -60,8 +64,11 @@ import com.example.pauze.ui.theme.headingMdRegular
 import com.example.pauze.ui.theme.headingSmBold
 import kotlin.math.asin
 
+private enum class ReportPeriod { DAILY, WEEKLY }
 @Composable
 fun ReportScreen(isGuest: Boolean = true) {
+    var selectedPeriod by remember { mutableStateOf(ReportPeriod.DAILY) }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -88,12 +95,14 @@ fun ReportScreen(isGuest: Boolean = true) {
             ) {
                 Tab(
                     text = "일별",
-                    selected = false,
+                    selected = selectedPeriod == ReportPeriod.DAILY,
+                    onClick = { selectedPeriod = ReportPeriod.DAILY },
                     modifier = Modifier.weight(1f)
                 )
                 Tab(
                     text = "주별",
-                    selected = false,
+                    selected = selectedPeriod == ReportPeriod.WEEKLY,
+                    onClick = { selectedPeriod = ReportPeriod.WEEKLY },
                     modifier = Modifier.weight(1f)
                 )
             }
@@ -109,9 +118,10 @@ fun ReportScreen(isGuest: Boolean = true) {
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     TodayConditionCard()
-                    AverageScoreCard()
+                    AverageScoreCard(selectedPeriod)
                     TriggerCard()
-                    InsightCard()
+                    InsightCard(selectedPeriod)
+                    Spacer(modifier = Modifier.height(136.dp)) // 네비게이션 바 자리
                 }
             }
         }
@@ -181,16 +191,16 @@ private fun TodayConditionCard() {
     }
 }
 @Composable
-private fun AverageScoreCard(){
+private fun AverageScoreCard(period: ReportPeriod){
     ReportCard() {
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)){
             Text(
-                text = "이번 달 평균 민감 지수",
+                text = if (period == ReportPeriod.DAILY) "이번 주 평균 민감 지수" else "이번 달 평균 민감 지수",
                 color = AppTheme.palette.gray.getColor(2),
                 style = bodyTextLgRegular
             )
             Text(
-                text = "56점",
+                text = if (period == ReportPeriod.DAILY) "55점" else "56점",
                 color = AppTheme.palette.tertiary.getColor(3),
                 style = bodyTextLgBold
             )
@@ -214,7 +224,10 @@ private fun AverageScoreCard(){
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
                 verticalAlignment = Alignment.Bottom
             ) {
-                val bars = listOf("1주" to 73, "2주" to 123, "3주" to 153, "4주" to 113, "5주" to 123)
+                val bars = if (period == ReportPeriod.DAILY)
+                    listOf("일" to 73, "월" to 123, "화" to 153, "수" to 113, "목" to 123, "금" to 84, "토" to 105)
+                else
+                    listOf("1주" to 73, "2주" to 123, "3주" to 153, "4주" to 113, "5주" to 123)
                 bars.forEach { (label, barHeight) ->
                     Column(
                         modifier = Modifier.weight(1f),
@@ -345,10 +358,14 @@ private fun LegendItem(label: String, color: Color) {
 
 
 @Composable
-private fun InsightCard() {
+private fun InsightCard(period: ReportPeriod) {
     ReportCard() {
         Row(){
-            Text(text="이번 달 인사이트", color= AppTheme.palette.gray.getColor(2), style=bodyTextXlMedium)
+            Text(
+                text = if (period == ReportPeriod.DAILY) "이번 주 인사이트" else "이번 달 인사이트",
+                color= AppTheme.palette.gray.getColor(2),
+                style=bodyTextXlMedium
+            )
         }
 
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)){
