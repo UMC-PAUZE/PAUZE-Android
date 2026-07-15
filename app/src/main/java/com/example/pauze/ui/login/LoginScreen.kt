@@ -28,6 +28,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.getValue
@@ -47,6 +48,10 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.flowWithLifecycle
 import com.example.pauze.R
 import com.example.pauze.ui.theme.AppTheme
 import com.example.pauze.ui.theme.MainPaletteTheme
@@ -75,6 +80,9 @@ class LoginActivity : ComponentActivity() {
 
 @Composable
 fun LoginScreen(){
+    val viewModel = LoginViewModel()        // todo: Hilt로 변경
+    val lifeCycleOwner = LocalLifecycleOwner.current
+
     val focusManager = LocalFocusManager.current
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -82,6 +90,19 @@ fun LoginScreen(){
     var isEmailFocused by remember { mutableStateOf(false) }
     var isPwdFocused by remember { mutableStateOf(false) }
     var showDialog by rememberSaveable { mutableStateOf(false) }
+
+    // 로그인 성공 여부 collect하기
+    LaunchedEffect(viewModel.isSuccess, lifeCycleOwner) {
+        viewModel.isSuccess.flowWithLifecycle(
+            lifeCycleOwner.lifecycle, Lifecycle.State.STARTED
+        ).collect { isSuccess ->
+            if(isSuccess){
+                // todo: 홈화면으로 이동
+            } else {
+                showDialog = true
+            }
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -230,7 +251,9 @@ fun LoginScreen(){
                         else AppTheme.palette.gray.getColor(2),
                     shape = RoundedCornerShape(size = 100.dp))
                 .clickable(
-                    onClick = { showDialog = true }
+                    onClick = {
+                        viewModel.login(email, password)
+                    }
                 )
                 .padding(horizontal = 28.dp, vertical = 18.dp),
             contentAlignment = Alignment.Center
@@ -269,7 +292,7 @@ fun LoginScreen(){
                     color = Color(0xFFFEE500),
                     shape = RoundedCornerShape(size = 100.dp))
                 .clickable{
-                    // todo: 카카오 로그인 구현
+                    viewModel.loginWithKakao()
                 }
                 .padding(horizontal = 28.dp, vertical = 18.dp),
             contentAlignment = Alignment.Center
@@ -338,7 +361,7 @@ fun LoginScreen(){
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
-                        "이메일이나 비번이 일치하지 않습니다",
+                        "이메일이나 비밀번호가 일치하지 않습니다",
                         style = bodyTextSmRegular,
                         color = AppTheme.palette.gray.getColor(2)
                     )
