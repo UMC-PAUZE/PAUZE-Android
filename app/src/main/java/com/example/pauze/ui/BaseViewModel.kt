@@ -12,13 +12,13 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.lang.Exception
 
-abstract class BaseViewModel<T>: ViewModel() {
+abstract class BaseViewModel: ViewModel() {
     // UI 상태 클래스를 Flow로 다룸
-    private val _uiState = MutableStateFlow(UiState<T>())
+    private val _uiState = MutableStateFlow(UiState())
     val uiState = _uiState.value
 
     // UI 상태를 업데이트 하는 함수
-    protected fun updateState(updater: (UiState<T>) -> UiState<T>){
+    protected fun updateState(updater: (UiState) -> UiState){
         _uiState.update { updater(it) }
     }
 
