@@ -34,8 +34,8 @@ val MyGlobalPalette = AppPaletteSystem(
         colors = listOf(
             Color(0xFFFBFBF9), Color(0xFFF6F6F3),
             Color(0xFFEBEBE5), Color(0xFFDBDBD1),
-            Color(0xFFBEBFB0), Color(0xFF81826B),
-            Color(0xFF5D5E50), Color(0xFF49493F),
+            Color(0xFFBEBFB0), Color(0xFF88887B),
+            Color(0xFF5E5F55), Color(0xFF49493F),
             Color(0xFF2D2E28), Color(0xFF1D1E1A),
             )
     ),
