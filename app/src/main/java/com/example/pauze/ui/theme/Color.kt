@@ -18,6 +18,8 @@ data class AppPaletteSystem(
     val primary: ColorSet,
     val secondary: ColorSet,
     val tertiary: ColorSet,
+    val blue: ColorSet,
+    val purple: ColorSet,
     val redError: ColorSet,
     val yellowWarning: ColorSet,
 )
@@ -67,6 +69,22 @@ val MyGlobalPalette = AppPaletteSystem(
             Color(0xFFF2B85A), Color(0xFFEEA32A),
             Color(0xFFD58A11), Color(0xFFA56B0D),
             Color(0xFF764C09), Color(0xFF472E06),
+        )
+    ),
+    blue = ColorSet(
+        id = "blue",
+        colors = listOf(
+            Color(0xFFF2F8FE), Color(0xFFDBE6F0),
+            Color(0xFF90B1CE), Color(0xFF6987A1),
+            Color(0xFF3C586F),
+        )
+    ),
+    purple = ColorSet(
+        id = "purple",
+        colors = listOf(
+            Color(0xFFF6F2FE), Color(0xFFE5DDF5),
+            Color(0xFFC4B2E8), Color(0xFF8570B0),
+            Color(0xFF483967),
         )
     ),
     redError = ColorSet(
