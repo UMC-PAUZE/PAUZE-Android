@@ -23,10 +23,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import android.graphics.Paint
@@ -46,6 +42,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.pauze.R
 import com.example.pauze.ui.component.Button
 import com.example.pauze.ui.component.ButtonSize
@@ -64,11 +61,8 @@ import com.example.pauze.ui.theme.headingMdRegular
 import com.example.pauze.ui.theme.headingSmBold
 import kotlin.math.asin
 
-private enum class ReportPeriod { DAILY, WEEKLY }
 @Composable
-fun ReportScreen(isGuest: Boolean = true) {
-    var selectedPeriod by remember { mutableStateOf(ReportPeriod.DAILY) }
-
+fun ReportScreen(isGuest: Boolean = true, viewModel: ReportViewModel = viewModel()) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -95,14 +89,14 @@ fun ReportScreen(isGuest: Boolean = true) {
             ) {
                 Tab(
                     text = "일별",
-                    selected = selectedPeriod == ReportPeriod.DAILY,
-                    onClick = { selectedPeriod = ReportPeriod.DAILY },
+                    selected = viewModel.selectedPeriod == ReportPeriod.DAILY,
+                    onClick = { viewModel.selectPeriod(ReportPeriod.DAILY) },
                     modifier = Modifier.weight(1f)
                 )
                 Tab(
                     text = "주별",
-                    selected = selectedPeriod == ReportPeriod.WEEKLY,
-                    onClick = { selectedPeriod = ReportPeriod.WEEKLY },
+                    selected = viewModel.selectedPeriod == ReportPeriod.WEEKLY,
+                    onClick = { viewModel.selectPeriod(ReportPeriod.WEEKLY) },
                     modifier = Modifier.weight(1f)
                 )
             }
@@ -118,9 +112,9 @@ fun ReportScreen(isGuest: Boolean = true) {
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     TodayConditionCard()
-                    AverageScoreCard(selectedPeriod)
+                    AverageScoreCard(viewModel.averageScore)
                     TriggerCard()
-                    InsightCard(selectedPeriod)
+                    InsightCard(viewModel.insightTitle)
                     Spacer(modifier = Modifier.height(136.dp)) // 네비게이션 바 자리
                 }
             }
@@ -191,16 +185,16 @@ private fun TodayConditionCard() {
     }
 }
 @Composable
-private fun AverageScoreCard(period: ReportPeriod){
+private fun AverageScoreCard(state: AverageScoreUiState){
     ReportCard() {
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)){
             Text(
-                text = if (period == ReportPeriod.DAILY) "이번 주 평균 민감 지수" else "이번 달 평균 민감 지수",
+                text = state.title,
                 color = AppTheme.palette.gray.getColor(2),
                 style = bodyTextLgRegular
             )
             Text(
-                text = if (period == ReportPeriod.DAILY) "55점" else "56점",
+                text = state.scoreText,
                 color = AppTheme.palette.tertiary.getColor(3),
                 style = bodyTextLgBold
             )
@@ -224,11 +218,7 @@ private fun AverageScoreCard(period: ReportPeriod){
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
                 verticalAlignment = Alignment.Bottom
             ) {
-                val bars = if (period == ReportPeriod.DAILY)
-                    listOf("일" to 73, "월" to 123, "화" to 153, "수" to 113, "목" to 123, "금" to 84, "토" to 105)
-                else
-                    listOf("1주" to 73, "2주" to 123, "3주" to 153, "4주" to 113, "5주" to 123)
-                bars.forEach { (label, barHeight) ->
+                state.bars.forEach { (label, barHeight) ->
                     Column(
                         modifier = Modifier.weight(1f),
                         horizontalAlignment = Alignment.CenterHorizontally,
@@ -254,11 +244,11 @@ private fun AverageScoreCard(period: ReportPeriod){
         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)){
                 Text(text = "최고 민감 요일", color = AppTheme.palette.gray.getColor(2), style = bodyTextMdRegular)
-                Text(text = "금요일", color= AppTheme.palette.secondary.getColor(4), style = bodyTextMdBold)
+                Text(text = state.bestDay, color= AppTheme.palette.secondary.getColor(4), style = bodyTextMdBold)
             }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)){
                 Text(text = "출석", color = AppTheme.palette.gray.getColor(2), style = bodyTextMdRegular)
-                Text(text = "7회", color= AppTheme.palette.primary.getColor(4), style = bodyTextMdBold)
+                Text(text = state.attendanceCount, color= AppTheme.palette.primary.getColor(4), style = bodyTextMdBold)
             }
         }
     }
@@ -358,16 +348,17 @@ private fun LegendItem(label: String, color: Color) {
 
 
 @Composable
-private fun InsightCard(period: ReportPeriod) {
+private fun InsightCard(title: String) {
     ReportCard() {
         Row(){
             Text(
-                text = if (period == ReportPeriod.DAILY) "이번 주 인사이트" else "이번 달 인사이트",
+                text = title,
                 color= AppTheme.palette.gray.getColor(2),
                 style=bodyTextXlMedium
             )
         }
 
+        // ui 확인용
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)){
             InsightParagraph(
                 "이번 달 소음 노출이 " to false,
