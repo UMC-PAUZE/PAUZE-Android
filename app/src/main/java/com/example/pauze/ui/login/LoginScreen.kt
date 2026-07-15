@@ -59,14 +59,14 @@ import com.example.pauze.ui.theme.bodyTextMdRegular
 import com.example.pauze.ui.theme.bodyTextSmRegular
 import com.example.pauze.ui.theme.bodyTextXlBold
 
-class LoginScreen : ComponentActivity() {
+class LoginActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
             MainPaletteTheme {
-                LoginLayout()
+                LoginScreen()
             }
         }
     }
@@ -74,7 +74,7 @@ class LoginScreen : ComponentActivity() {
 
 
 @Composable
-fun LoginLayout(){
+fun LoginScreen(){
     val focusManager = LocalFocusManager.current
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -367,8 +367,8 @@ fun LoginLayout(){
 
 @Preview(showBackground = true)
 @Composable
-fun LoginLayoutPreview(){
+fun LoginScreenPreview(){
     PAUZEAndroidTheme {
-        LoginLayout()
+        LoginScreen()
     }
 }
