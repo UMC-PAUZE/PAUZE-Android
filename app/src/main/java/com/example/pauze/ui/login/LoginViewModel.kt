@@ -4,7 +4,7 @@ import com.example.pauze.ui.BaseViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 
-class LoginViewModel: BaseViewModel<Boolean>() {
+class LoginViewModel: BaseViewModel() {
     private val _isSuccess = MutableSharedFlow<Boolean>()
     val isSuccess = _isSuccess.asSharedFlow()
     fun loginWithKakao(){
