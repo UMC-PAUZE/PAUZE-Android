@@ -73,6 +73,30 @@ fun ReportScreen(isGuest: Boolean = true, viewModel: ReportViewModel = viewModel
             showBackButton = false
         )
 
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp),
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Tab(
+                text = "일별",
+                selected = viewModel.selectedPeriod == ReportPeriod.DAILY,
+                onClick = { viewModel.selectPeriod(ReportPeriod.DAILY) },
+                modifier = Modifier.weight(1f)
+            )
+            Tab(
+                text = "주별",
+                selected = viewModel.selectedPeriod == ReportPeriod.WEEKLY,
+                onClick = { viewModel.selectPeriod(ReportPeriod.WEEKLY) },
+                modifier = Modifier.weight(1f)
+            )
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
+
         Column(
             modifier = Modifier
                 .weight(1f)
@@ -81,32 +105,10 @@ fun ReportScreen(isGuest: Boolean = true, viewModel: ReportViewModel = viewModel
         ) {
             Spacer(modifier = Modifier.height(16.dp))
 
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 24.dp),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                Tab(
-                    text = "일별",
-                    selected = viewModel.selectedPeriod == ReportPeriod.DAILY,
-                    onClick = { viewModel.selectPeriod(ReportPeriod.DAILY) },
-                    modifier = Modifier.weight(1f)
-                )
-                Tab(
-                    text = "주별",
-                    selected = viewModel.selectedPeriod == ReportPeriod.WEEKLY,
-                    onClick = { viewModel.selectPeriod(ReportPeriod.WEEKLY) },
-                    modifier = Modifier.weight(1f)
-                )
-            }
-
             if (isGuest) {
                 Spacer(modifier = Modifier.height(83.dp))
                 GuestContent()
             } else {
-                Spacer(modifier = Modifier.height(32.dp))
-
                 Column(
                     modifier = Modifier.padding(horizontal = 24.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
