@@ -539,7 +539,8 @@ fun PauzeVisualCountdownOverlay(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Black.copy(alpha = 0.72f)),
+            .background(Color.Black.copy(alpha = 0.72f))
+            .clickable { },
         contentAlignment = Alignment.Center
     ) {
         Column(
