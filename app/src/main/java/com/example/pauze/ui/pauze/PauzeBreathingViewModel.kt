@@ -5,14 +5,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.pauze.data.model.BreathPattern
+import com.example.pauze.data.model.BreathPhase
+import com.example.pauze.data.model.BreathState
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-
-enum class BreathPhase {INHALE, HOLD, EXHALE} // 들숨, 참기, 날숨
-
-data class BreathPattern(val inhale: Int, val hold: Int, val exhale: Int)
-data class BreathState(val phase: BreathPhase, val second: Int)
 
 class PauzeBreathingViewModel: ViewModel() {
     val patterns = listOf(
@@ -37,12 +35,12 @@ class PauzeBreathingViewModel: ViewModel() {
     private var timerJob: Job? = null
 
     init{ // 재생바 추가 시 변경
-        startBreathing()
+        startBreathing(resume = true)
     }
 
     fun selectTab(index: Int){
         selectedTabIndex = index
-        startBreathing()
+        startBreathing(resume = true)
     }
 
     fun togglePlayPause(){
@@ -50,13 +48,14 @@ class PauzeBreathingViewModel: ViewModel() {
     }
 
     fun reset(){
-        startBreathing()
+        startBreathing(resume = true)
     }
 
-    private fun startBreathing() {
+    private fun startBreathing(resume: Boolean) {
         timerJob?.cancel()
         currentCycle = 0
         isFinished = false
+        isPlaying = resume
 
         val pattern = patterns[selectedTabIndex]
         val phases = buildList {

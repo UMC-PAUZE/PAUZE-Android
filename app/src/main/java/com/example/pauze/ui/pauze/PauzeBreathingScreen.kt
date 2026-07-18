@@ -34,6 +34,7 @@ import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.unit.lerp
+import com.example.pauze.data.model.BreathPhase
 
 @Composable
 fun PauzeBreathingScreen(
@@ -49,45 +50,16 @@ fun PauzeBreathingScreen(
         BreathPhase.EXHALE -> 1f - (viewModel.breathState.second.toFloat() / pattern.exhale)
     }
 
-    val outerSize by animateDpAsState(
-        targetValue = lerp(220.dp, 312.dp, progress),
-        animationSpec = tween(durationMillis = 1000, easing = LinearEasing)
-    )
-    val middleSize by animateDpAsState(
-        targetValue = lerp(180.dp, 218.dp, progress),
-        animationSpec = tween(durationMillis = 1000, easing = LinearEasing)
-    )
-
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(AppTheme.palette.gray.getColor(9))
     ) {
         TopBar("즉각 안정")
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(start = 24.dp, end = 24.dp)
-        ){
-            Tab(
-                text = "478 호흡",
-                selected = viewModel.selectedTabIndex == 0,
-                onClick = { viewModel.selectTab(0) },
-                modifier = Modifier.weight(1f)
-            )
-            Tab(
-                text = "박스 호흡",
-                selected = viewModel.selectedTabIndex == 1,
-                onClick = { viewModel.selectTab(1) },
-                modifier = Modifier.weight(1f)
-            )
-            Tab(
-                text = "간단 호흡",
-                selected = viewModel.selectedTabIndex == 2,
-                onClick = { viewModel.selectTab(2) },
-                modifier = Modifier.weight(1f)
-            )
-        }
+        BreathTabBar(
+            selectedIndex = viewModel.selectedTabIndex,
+            onTabSelected = { viewModel.selectTab(it) }
+        )
 
         Spacer(modifier = Modifier.height(32.dp))
 
@@ -115,45 +87,10 @@ fun PauzeBreathingScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(312.dp),
-            contentAlignment = Alignment.Center
-        ){
-            Box(
-                modifier = Modifier
-                    .size(outerSize)
-                    .background(
-                        color = AppTheme.palette.gray.getColor(8),
-                        shape = CircleShape
-                    )
-            )
-            Box(
-                modifier = Modifier
-                    .size(middleSize)
-                    .background(
-                        color = AppTheme.palette.gray.getColor(7),
-                        shape = CircleShape
-                    )
-            )
-            Box(
-                modifier = Modifier
-                    .size(120.dp)
-                    .background(
-                        color = AppTheme.palette.gray.getColor(6),
-                        shape = CircleShape
-                    )
-            )
-
-            Text(
-                text = "${viewModel.breathState.second}",
-                color = AppTheme.palette.gray.getColor(2),
-                fontSize = 64.sp,
-                fontWeight = FontWeight.Medium,
-                fontFamily = fontFamily
-            )
-        }
+        BreathingCircle(
+            progress = progress,
+            secondsText = "${viewModel.breathState.second}"
+        )
 
         Spacer(modifier = Modifier.height(26.dp))
 
@@ -195,6 +132,93 @@ fun PauzeBreathingScreen(
                 )
             }
         }
+    }
+}
+@Composable
+private fun BreathTabBar(
+    selectedIndex: Int,
+    onTabSelected: (Int) -> Unit,
+    modifier: Modifier = Modifier
+){
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(start = 24.dp, end = 24.dp)
+    ){
+        Tab(
+            text = "478 호흡",
+            selected = selectedIndex == 0,
+            onClick = { onTabSelected(0) },
+            modifier = Modifier.weight(1f)
+        )
+        Tab(
+            text = "박스 호흡",
+            selected = selectedIndex == 1,
+            onClick = { onTabSelected(1) },
+            modifier = Modifier.weight(1f)
+        )
+        Tab(
+            text = "간단 호흡",
+            selected = selectedIndex == 2,
+            onClick = { onTabSelected(2) },
+            modifier = Modifier.weight(1f)
+        )
+    }
+}
+
+@Composable
+private fun BreathingCircle(
+    progress: Float,
+    secondsText: String,
+    modifier: Modifier = Modifier
+){
+    val outerSize by animateDpAsState(
+        targetValue = lerp(220.dp, 312.dp, progress),
+        animationSpec = tween(durationMillis = 1000, easing = LinearEasing)
+    )
+    val middleSize by animateDpAsState(
+        targetValue = lerp(180.dp, 218.dp, progress),
+        animationSpec = tween(durationMillis = 1000, easing = LinearEasing)
+    )
+
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(312.dp),
+        contentAlignment = Alignment.Center
+    ){
+        Box(
+            modifier = Modifier
+                .size(outerSize)
+                .background(
+                    color = AppTheme.palette.gray.getColor(8),
+                    shape = CircleShape
+                )
+        )
+        Box(
+            modifier = Modifier
+                .size(middleSize)
+                .background(
+                    color = AppTheme.palette.gray.getColor(7),
+                    shape = CircleShape
+                )
+        )
+        Box(
+            modifier = Modifier
+                .size(120.dp)
+                .background(
+                    color = AppTheme.palette.gray.getColor(6),
+                    shape = CircleShape
+                )
+        )
+
+        Text(
+            text = secondsText,
+            color = AppTheme.palette.gray.getColor(2),
+            fontSize = 64.sp,
+            fontWeight = FontWeight.Medium,
+            fontFamily = fontFamily
+        )
     }
 }
 
