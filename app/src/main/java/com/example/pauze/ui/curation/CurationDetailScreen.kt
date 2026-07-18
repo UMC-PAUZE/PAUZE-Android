@@ -2,6 +2,7 @@ package com.example.pauze.ui.curation
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -17,8 +18,11 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -29,6 +33,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -39,6 +44,7 @@ import com.example.pauze.ui.component.TopBar
 import com.example.pauze.ui.theme.AppTheme
 import com.example.pauze.ui.theme.PAUZEAndroidTheme
 import com.example.pauze.ui.theme.bodyTextLgBold
+import com.example.pauze.ui.theme.bodyTextLgMedium
 import com.example.pauze.ui.theme.bodyTextMdRegular
 import com.example.pauze.ui.theme.bodyTextSmMedium
 import com.example.pauze.ui.theme.bodyTextSmRegular
@@ -52,6 +58,7 @@ fun CurationDetailScreen(
     onBackClick: () -> Unit = {},
     onLikeClick: (Long) -> Unit = {},
     onBookmarkClick: (Long) -> Unit = {},
+    onCopyLinkClick: (Long) -> Unit = {},
     onShareClick: (Long) -> Unit = {},
 ) {
     var isLiked by rememberSaveable(post.postId, post.isLiked) {
@@ -65,6 +72,9 @@ fun CurationDetailScreen(
     }
     var likeCount by rememberSaveable(post.postId, post.likeCount) {
         mutableIntStateOf(post.likeCount)
+    }
+    var showShareBottomSheet by rememberSaveable {
+        mutableStateOf(false)
     }
 
     val paragraphs = remember(post.summary) {
@@ -146,11 +156,26 @@ fun CurationDetailScreen(
                         onBookmarkClick(post.postId)
                     },
                     onShareClick = {
-                        onShareClick(post.postId)
+                        showShareBottomSheet = true
                     },
                 )
             }
         }
+    }
+
+    if (showShareBottomSheet) {
+        CurationShareBottomSheet(
+            onDismissRequest = {
+                showShareBottomSheet = false
+            },
+            onCopyLinkClick = {
+                onCopyLinkClick(post.postId)
+            },
+            onShareClick = {
+                showShareBottomSheet = false
+                onShareClick(post.postId)
+            },
+        )
     }
 }
 
@@ -305,6 +330,117 @@ private fun CurationDetailActions(
                 modifier = Modifier.size(24.dp),
             )
         }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun CurationShareBottomSheet(
+    onDismissRequest: () -> Unit,
+    onCopyLinkClick: () -> Unit,
+    onShareClick: () -> Unit,
+) {
+    val sheetState = rememberModalBottomSheetState(
+        skipPartiallyExpanded = true,
+    )
+    var isLinkCopied by rememberSaveable {
+        mutableStateOf(false)
+    }
+
+    ModalBottomSheet(
+        onDismissRequest = onDismissRequest,
+        sheetState = sheetState,
+        shape = RoundedCornerShape(
+            topStart = 48.dp,
+            topEnd = 48.dp,
+        ),
+        containerColor = AppTheme.palette.gray.getColor(9),
+        contentColor = AppTheme.palette.gray.getColor(2),
+        scrimColor = Color.Black.copy(alpha = 0.72f),
+        dragHandle = {
+            Box(
+                modifier = Modifier
+                    .padding(
+                        top = 24.dp,
+                        bottom = 20.dp,
+                    )
+                    .width(56.dp)
+                    .height(6.dp)
+                    .clip(RoundedCornerShape(50.dp))
+                    .background(AppTheme.palette.gray.getColor(4)),
+            )
+        },
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(
+                    start = 40.dp,
+                    end = 40.dp,
+                    bottom = 48.dp,
+                ),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            CurationShareOption(
+                iconRes = if (isLinkCopied) {
+                    R.drawable.ic_check_curation
+                } else {
+                    R.drawable.ic_link_curation
+                },
+                text = if (isLinkCopied) {
+                    "링크가 복사되었어요"
+                } else {
+                    "링크 복사하기"
+                },
+                textColor = if (isLinkCopied) {
+                    AppTheme.palette.primary.getColor(4)
+                } else {
+                    AppTheme.palette.gray.getColor(2)
+                },
+                onClick = {
+                    isLinkCopied = true
+                    onCopyLinkClick()
+                },
+            )
+
+            CurationShareOption(
+                iconRes = R.drawable.ic_share_curation,
+                text = "다른 앱으로 공유하기",
+                textColor = AppTheme.palette.gray.getColor(2),
+                onClick = onShareClick,
+            )
+        }
+    }
+}
+
+@Composable
+private fun CurationShareOption(
+    iconRes: Int,
+    text: String,
+    textColor: Color,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(vertical = 16.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Image(
+            painter = painterResource(id = iconRes),
+            contentDescription = null,
+            modifier = Modifier.size(24.dp),
+        )
+
+        Spacer(modifier = Modifier.width(12.dp))
+
+        Text(
+            text = text,
+            style = bodyTextLgMedium,
+            color = textColor,
+        )
     }
 }
 
