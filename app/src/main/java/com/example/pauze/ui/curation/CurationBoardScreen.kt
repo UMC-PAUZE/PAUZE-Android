@@ -20,14 +20,12 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -38,7 +36,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalFocusManager
@@ -52,6 +49,7 @@ import com.example.pauze.data.dummies.curationCategories
 import com.example.pauze.data.model.CurationCategory
 import com.example.pauze.ui.component.TopBar
 import com.example.pauze.ui.curation.component.CurationPostCard
+import com.example.pauze.ui.curation.component.CurationScrollToTopButton
 import com.example.pauze.ui.theme.AppTheme
 import com.example.pauze.ui.theme.PAUZEAndroidTheme
 import com.example.pauze.ui.theme.bodyTextLgRegular
@@ -175,7 +173,7 @@ fun CurationBoardScreen(
         }
 
         if (showScrollToTopButton) {
-            SmallFloatingActionButton(
+            CurationScrollToTopButton(
                 onClick = {
                     coroutineScope.launch {
                         listState.animateScrollToItem(0)
@@ -186,25 +184,8 @@ fun CurationBoardScreen(
                     .padding(
                         end = 20.dp,
                         bottom = 20.dp,
-                    )
-                    .size(48.dp),
-                shape = CircleShape,
-                containerColor =
-                    AppTheme.palette.primary.getColor(3),
-                contentColor =
-                    AppTheme.palette.gray.getColor(9),
-            ) {
-                Icon(
-                    painter = painterResource(
-                        id = R.drawable.ic_arrow_back,
                     ),
-                    contentDescription = "목록 맨 위로 이동",
-                    modifier = Modifier
-                        .size(24.dp)
-                        .rotate(90f),
-                    tint = AppTheme.palette.gray.getColor(9),
-                )
-            }
+            )
         }
     }
 }
