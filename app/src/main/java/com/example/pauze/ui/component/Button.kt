@@ -20,6 +20,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.pauze.ui.theme.AppTheme
@@ -74,6 +75,7 @@ fun Button(
                 enabled = enabled,
                 interactionSource = interactionSource,
                 indication = null,
+                role = Role.Button,
                 onClick = onClick
             )
             .padding(horizontal = horizontalPadding, vertical = verticalPadding),
@@ -83,8 +85,8 @@ fun Button(
             text = label,
             style = textStyle,
             color = when {
-                variant == ButtonVariant.Stroke -> currentColor
                 !enabled -> AppTheme.palette.gray.getColor(2)
+                variant == ButtonVariant.Stroke -> currentColor
                 else -> contentColor
             }
         )
@@ -100,6 +102,7 @@ private fun ButtonPreview() {
                 .fillMaxSize()
                 .background(AppTheme.palette.gray.getColor(9))
                 .padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             // 사이즈별
