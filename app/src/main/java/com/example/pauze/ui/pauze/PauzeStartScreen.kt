@@ -93,7 +93,7 @@ fun PauzeStartScreen(
                             Text(
                                 text = "1분 호흡으로 바로 안정해요.",
                                 style = bodyTextSmRegular,
-                                color = AppTheme.palette.primary.getColor(7)
+                                color = AppTheme.palette.primary.getColor(9)
                             )
                         }
                     }
@@ -187,7 +187,7 @@ fun SelectionCard(
                     Text(
                         text = description,
                         style = bodyTextSmRegular,
-                        color = AppTheme.palette.gray.getColor(5),
+                        color = AppTheme.palette.gray.getColor(4),
                         modifier = Modifier.width(152.dp)
                     )
                 }
