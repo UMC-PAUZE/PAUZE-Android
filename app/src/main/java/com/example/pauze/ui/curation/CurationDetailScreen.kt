@@ -1,5 +1,7 @@
 package com.example.pauze.ui.curation
 
+import android.content.Context
+import android.content.Intent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -34,6 +36,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -55,12 +58,15 @@ private val paragraphSeparatorPattern = Regex("""\n\s*\n""")
 @Composable
 fun CurationDetailScreen(
     post: CurationPost,
+    shareUrl: String? = null,
     onBackClick: () -> Unit = {},
     onLikeClick: (Long) -> Unit = {},
     onBookmarkClick: (Long) -> Unit = {},
     onCopyLinkClick: (Long) -> Unit = {},
     onShareClick: (Long) -> Unit = {},
 ) {
+    val context = LocalContext.current
+
     var isLiked by rememberSaveable(post.postId, post.isLiked) {
         mutableStateOf(post.isLiked)
     }
@@ -173,6 +179,11 @@ fun CurationDetailScreen(
             },
             onShareClick = {
                 showShareBottomSheet = false
+                shareCurationPost(
+                    context = context,
+                    post = post,
+                    shareUrl = shareUrl,
+                )
                 onShareClick(post.postId)
             },
         )
@@ -442,6 +453,34 @@ private fun CurationShareOption(
             color = textColor,
         )
     }
+}
+
+private fun shareCurationPost(
+    context: Context,
+    post: CurationPost,
+    shareUrl: String?,
+) {
+    val shareText = buildString {
+        append(post.title)
+
+        if (!shareUrl.isNullOrBlank()) {
+            appendLine()
+            append(shareUrl)
+        }
+    }
+
+    val sendIntent = Intent(Intent.ACTION_SEND).apply {
+        type = "text/plain"
+        putExtra(Intent.EXTRA_TITLE, post.title)
+        putExtra(Intent.EXTRA_TEXT, shareText)
+    }
+
+    context.startActivity(
+        Intent.createChooser(
+            sendIntent,
+            "링크 공유",
+        ),
+    )
 }
 
 @Preview(
