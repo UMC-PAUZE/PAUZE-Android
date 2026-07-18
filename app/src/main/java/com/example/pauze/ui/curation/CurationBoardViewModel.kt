@@ -43,6 +43,11 @@ class CurationBoardViewModel : ViewModel() {
             matchesCategory && matchesKeyword
         }
 
+    val bookmarkedPosts: List<CurationPost>
+        get() = posts.filter { post ->
+            post.isBookmarked
+        }
+
     val selectedPost: CurationPost?
         get() = posts.firstOrNull { post ->
             post.postId == selectedPostId
