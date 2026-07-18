@@ -199,13 +199,13 @@ fun CurationBoardScreen(
                                     currentPost.copy(
                                         isLiked = willBeLiked,
                                         likeCount = (
-                                                currentPost.likeCount +
-                                                        if (willBeLiked) {
-                                                            1
-                                                        } else {
-                                                            -1
-                                                        }
-                                                ).coerceAtLeast(0),
+                                            currentPost.likeCount +
+                                                if (willBeLiked) {
+                                                    1
+                                                } else {
+                                                    -1
+                                                }
+                                            ).coerceAtLeast(0),
                                     )
                                 } else {
                                     currentPost
@@ -519,11 +519,15 @@ private fun CurationPostCard(
         }
 
         Text(
-            text = post.summary,
+            text = if (post.summary.length > 35) {
+                "${post.summary.take(35)}..."
+            } else {
+                post.summary
+            },
             modifier = Modifier.fillMaxWidth(),
             style = bodyTextMdRegular,
             color = AppTheme.palette.gray.getColor(4),
-            maxLines = 2,
+            maxLines = 1,
             overflow = TextOverflow.Ellipsis,
         )
 
