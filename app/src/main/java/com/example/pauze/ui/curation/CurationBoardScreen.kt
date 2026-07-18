@@ -1,5 +1,6 @@
 package com.example.pauze.ui.curation
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -89,6 +90,40 @@ fun CurationBoardScreen(
         mutableStateOf(dummyCurationPosts)
     }
 
+    var selectedPostId by rememberSaveable {
+        mutableStateOf<Long?>(null)
+    }
+
+    fun toggleLike(postId: Long) {
+        posts = posts.map { post ->
+            if (post.postId == postId) {
+                val willBeLiked = !post.isLiked
+
+                post.copy(
+                    isLiked = willBeLiked,
+                    likeCount = (
+                        post.likeCount +
+                            if (willBeLiked) 1 else -1
+                        ).coerceAtLeast(0),
+                )
+            } else {
+                post
+            }
+        }
+    }
+
+    fun toggleBookmark(postId: Long) {
+        posts = posts.map { post ->
+            if (post.postId == postId) {
+                post.copy(
+                    isBookmarked = !post.isBookmarked,
+                )
+            } else {
+                post
+            }
+        }
+    }
+
     val listState = rememberLazyListState()
     val coroutineScope = rememberCoroutineScope()
 
@@ -122,6 +157,26 @@ fun CurationBoardScreen(
 
             matchesCategory && matchesKeyword
         }
+    }
+
+    val selectedPost = posts.firstOrNull { post ->
+        post.postId == selectedPostId
+    }
+
+    BackHandler(enabled = selectedPost != null) {
+        selectedPostId = null
+    }
+
+    if (selectedPost != null) {
+        CurationDetailScreen(
+            post = selectedPost,
+            onBackClick = {
+                selectedPostId = null
+            },
+            onLikeClick = ::toggleLike,
+            onBookmarkClick = ::toggleBookmark,
+        )
+        return
     }
 
     Box(
@@ -189,41 +244,12 @@ fun CurationBoardScreen(
                 ) { post ->
                     CurationPostCard(
                         post = post,
-                        onPostClick = onPostClick,
-                        onLikeClick = { postId ->
-                            posts = posts.map { currentPost ->
-                                if (currentPost.postId == postId) {
-                                    val willBeLiked =
-                                        !currentPost.isLiked
-
-                                    currentPost.copy(
-                                        isLiked = willBeLiked,
-                                        likeCount = (
-                                            currentPost.likeCount +
-                                                if (willBeLiked) {
-                                                    1
-                                                } else {
-                                                    -1
-                                                }
-                                            ).coerceAtLeast(0),
-                                    )
-                                } else {
-                                    currentPost
-                                }
-                            }
+                        onPostClick = { postId ->
+                            selectedPostId = postId
+                            onPostClick(postId)
                         },
-                        onBookmarkClick = { postId ->
-                            posts = posts.map { currentPost ->
-                                if (currentPost.postId == postId) {
-                                    currentPost.copy(
-                                        isBookmarked =
-                                            !currentPost.isBookmarked,
-                                    )
-                                } else {
-                                    currentPost
-                                }
-                            }
-                        },
+                        onLikeClick = ::toggleLike,
+                        onBookmarkClick = ::toggleBookmark,
                     )
                 }
             }
@@ -583,7 +609,7 @@ private const val DAY_MILLIS = 24 * HOUR_MILLIS
 private const val MONTH_MILLIS = 30 * DAY_MILLIS
 private const val YEAR_MILLIS = 365 * DAY_MILLIS
 
-private fun formatRelativeTime(
+internal fun formatRelativeTime(
     createdAt: String,
     currentTimeMillis: Long = System.currentTimeMillis(),
 ): String {
