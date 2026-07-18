@@ -4,7 +4,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
-import com.example.pauze.data.datasource.ReportMockDataSource
+import com.example.pauze.data.dummies.ReportDummyData
 import com.example.pauze.data.model.AverageScoreUiState
 import com.example.pauze.data.model.InsightUiState
 import com.example.pauze.data.model.ReportPeriod
@@ -20,15 +20,15 @@ class ReportViewModel : ViewModel() {
 
     val averageScore: AverageScoreUiState
         get() = if (selectedPeriod == ReportPeriod.DAILY) {
-            ReportMockDataSource.dailyAverageScore
+            ReportDummyData.dailyAverageScore
         } else {
-            ReportMockDataSource.weeklyAverageScore
+            ReportDummyData.weeklyAverageScore
         }
 
     val insight: InsightUiState
         get() = if (selectedPeriod == ReportPeriod.DAILY){
-            ReportMockDataSource.dailyInsight
+            ReportDummyData.dailyInsight
         } else{
-            ReportMockDataSource.weeklyInsight
+            ReportDummyData.weeklyInsight
         }
 }

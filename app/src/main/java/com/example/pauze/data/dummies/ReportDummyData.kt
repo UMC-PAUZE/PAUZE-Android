@@ -1,11 +1,11 @@
-package com.example.pauze.data.datasource
+package com.example.pauze.data.dummies
 
 import com.example.pauze.data.model.AverageScoreUiState
 import com.example.pauze.data.model.ChartBar
 import com.example.pauze.data.model.InsightSegment
 import com.example.pauze.data.model.InsightUiState
 
-object ReportMockDataSource { //ui 확인하기 위한 데이터
+object ReportDummyData { //ui 확인하기 위한 데이터
     val dailyAverageScore = AverageScoreUiState(
         title = "이번 주 평균 민감 지수",
         score = 55,
