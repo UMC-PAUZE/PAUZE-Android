@@ -61,6 +61,7 @@ import com.example.pauze.ui.theme.bodyTextMdMedium
 import com.example.pauze.ui.theme.bodyTextMdRegular
 import com.example.pauze.ui.theme.bodyTextSmMedium
 import com.example.pauze.ui.theme.bodyTextSmRegular
+import com.example.pauze.ui.theme.headingSmBold
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -83,6 +84,7 @@ fun CurationBoardScreen(
     }
 
     val selectedPost = viewModel.selectedPost
+    val filteredPosts = viewModel.filteredPosts
 
     BackHandler(enabled = selectedPost != null) {
         viewModel.clearSelectedPost()
@@ -137,33 +139,41 @@ fun CurationBoardScreen(
                 ),
             )
 
-            LazyColumn(
-                state = listState,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f),
-                contentPadding = PaddingValues(
-                    start = 20.dp,
-                    end = 20.dp,
-                    bottom = 88.dp,
-                ),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-            ) {
-                items(
-                    items = viewModel.filteredPosts,
-                    key = { post ->
-                        post.postId
-                    },
-                ) { post ->
-                    CurationPostCard(
-                        post = post,
-                        onPostClick = { postId ->
-                            viewModel.selectPost(postId)
-                            onPostClick(postId)
+            if (filteredPosts.isEmpty()) {
+                CurationEmptySearchResult(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f),
+                )
+            } else {
+                LazyColumn(
+                    state = listState,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f),
+                    contentPadding = PaddingValues(
+                        start = 20.dp,
+                        end = 20.dp,
+                        bottom = 88.dp,
+                    ),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    items(
+                        items = filteredPosts,
+                        key = { post ->
+                            post.postId
                         },
-                        onLikeClick = viewModel::toggleLike,
-                        onBookmarkClick = viewModel::toggleBookmark,
-                    )
+                    ) { post ->
+                        CurationPostCard(
+                            post = post,
+                            onPostClick = { postId ->
+                                viewModel.selectPost(postId)
+                                onPostClick(postId)
+                            },
+                            onLikeClick = viewModel::toggleLike,
+                            onBookmarkClick = viewModel::toggleBookmark,
+                        )
+                    }
                 }
             }
         }
@@ -200,6 +210,32 @@ fun CurationBoardScreen(
                 )
             }
         }
+    }
+}
+
+@Composable
+private fun CurationEmptySearchResult(
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        modifier = modifier,
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+    ) {
+        Icon(
+            painter = painterResource(R.drawable.ic_headset),
+            contentDescription = null,
+            modifier = Modifier.size(107.dp),
+            tint = AppTheme.palette.gray.getColor(2),
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Text(
+            text = "검색 결과가 없어요",
+            style = headingSmBold,
+            color = AppTheme.palette.gray.getColor(2),
+        )
     }
 }
 
