@@ -57,7 +57,8 @@ fun AverageScoreCard(state: AverageScoreUiState){
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
                 verticalAlignment = Alignment.Bottom
             ) {
-                state.bars.forEach { (label, barHeight) ->
+                val chartHeight = 165.dp
+                state.bars.forEach { bar ->
                     Column(
                         modifier = Modifier.weight(1f),
                         horizontalAlignment = Alignment.CenterHorizontally,
@@ -66,7 +67,7 @@ fun AverageScoreCard(state: AverageScoreUiState){
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(barHeight.dp)
+                                .height(chartHeight * (bar.score / 100f))
                                 .background(
                                     brush = Brush.verticalGradient(
                                         colors = listOf(
@@ -80,7 +81,7 @@ fun AverageScoreCard(state: AverageScoreUiState){
                                     )
                                 )
                         )
-                        Text(text = label, style = bodyTextSmRegular, color = AppTheme.palette.gray.getColor(2))
+                        Text(text = bar.label, style = bodyTextSmRegular, color = AppTheme.palette.gray.getColor(2))
                     }
                 }
             }

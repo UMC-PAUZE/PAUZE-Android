@@ -92,7 +92,7 @@ fun ReportScreen(isGuest: Boolean = true, viewModel: ReportViewModel = viewModel
                     TodayConditionCard()
                     AverageScoreCard(viewModel.averageScore)
                     TriggerCard()
-                    InsightCard(viewModel.insightTitle)
+                    InsightCard(viewModel.insight)
                     Spacer(modifier = Modifier.height(136.dp)) // 네비게이션 바 자리
                 }
             }
@@ -141,8 +141,6 @@ private fun GuestContent() {
             label = "로그인하고 시작하기",
             modifier = Modifier.fillMaxWidth()
         )
-
-        // 내비게이션 바
     }
 }
 
