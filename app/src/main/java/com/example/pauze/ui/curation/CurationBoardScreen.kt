@@ -33,11 +33,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -50,9 +47,9 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.pauze.R
 import com.example.pauze.data.dummies.curationCategories
-import com.example.pauze.data.dummies.dummyCurationPosts
 import com.example.pauze.data.model.CurationCategory
 import com.example.pauze.data.model.CurationPost
 import com.example.pauze.ui.component.TopBar
@@ -73,57 +70,8 @@ import java.util.TimeZone
 fun CurationBoardScreen(
     onPostClick: (Long) -> Unit = {},
     onBookmarkListClick: () -> Unit = {},
+    viewModel: CurationBoardViewModel = viewModel(),
 ) {
-    var keyword by rememberSaveable {
-        mutableStateOf("")
-    }
-
-    var submittedKeyword by rememberSaveable {
-        mutableStateOf("")
-    }
-
-    var selectedCategoryId by rememberSaveable {
-        mutableStateOf<Long?>(null)
-    }
-
-    var posts by remember {
-        mutableStateOf(dummyCurationPosts)
-    }
-
-    var selectedPostId by rememberSaveable {
-        mutableStateOf<Long?>(null)
-    }
-
-    fun toggleLike(postId: Long) {
-        posts = posts.map { post ->
-            if (post.postId == postId) {
-                val willBeLiked = !post.isLiked
-
-                post.copy(
-                    isLiked = willBeLiked,
-                    likeCount = (
-                        post.likeCount +
-                            if (willBeLiked) 1 else -1
-                        ).coerceAtLeast(0),
-                )
-            } else {
-                post
-            }
-        }
-    }
-
-    fun toggleBookmark(postId: Long) {
-        posts = posts.map { post ->
-            if (post.postId == postId) {
-                post.copy(
-                    isBookmarked = !post.isBookmarked,
-                )
-            } else {
-                post
-            }
-        }
-    }
-
     val listState = rememberLazyListState()
     val coroutineScope = rememberCoroutineScope()
 
@@ -134,47 +82,18 @@ fun CurationBoardScreen(
         }
     }
 
-    val filteredPosts = remember(
-        posts,
-        submittedKeyword,
-        selectedCategoryId,
-    ) {
-        posts.filter { post ->
-            val matchesCategory =
-                selectedCategoryId == null ||
-                        post.categoryId == selectedCategoryId
-
-            val matchesKeyword =
-                submittedKeyword.isBlank() ||
-                        post.title.contains(
-                            submittedKeyword,
-                            ignoreCase = true,
-                        ) ||
-                        post.summary.contains(
-                            submittedKeyword,
-                            ignoreCase = true,
-                        )
-
-            matchesCategory && matchesKeyword
-        }
-    }
-
-    val selectedPost = posts.firstOrNull { post ->
-        post.postId == selectedPostId
-    }
+    val selectedPost = viewModel.selectedPost
 
     BackHandler(enabled = selectedPost != null) {
-        selectedPostId = null
+        viewModel.clearSelectedPost()
     }
 
     if (selectedPost != null) {
         CurationDetailScreen(
             post = selectedPost,
-            onBackClick = {
-                selectedPostId = null
-            },
-            onLikeClick = ::toggleLike,
-            onBookmarkClick = ::toggleBookmark,
+            onBackClick = viewModel::clearSelectedPost,
+            onLikeClick = viewModel::toggleLike,
+            onBookmarkClick = viewModel::toggleBookmark,
         )
         return
     }
@@ -206,18 +125,12 @@ fun CurationBoardScreen(
             )
 
             CurationSearchFilter(
-                keyword = keyword,
+                keyword = viewModel.keyword,
                 categories = curationCategories,
-                selectedCategoryId = selectedCategoryId,
-                onKeywordChange = {
-                    keyword = it
-                },
-                onSearch = {
-                    submittedKeyword = keyword.trim()
-                },
-                onCategorySelected = {
-                    selectedCategoryId = it
-                },
+                selectedCategoryId = viewModel.selectedCategoryId,
+                onKeywordChange = viewModel::updateKeyword,
+                onSearch = viewModel::search,
+                onCategorySelected = viewModel::selectCategory,
                 modifier = Modifier.padding(
                     horizontal = 20.dp,
                     vertical = 16.dp,
@@ -237,7 +150,7 @@ fun CurationBoardScreen(
                 verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
                 items(
-                    items = filteredPosts,
+                    items = viewModel.filteredPosts,
                     key = { post ->
                         post.postId
                     },
@@ -245,11 +158,11 @@ fun CurationBoardScreen(
                     CurationPostCard(
                         post = post,
                         onPostClick = { postId ->
-                            selectedPostId = postId
+                            viewModel.selectPost(postId)
                             onPostClick(postId)
                         },
-                        onLikeClick = ::toggleLike,
-                        onBookmarkClick = ::toggleBookmark,
+                        onLikeClick = viewModel::toggleLike,
+                        onBookmarkClick = viewModel::toggleBookmark,
                     )
                 }
             }
