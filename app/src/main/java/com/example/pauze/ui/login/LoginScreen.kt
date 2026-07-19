@@ -81,7 +81,6 @@ class LoginActivity : ComponentActivity() {
 @Composable
 fun LoginScreen(){
     val viewModel = LoginViewModel()        // todo: Hilt로 변경
-    val lifeCycleOwner = LocalLifecycleOwner.current
 
     val focusManager = LocalFocusManager.current
     var email by remember { mutableStateOf("") }
@@ -92,14 +91,18 @@ fun LoginScreen(){
     var showDialog by rememberSaveable { mutableStateOf(false) }
 
     // 로그인 성공 여부 collect하기
-    LaunchedEffect(viewModel.isSuccess, lifeCycleOwner) {
-        viewModel.isSuccess.flowWithLifecycle(
-            lifeCycleOwner.lifecycle, Lifecycle.State.STARTED
-        ).collect { isSuccess ->
-            if(isSuccess){
-                // todo: 홈화면으로 이동
-            } else {
-                showDialog = true
+    LaunchedEffect(viewModel.effect) {
+        viewModel.effect.collect { effect ->
+            when(effect){
+                is LoginEffect.NavigateToHome -> {
+
+                }
+                is LoginEffect.NavigateToSignUp -> {
+
+                }
+                is LoginEffect.ShowDialog -> {
+                    showDialog = true
+                }
             }
         }
     }
