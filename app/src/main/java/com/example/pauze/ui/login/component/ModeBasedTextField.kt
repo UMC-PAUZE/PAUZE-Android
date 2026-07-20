@@ -46,6 +46,7 @@ fun ModeBasedTextField(
     value: String,
     onValueChanged: (String) -> Unit,
     onCheckClick: () -> Unit = {},
+    imeAction: ImeAction
 ) {
     val focusManager = LocalFocusManager.current
     var isFocused by remember { mutableStateOf(false) }
@@ -87,15 +88,15 @@ fun ModeBasedTextField(
             keyboardOptions = when (mode) {
                 TextFieldMode.UserName -> KeyboardOptions(
                     keyboardType = KeyboardType.Text,
-                    imeAction = ImeAction.Next
+                    imeAction = imeAction
                 )
                 TextFieldMode.Pwd, TextFieldMode.SetPwd -> KeyboardOptions(
                     keyboardType = KeyboardType.Password,
-                    imeAction = ImeAction.Done
+                    imeAction = imeAction
                 )
                 else -> KeyboardOptions(
                     keyboardType = KeyboardType.Email,
-                    imeAction = ImeAction.Next
+                    imeAction = imeAction
                 )
             },
             keyboardActions = KeyboardActions(

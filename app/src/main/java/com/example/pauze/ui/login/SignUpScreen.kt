@@ -15,29 +15,24 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextFieldLabelScope
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.pauze.ui.component.Button
 import com.example.pauze.ui.component.PhaseBar
 import com.example.pauze.ui.component.TopBar
-import com.example.pauze.ui.login.component.ModeBasedTextField
-import com.example.pauze.ui.login.component.TextFieldMode
 import com.example.pauze.ui.theme.AppTheme
 import com.example.pauze.ui.theme.MainPaletteTheme
 import com.example.pauze.ui.theme.PAUZEAndroidTheme
-import com.example.pauze.ui.theme.bodyTextSmRegular
 import com.example.pauze.ui.theme.headingMdMedium
-import com.example.pauze.ui.theme.headingMdRegular
 
 class SignUpActivity : ComponentActivity() {
 
@@ -55,6 +50,7 @@ class SignUpActivity : ComponentActivity() {
 @Composable
 fun SignUpScreen(){
     var phase by remember { mutableIntStateOf(0) }
+    var isCompleted by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -77,27 +73,19 @@ fun SignUpScreen(){
         }
         Spacer(modifier = Modifier.height(24.dp))
         Text(
-            "이름과 생년월일을\n알려주세요",
+            if(phase == 0) "이름과 생년월일을\n알려주세요" else "이메일을 입력하고\n비밀번호를 설정해주세요",
             style = headingMdMedium,
             color = AppTheme.palette.gray.getColor(2)
         )
         Spacer(modifier = Modifier.height(48.dp))
-        PersonalInfo()
-    }
-}
-
-@Composable
-fun PersonalInfo(){
-    var name by remember { mutableStateOf("") }
-    Column{
-        ModeBasedTextField(
-            mode = TextFieldMode.UserName,
-            value = name,
-            onValueChanged = { name = it }
-        )
-        Spacer(modifier = Modifier.height(4.dp))
-        Text("2자 이상 입력해주세요", style = bodyTextSmRegular, color = AppTheme.palette.gray.getColor(5))
-        Spacer(modifier = Modifier.height(12.dp))
+        PersonalInfoContent()
+        Spacer(modifier = Modifier.weight(1f))
+        Button(
+            "다음",
+            modifier = Modifier.fillMaxWidth().padding(bottom = 48.dp),
+            color = if(isCompleted) AppTheme.palette.gray.getColor(2)
+                else AppTheme.palette.gray.getColor(8),
+            contentColor = AppTheme.palette.gray.getColor(9),)
     }
 }
 

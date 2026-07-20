@@ -34,8 +34,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.pauze.R
 import com.example.pauze.ui.component.Button
 import com.example.pauze.ui.component.Dialog
@@ -66,7 +68,7 @@ class LoginActivity : ComponentActivity() {
 
 @Composable
 fun LoginScreen(){
-    val viewModel = LoginViewModel()        // todo: Hilt로 변경
+    val viewModel: LoginViewModel = viewModel()  // todo: Hilt로 변경
 
     val focusManager = LocalFocusManager.current
     var email by remember { mutableStateOf("") }
@@ -114,23 +116,25 @@ fun LoginScreen(){
             mode = TextFieldMode.Email,
             value = email,
             onValueChanged = { email = it },
+            imeAction = ImeAction.Next
         )
         Spacer(modifier = Modifier.height(12.dp))
         ModeBasedTextField(
             mode = TextFieldMode.Pwd,
             value = password,
             onValueChanged = { password = it },
+            imeAction = ImeAction.Done
         )
         Spacer(modifier = Modifier.height(32.dp))
         Button(
             "로그인",
             onClick = {
-                if(email.isNotEmpty() && password.isNotEmpty()){
+                if(email != "" && password != ""){
                     viewModel.login(email, password)
                 }
             },
             modifier = Modifier.fillMaxWidth(),
-            color = if(email.isNotEmpty() && password.isNotEmpty()) AppTheme.palette.gray.getColor(2) else AppTheme.palette.gray.getColor(8),
+            color = if(email != "" && password != "") AppTheme.palette.gray.getColor(2) else AppTheme.palette.gray.getColor(8),
             contentColor = AppTheme.palette.gray.getColor(9),
         )
         Spacer(modifier = Modifier.height(12.dp))
