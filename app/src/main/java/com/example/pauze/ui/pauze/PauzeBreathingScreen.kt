@@ -32,6 +32,7 @@ import com.example.pauze.ui.theme.*
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.unit.lerp
 import com.example.pauze.data.model.BreathPhase
@@ -40,6 +41,19 @@ import com.example.pauze.data.model.BreathPhase
 fun PauzeBreathingScreen(
     viewModel: PauzeBreathingViewModel = viewModel()
 ) {
+
+    LaunchedEffect(viewModel.effect) {
+        viewModel.effect.collect { effect ->
+            when (effect) {
+                is BreathingEffect.NavigateToMain -> {
+                    // todo: 메인 화면(PZ002, 478호흡 처음 화면)으로 이동
+                }
+                is BreathingEffect.NavigateToBack -> {
+                    // todo: PauzeStartScreen으로 이동
+                }
+            }
+        }
+    }
 
     val pattern = viewModel.patterns[viewModel.selectedTabIndex]
 
@@ -55,7 +69,7 @@ fun PauzeBreathingScreen(
             .fillMaxSize()
             .background(AppTheme.palette.gray.getColor(9))
     ) {
-        TopBar("즉각 안정")
+        TopBar("즉각 안정", onBackClick = viewModel::onBackClick)
         BreathTabBar(
             selectedIndex = viewModel.selectedTabIndex,
             onTabSelected = { viewModel.selectTab(it) }
