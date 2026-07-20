@@ -1,15 +1,7 @@
 package com.example.pauze.data.dummies
 
 import com.example.pauze.R
-
-data class SoundItem(
-    val id: String,
-    val title: String,
-    val category: String,
-    val isLiked: Boolean,
-    val isBookmarked: Boolean,
-    val imageResId: Int
-)
+import com.example.pauze.data.model.SoundItem
 
 object Sounds {
     val items = listOf(

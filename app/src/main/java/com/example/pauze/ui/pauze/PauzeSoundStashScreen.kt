@@ -1,6 +1,6 @@
 package com.example.pauze.ui.pauze
 
-import com.example.pauze.data.dummies.SoundItem
+import com.example.pauze.data.model.SoundItem
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background

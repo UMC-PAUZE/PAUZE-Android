@@ -25,8 +25,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.pauze.R
-import com.example.pauze.data.dummies.SoundItem
 import com.example.pauze.data.dummies.Sounds
+import com.example.pauze.data.model.SoundItem
 import com.example.pauze.ui.component.TopBar
 import com.example.pauze.ui.theme.*
 import com.example.pauze.ui.pauze.PauzeSoundDetailScreen
