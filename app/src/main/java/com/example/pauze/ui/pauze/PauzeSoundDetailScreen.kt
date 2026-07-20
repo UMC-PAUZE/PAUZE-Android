@@ -71,7 +71,7 @@ fun PauzeSoundDetailScreen(
                     .padding(horizontal = 20.dp, vertical = 24.dp)
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(32.dp))
-                    .background(Color(0xFF1B1C18)) // 레퍼런스 이미지의 다크 테마 카드 배경색 적용 (불투명)
+                    .background(AppTheme.palette.base.getColor(0)) // 레퍼런스 이미지의 다크 테마 카드 배경색 적용 (불투명)
                     .padding(horizontal = 24.dp, vertical = 28.dp)
             ) {
                 Column(

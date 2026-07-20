@@ -27,7 +27,6 @@ import androidx.compose.ui.unit.dp
 import com.example.pauze.R
 import com.example.pauze.ui.component.TopBar
 import com.example.pauze.ui.theme.*
-// [해결포인트] 다른 패키지(com.example.pauze.ui.sound)에 정의된 상세화면 컴포저블을 올바르게 import합니다.
 import com.example.pauze.ui.pauze.PauzeSoundDetailScreen
 
 // 소리 아이템 데이터 구조 (이미지 리소스 ID 필수 적용)
@@ -229,97 +228,134 @@ fun PauzeSoundScreen(
 
                 Spacer(modifier = Modifier.height(32.dp))
 
-                // =================--- 4. 소리 리스트 출력 영역 ---=================
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f),
-                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    items(filteredSounds, key = { it.id }) { sound ->
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clip(RoundedCornerShape(24.dp))
-                                .background(AppTheme.palette.gray.getColor(8))
-                                .clickable {
-                                    previousScreen = "list"
-                                    selectedSound = sound
-                                    currentScreen = "detail"
-                                }
-                                .padding(16.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .size(60.dp)
-                                    .clip(RoundedCornerShape(12.dp)),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Image(
-                                    painter = painterResource(id = sound.imageResId),
-                                    contentDescription = sound.title,
-                                    modifier = Modifier.fillMaxSize(),
-                                    contentScale = ContentScale.Crop
-                                )
-                            }
-
-                            Spacer(modifier = Modifier.width(16.dp))
-
-                            Column(
-                                modifier = Modifier.weight(1f)
-                            ) {
-                                Text(
-                                    text = sound.title,
-                                    style = bodyTextLgBold,
-                                    color = AppTheme.palette.gray.getColor(0)
-                                )
-                                Spacer(modifier = Modifier.height(4.dp))
-                                Text(
-                                    text = sound.category,
-                                    style = bodyTextSmRegular,
-                                    color = AppTheme.palette.gray.getColor(5)
-                                )
-                            }
-
-                            // 하트 (좋아요) 토글 버튼
-                            IconButton(
-                                onClick = {
-                                    soundList = soundList.map {
-                                        if (it.id == sound.id) it.copy(isLiked = !it.isLiked) else it
-                                    }
-                                }
-                            ) {
-                                Icon(
-                                    painter = painterResource(
-                                        id = if (sound.isLiked) R.drawable.ic_heart_on else R.drawable.ic_heart_off
-                                    ),
-                                    contentDescription = "좋아요",
-                                    tint = Color.Unspecified,
-                                    modifier = Modifier.size(24.dp)
-                                )
-                            }
-
-                            // 북마크 토글 버튼
-                            IconButton(
-                                onClick = {
-                                    soundList = soundList.map {
-                                        if (it.id == sound.id) it.copy(isBookmarked = !it.isBookmarked) else it
-                                    }
-                                }
-                            ) {
-                                Icon(
-                                    painter = painterResource(id = R.drawable.ic_download),
-                                    contentDescription = "북마크",
-                                    tint = Color.Unspecified,
-                                    modifier = Modifier.size(24.dp)
-                                )
-                            }
+                // =================--- 4. 소리 리스트 출력 영역 (분리된 컴포저블 적용) ---=================
+                SoundList(
+                    sounds = filteredSounds,
+                    onItemClick = { sound ->
+                        previousScreen = "list"
+                        selectedSound = sound
+                        currentScreen = "detail"
+                    },
+                    onToggleLike = { id ->
+                        soundList = soundList.map {
+                            if (it.id == id) it.copy(isLiked = !it.isLiked) else it
                         }
-                    }
-                }
+                    },
+                    onToggleBookmark = { id ->
+                        soundList = soundList.map {
+                            if (it.id == id) it.copy(isBookmarked = !it.isBookmarked) else it
+                        }
+                    },
+                    modifier = Modifier.weight(1f)
+                )
             }
+        }
+    }
+}
+
+// =================--- 분리된 하위 컴포저블 목록 ---=================
+
+/**
+ * 소리 아이템들을 리스트 형태로 띄워주는 LazyColumn 스크롤 컴포저블
+ */
+@Composable
+fun SoundList(
+    sounds: List<SoundItem>,
+    onItemClick: (SoundItem) -> Unit,
+    onToggleLike: (String) -> Unit,
+    onToggleBookmark: (String) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    LazyColumn(
+        modifier = modifier.fillMaxWidth(),
+        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        items(sounds, key = { it.id }) { sound ->
+            SoundListItem(
+                sound = sound,
+                onItemClick = onItemClick,
+                onToggleLike = onToggleLike,
+                onToggleBookmark = onToggleBookmark
+            )
+        }
+    }
+}
+
+/**
+ * 개별 소리 항목을 구성하는 리스트 카드 아이템 컴포저블
+ */
+@Composable
+fun SoundListItem(
+    sound: SoundItem,
+    onItemClick: (SoundItem) -> Unit,
+    onToggleLike: (String) -> Unit,
+    onToggleBookmark: (String) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(24.dp))
+            .background(AppTheme.palette.gray.getColor(8))
+            .clickable { onItemClick(sound) }
+            .padding(16.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        // 음원 이미지 영역
+        Box(
+            modifier = Modifier
+                .size(60.dp)
+                .clip(RoundedCornerShape(12.dp)),
+            contentAlignment = Alignment.Center
+        ) {
+            Image(
+                painter = painterResource(id = sound.imageResId),
+                contentDescription = sound.title,
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.Crop
+            )
+        }
+
+        Spacer(modifier = Modifier.width(16.dp))
+
+        // 음원 정보 영역 (제목, 카테고리)
+        Column(
+            modifier = Modifier.weight(1f)
+        ) {
+            Text(
+                text = sound.title,
+                style = bodyTextLgBold,
+                color = AppTheme.palette.gray.getColor(0)
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = sound.category,
+                style = bodyTextSmRegular,
+                color = AppTheme.palette.gray.getColor(5)
+            )
+        }
+
+        // 하트 (좋아요) 토글 버튼
+        IconButton(onClick = { onToggleLike(sound.id) }) {
+            Icon(
+                painter = painterResource(
+                    id = if (sound.isLiked) R.drawable.ic_heart_on else R.drawable.ic_heart_off
+                ),
+                contentDescription = "좋아요",
+                tint = Color.Unspecified,
+                modifier = Modifier.size(24.dp)
+            )
+        }
+
+        // 북마크 토글 버튼 (다운로드 형태 아이콘 유지)
+        IconButton(onClick = { onToggleBookmark(sound.id) }) {
+            Icon(
+                painter = painterResource(id = R.drawable.ic_download),
+                contentDescription = "북마크",
+                tint = Color.Unspecified,
+                modifier = Modifier.size(24.dp)
+            )
         }
     }
 }
