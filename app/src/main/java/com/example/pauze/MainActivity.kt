@@ -10,6 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.pauze.ui.login.LoginScreen
 import com.example.pauze.ui.login.PrivacyPolicyScreen
+import com.example.pauze.ui.login.SignUpCompletedScreen
 import com.example.pauze.ui.login.SignUpScreen
 import com.example.pauze.ui.theme.AppTheme
 import com.example.pauze.ui.theme.MainPaletteTheme
@@ -22,7 +23,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             MainPaletteTheme {
-                PrivacyPolicyScreen()
+                SignUpCompletedScreen(name = "홍길동")
             }
         }
     }
