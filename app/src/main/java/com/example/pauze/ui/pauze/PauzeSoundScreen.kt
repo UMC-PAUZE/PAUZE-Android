@@ -25,19 +25,11 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.pauze.R
+import com.example.pauze.data.dummies.SoundItem
+import com.example.pauze.data.dummies.Sounds
 import com.example.pauze.ui.component.TopBar
 import com.example.pauze.ui.theme.*
 import com.example.pauze.ui.pauze.PauzeSoundDetailScreen
-
-// 소리 아이템 데이터 구조 (이미지 리소스 ID 필수 적용)
-data class SoundItem(
-    val id: String,
-    val title: String,
-    val category: String,
-    val isLiked: Boolean,
-    val isBookmarked: Boolean,
-    val imageResId: Int
-)
 
 @Composable
 fun PauzeSoundScreen(
@@ -61,19 +53,7 @@ fun PauzeSoundScreen(
     var selectedCategory by remember { mutableStateOf("전체") }
 
     // 5. 음원 데이터 리스트 상태 관리 (공통 원천 데이터)
-    var soundList by remember {
-        mutableStateOf(
-            listOf(
-                SoundItem(id = "1", title = "빗소리", category = "자연소리", isLiked = false, isBookmarked = false, imageResId = R.drawable.ic_rain),
-                SoundItem(id = "2", title = "파도소리", category = "자연소리", isLiked = false, isBookmarked = false, imageResId = R.drawable.ic_empty_image),
-                SoundItem(id = "3", title = "시냇물소리", category = "자연소리", isLiked = false, isBookmarked = false, imageResId = R.drawable.ic_empty_image),
-                SoundItem(id = "4", title = "천둥소리", category = "자연소리", isLiked = false, isBookmarked = false, imageResId = R.drawable.ic_empty_image),
-                SoundItem(id = "5", title = "바람소리", category = "자연소리", isLiked = false, isBookmarked = false, imageResId = R.drawable.ic_empty_image),
-                SoundItem(id = "6", title = "ASMR 속삭임", category = "ASMR", isLiked = false, isBookmarked = false, imageResId = R.drawable.ic_empty_image),
-                SoundItem(id = "7", title = "백색소음", category = "노이즈", isLiked = false, isBookmarked = false, imageResId = R.drawable.ic_empty_image)
-            )
-        )
-    }
+    var soundList by remember { mutableStateOf(Sounds.items) }
 
     // =================--- 화면 전환 조건 분기 ---=================
     when (currentScreen) {
@@ -357,13 +337,5 @@ fun SoundListItem(
                 modifier = Modifier.size(24.dp)
             )
         }
-    }
-}
-
-@Preview(showBackground = true, backgroundColor = 0xFF1B1C18)
-@Composable
-fun PauzeSoundScreenPreview() {
-    MainPaletteTheme {
-        PauzeSoundScreen()
     }
 }
