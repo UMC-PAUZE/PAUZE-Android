@@ -353,11 +353,3 @@ fun PauzeSoundScreen(
         }
     }
 }
-
-@Preview(showBackground = true, backgroundColor = 0xFF1B1C18)
-@Composable
-fun PauzeSoundScreenPreview() {
-    MainPaletteTheme {
-        PauzeSoundScreen()
-    }
-}
