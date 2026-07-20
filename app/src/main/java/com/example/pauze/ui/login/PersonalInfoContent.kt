@@ -4,19 +4,20 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -36,17 +37,31 @@ import com.example.pauze.ui.theme.AppTheme
 import com.example.pauze.ui.theme.bodyTextLgMedium
 import com.example.pauze.ui.theme.bodyTextMdRegular
 import com.example.pauze.ui.theme.bodyTextSmRegular
-import com.example.pauze.ui.theme.bodyTextXlRegular
 import dev.darkokoa.datetimewheelpicker.WheelDatePicker
+import com.example.pauze.ui.theme.bodyTextXlRegular
 import dev.darkokoa.datetimewheelpicker.core.WheelPickerDefaults
-import java.sql.DriverManager.println
+import dev.darkokoa.datetimewheelpicker.core.format.CjkSuffixConfig
+import dev.darkokoa.datetimewheelpicker.core.format.DateOrder
+import dev.darkokoa.datetimewheelpicker.core.format.MonthDisplayStyle
+import dev.darkokoa.datetimewheelpicker.core.format.dateFormatter
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.format
+import kotlinx.datetime.format.char
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PersonalInfoContent(){
+fun PersonalInfoContent(): Boolean {
     var name by remember { mutableStateOf("") }
+    var birthday by remember { mutableStateOf<LocalDate?>(null) }
+    var tempDay by remember { mutableStateOf<LocalDate?>(null)}
     var showBottomSheet by remember { mutableStateOf(false) }
-    val datePickerState = rememberDatePickerState()
+
+    val customDateFormat = LocalDate.Format{
+        year()
+        char('-')
+        monthNumber()
+        char('-')
+        day()
+    }
 
     Column{
         ModeBasedTextField(
@@ -56,62 +71,32 @@ fun PersonalInfoContent(){
             imeAction = ImeAction.Done
         )
         Spacer(modifier = Modifier.height(4.dp))
-        Text("2자 이상 입력해주세요", style = bodyTextSmRegular, color = AppTheme.palette.gray.getColor(5))
+        Text(
+            "2자 이상 입력해주세요",
+            style = bodyTextSmRegular,
+            color = if(name.length == 1) AppTheme.palette.secondary.getColor(4)
+                else AppTheme.palette.gray.getColor(5)
+        )
         Spacer(modifier = Modifier.height(12.dp))
-        BirthdayPicker(onClick = { showBottomSheet = true })
+        NameAndBirthday(
+            birthday = birthday?.format(customDateFormat) ?: "생년월일을 입력해주세요",
+            onClick = { showBottomSheet = true }
+        )
 
         if(showBottomSheet){
-            val borderShape = RoundedCornerShape(topStart = 56.dp, topEnd = 56.dp)
-            ModalBottomSheet(
+            BirthdayBottomSheet(
                 onDismissRequest = { showBottomSheet = false },
-                containerColor = AppTheme.palette.gray.getColor(9),
-                dragHandle = null,
-                shape = borderShape,
-                scrimColor = BottomSheetDefaults.ScrimColor
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(
-                            color = AppTheme.palette.gray.getColor(9),
-                            shape = borderShape
-                        ).padding(horizontal = 24.dp)
-                ){
-                    Spacer(modifier = Modifier.height(12.dp))
-                    Spacer(modifier = Modifier
-                        .width(56.dp)
-                        .height(6.dp)
-                        .background(color = AppTheme.palette.gray.getColor(4))
-                        .align(Alignment.CenterHorizontally)
-                    )
-                    Spacer(modifier = Modifier.height(12.dp))
-                    WheelDatePicker(
-                        size = DpSize(width = 312.dp, height = 52.dp),
-                        rowCount = 5,
-                        textStyle = bodyTextXlRegular,
-                        textColor = AppTheme.palette.gray.getColor(7),
-                        selectorProperties = WheelPickerDefaults.selectorProperties(
-                            enabled = true,
-                            shape = RoundedCornerShape(1000.dp),
-                            color = AppTheme.palette.gray.getColor(7)
-                        )
-                    ){ snappedDate ->
-                        println("선택된 날짜, $snappedDate")
-                    }
-                    Button(
-                        "선택하기",
-                        modifier = Modifier.fillMaxWidth(),
-                        enabled = true
-                    )
-                    Spacer(modifier = Modifier.height(48.dp))
-                }
-            }
+                onDateChanged = { tempDay = it },
+                onClick = { birthday = tempDay; showBottomSheet = false }
+            )
         }
     }
+    return name.length > 1 && birthday != null
 }
 
 @Composable
-fun BirthdayPicker(
+fun NameAndBirthday(
+    birthday: String,
     onClick: () -> Unit,
 ){
     Column(
@@ -132,10 +117,11 @@ fun BirthdayPicker(
         Spacer(modifier = Modifier.height(4.dp))
         Row{
             Text(
-                "생년월일을 입력해주세요",
+                birthday,
                 modifier = Modifier.weight(1f),
                 style = bodyTextLgMedium,
-                color = AppTheme.palette.gray.getColor(5)
+                color = if (birthday == "생년월일을 입력해주세요") AppTheme.palette.gray.getColor(5)
+                    else AppTheme.palette.gray.getColor(2)
             )
             Image(
                 modifier = Modifier.clickable(onClick = onClick),
@@ -145,3 +131,111 @@ fun BirthdayPicker(
         }
     }
 }
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun BirthdayBottomSheet(
+    onDismissRequest: () -> Unit,
+    onDateChanged: (LocalDate) -> Unit,
+    onClick: () -> Unit
+){
+    val borderShape = RoundedCornerShape(topStart = 56.dp, topEnd = 56.dp)
+    ModalBottomSheet(
+        onDismissRequest = onDismissRequest,
+        containerColor = AppTheme.palette.gray.getColor(9),
+        dragHandle = null,
+        shape = borderShape,
+        scrimColor = BottomSheetDefaults.ScrimColor
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(
+                    color = AppTheme.palette.gray.getColor(9),
+                    shape = borderShape
+                ).padding(horizontal = 24.dp)
+        ){
+            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier
+                .width(56.dp)
+                .height(6.dp)
+                .background(color = AppTheme.palette.gray.getColor(4))
+                .align(Alignment.CenterHorizontally)
+            )
+            Spacer(modifier = Modifier.height(12.dp))
+            BirthdayPicker(
+                onDateChanged = onDateChanged
+            )
+            Button(
+                "선택하기",
+                onClick = onClick,
+                modifier = Modifier.fillMaxWidth(),
+                enabled = true
+            )
+        }
+    }
+}
+@Composable
+fun BirthdayPicker(
+    onDateChanged: (LocalDate) -> Unit
+){
+    val width = 360.dp
+    val height = 294.dp
+    val pickerHeight = 294.dp / 5
+    val ymdHeight = 34.dp
+
+    Row(
+        modifier = Modifier.size(width = width, height = ymdHeight),
+        verticalAlignment = Alignment.CenterVertically
+    ){
+        Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center){
+            YMDText("년")
+        }
+        Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center){
+            YMDText("월")
+        }
+        Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center){
+            YMDText("일")
+        }
+    }
+    Spacer(modifier = Modifier.height(12.dp))
+    Box(modifier = Modifier.size(width = width, height = height),
+        contentAlignment = Alignment.Center
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(pickerHeight)
+                .background(
+                    color = AppTheme.palette.gray.getColor(7),
+                    shape = RoundedCornerShape(1000.dp)
+                )
+        )
+        WheelDatePicker(
+            size = DpSize(width = width, height = height),
+            rowCount = 5,
+            textStyle = bodyTextXlRegular,
+            textColor = AppTheme.palette.gray.getColor(2),
+            selectorProperties = WheelPickerDefaults.selectorProperties(
+                enabled = false
+            ),
+            dateFormatter = dateFormatter(
+                dateOrder = DateOrder.YMD,
+                monthDisplayStyle = MonthDisplayStyle.NUMERIC,
+                cjkSuffixConfig = CjkSuffixConfig.HideAll,
+            )
+        ) { snappedDate ->
+            onDateChanged(snappedDate)
+        }
+    }
+}
+
+@Composable
+fun YMDText(ymd: String){
+    Text(
+        ymd,
+        style = bodyTextMdRegular,
+        color = AppTheme.palette.gray.getColor(4)
+    )
+}
+

@@ -78,10 +78,15 @@ fun SignUpScreen(){
             color = AppTheme.palette.gray.getColor(2)
         )
         Spacer(modifier = Modifier.height(48.dp))
-        PersonalInfoContent()
+        isCompleted = PersonalInfoContent()
         Spacer(modifier = Modifier.weight(1f))
         Button(
             "다음",
+            onClick = {
+                if(isCompleted){
+                    phase = phase++
+                }
+            },
             modifier = Modifier.fillMaxWidth().padding(bottom = 48.dp),
             color = if(isCompleted) AppTheme.palette.gray.getColor(2)
                 else AppTheme.palette.gray.getColor(8),

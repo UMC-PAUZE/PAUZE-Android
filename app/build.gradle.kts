@@ -59,7 +59,7 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
-    implementation("io.github.darkokoa:datetime-wheel-picker:1.3.0")
+    implementation("io.github.darkokoa:datetime-wheel-picker:1.3.1")
     implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.8.0")
 }
 

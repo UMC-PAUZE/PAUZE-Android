@@ -60,8 +60,11 @@ fun ModeBasedTextField(
         modifier = Modifier
             .fillMaxWidth().border(
                 width = 1.dp,
-                color = if (isFocused) AppTheme.palette.gray.getColor(3)
-                else AppTheme.palette.gray.getColor(6),
+                color = when {
+                    mode == TextFieldMode.UserName && value.length == 1 -> AppTheme.palette.secondary.getColor(4)
+                    isFocused -> AppTheme.palette.gray.getColor(3)
+                    else -> AppTheme.palette.gray.getColor(6)
+                },
                 shape = RoundedCornerShape(size = 16.dp)
             ).onFocusChanged {
                 isFocused = it.isFocused
@@ -104,7 +107,7 @@ fun ModeBasedTextField(
                 onDone = { focusManager.clearFocus() }
             ),
             decorationBox = { innerTextField ->
-                if(value.isEmpty()){
+                if(value == ""){
                     Text(
                         when(mode){
                             TextFieldMode.SetEmail -> "example@gmail.com"
