@@ -28,7 +28,7 @@ import com.example.pauze.ui.theme.fontFamily
 import com.example.pauze.ui.theme.headingMdRegular
 
 @Composable
-fun TodayConditionCard() {
+fun TodayConditionCard(onInputClick: () -> Unit) {
     ReportCard {
         Text(
             text = "오늘의 컨디션은 어떤가요?",
@@ -85,7 +85,8 @@ fun TodayConditionCard() {
         Button(
             label = "오늘의 컨디션 입력하기",
             size = ButtonSize.Md,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            onClick = onInputClick
         )
     }
 }

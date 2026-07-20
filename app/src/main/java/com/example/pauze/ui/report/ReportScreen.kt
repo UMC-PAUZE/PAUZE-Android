@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -39,6 +40,18 @@ import com.example.pauze.ui.theme.headingSmBold
 
 @Composable
 fun ReportScreen(isGuest: Boolean = true, viewModel: ReportViewModel = viewModel()) {
+    LaunchedEffect(viewModel.effect) {
+        viewModel.effect.collect { effect ->
+            when (effect){
+                is ReportEffect.NavigateToConditionInput -> {
+                    // todo: 오늘의 컨디션 입력 화면으로 이동
+                }
+                is ReportEffect.NavigateToLogin -> {
+                    // todo: 로그인 화면으로 이동
+                }
+            }
+        }
+    }
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -83,15 +96,15 @@ fun ReportScreen(isGuest: Boolean = true, viewModel: ReportViewModel = viewModel
 
             if (isGuest) {
                 Spacer(modifier = Modifier.height(83.dp))
-                GuestContent()
+                GuestContent(viewModel::onGuestLoginClick)
             } else {
                 Column(
                     modifier = Modifier.padding(horizontal = 24.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    TodayConditionCard()
+                    TodayConditionCard(viewModel::onConditionInputClick)
                     AverageScoreCard(viewModel.averageScore)
-                    TriggerCard()
+                    TriggerCard(viewModel.triggers)
                     InsightCard(viewModel.insight)
                     Spacer(modifier = Modifier.height(136.dp)) // 네비게이션 바 자리
                 }
@@ -101,7 +114,7 @@ fun ReportScreen(isGuest: Boolean = true, viewModel: ReportViewModel = viewModel
 }
 
 @Composable
-private fun GuestContent() {
+private fun GuestContent(onLoginClick: () -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -139,7 +152,8 @@ private fun GuestContent() {
 
         Button(
             label = "로그인하고 시작하기",
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            onClick = onLoginClick
         )
     }
 }

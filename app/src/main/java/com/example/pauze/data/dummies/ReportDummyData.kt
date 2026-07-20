@@ -4,6 +4,8 @@ import com.example.pauze.data.model.AverageScoreUiState
 import com.example.pauze.data.model.ChartBar
 import com.example.pauze.data.model.InsightSegment
 import com.example.pauze.data.model.InsightUiState
+import com.example.pauze.data.model.TriggerColorToken
+import com.example.pauze.data.model.TriggerUiState
 
 object ReportDummyData { //ui 확인하기 위한 데이터
     val dailyAverageScore = AverageScoreUiState(
@@ -29,6 +31,14 @@ object ReportDummyData { //ui 확인하기 위한 데이터
         ),
         bestDay = "금요일",
         attendanceCount = 7
+    )
+
+    val triggers = listOf(
+        TriggerUiState("소음 노출", 0.40f, TriggerColorToken.NOISE),
+        TriggerUiState("수면 부족", 0.20f, TriggerColorToken.SLEEP),
+        TriggerUiState("사회 피로", 0.20f, TriggerColorToken.SOCIAL),
+        TriggerUiState("업무 스트레스", 0.15f, TriggerColorToken.WORK),
+        TriggerUiState("혼잡한 공간", 0.05f, TriggerColorToken.CROWDED)
     )
 
     val dailyInsight = InsightUiState(

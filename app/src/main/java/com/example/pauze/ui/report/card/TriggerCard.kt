@@ -21,22 +21,17 @@ import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.dp
+import com.example.pauze.data.model.TriggerColorToken
+import com.example.pauze.data.model.TriggerUiState
 import com.example.pauze.ui.theme.AppTheme
 import com.example.pauze.ui.theme.bodyTextMdRegular
 import com.example.pauze.ui.theme.bodyTextXlMedium
 import kotlin.math.asin
 
 @Composable
-fun TriggerCard(){
-    data class TriggerData(val label: String, val percent: Float, val color: Color)
+fun TriggerCard(triggers: List<TriggerUiState>){
 
-    val triggers = listOf(
-        TriggerData("소음 노출", 0.40f, AppTheme.palette.tertiary.getColor(3)),
-        TriggerData("수면 부족", 0.20f, AppTheme.palette.purple.getColor(2)),
-        TriggerData("사회 피로", 0.20f, AppTheme.palette.primary.getColor(4)),
-        TriggerData("업무 스트레스", 0.15f, AppTheme.palette.secondary.getColor(3)),
-        TriggerData("혼잡한 공간", 0.05f, AppTheme.palette.blue.getColor(2)),
-    )
+    val coloredTriggers = triggers.map {it to it.colorToken.toColor()}
 
     ReportCard(horizontalAlignment = Alignment.CenterHorizontally) {
         Text(
@@ -67,14 +62,14 @@ fun TriggerCard(){
             val innerInset = Math.toDegrees(asin((halfGap / innerRadius).toDouble())).toFloat()
 
             var startAngle = -90f
-            triggers.forEach { trigger ->
+            coloredTriggers.forEach { (trigger, color) ->
                 val sweep = trigger.percent * 360f
                 val path = Path().apply {
                     arcTo(outerRect, startAngle - outerInset, -(sweep - 2 * outerInset))
                     arcTo(innerRect, startAngle - sweep + innerInset, sweep - 2 * innerInset)
                     close()
                 }
-                paint.color = trigger.color.toArgb()
+                paint.color = color.toArgb()
                 drawIntoCanvas { it.nativeCanvas.drawPath(path, paint) }
 
                 startAngle -= sweep
@@ -90,13 +85,13 @@ fun TriggerCard(){
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                triggers.take(3).forEach { trigger ->
-                    LegendItem(trigger.label, trigger.color)
+                coloredTriggers.take(3).forEach { (trigger, color) ->
+                    LegendItem(trigger.label, color)
                 }
             }
             Row(horizontalArrangement = Arrangement.spacedBy(24.dp)) {
-                triggers.drop(3).forEach { trigger ->
-                    LegendItem(trigger.label, trigger.color)
+                coloredTriggers.drop(3).forEach { (trigger, color) ->
+                    LegendItem(trigger.label, color)
                 }
             }
         }
@@ -116,4 +111,13 @@ private fun LegendItem(label: String, color: Color) {
         )
         Text(text = label, style = bodyTextMdRegular, color = AppTheme.palette.gray.getColor(2))
     }
+}
+
+@Composable
+private fun TriggerColorToken.toColor(): Color = when (this) {
+    TriggerColorToken.NOISE -> AppTheme.palette.tertiary.getColor(3)
+    TriggerColorToken.SLEEP -> AppTheme.palette.purple.getColor(2)
+    TriggerColorToken.SOCIAL -> AppTheme.palette.primary.getColor(4)
+    TriggerColorToken.WORK -> AppTheme.palette.secondary.getColor(3)
+    TriggerColorToken.CROWDED -> AppTheme.palette.blue.getColor(2)
 }

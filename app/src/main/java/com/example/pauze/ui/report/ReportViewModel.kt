@@ -3,14 +3,18 @@ package com.example.pauze.ui.report
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.lifecycle.ViewModel
 import com.example.pauze.data.dummies.ReportDummyData
 import com.example.pauze.data.model.AverageScoreUiState
 import com.example.pauze.data.model.InsightUiState
 import com.example.pauze.data.model.ReportPeriod
+import com.example.pauze.data.model.TriggerUiState
+import com.example.pauze.ui.BaseViewModel
 
-
-class ReportViewModel : ViewModel() {
+sealed interface ReportEffect  {
+    object NavigateToConditionInput: ReportEffect
+    object NavigateToLogin: ReportEffect
+}
+class ReportViewModel : BaseViewModel<ReportEffect>() {
     var selectedPeriod by mutableStateOf(ReportPeriod.DAILY)
         private set
 
@@ -31,4 +35,15 @@ class ReportViewModel : ViewModel() {
         } else{
             ReportDummyData.weeklyInsight
         }
+
+    val triggers: List<TriggerUiState>
+        get() = ReportDummyData.triggers
+
+    fun onConditionInputClick(){
+        sendEffect(ReportEffect.NavigateToConditionInput)
+    }
+
+    fun onGuestLoginClick(){
+        sendEffect(ReportEffect.NavigateToLogin)
+    }
 }
