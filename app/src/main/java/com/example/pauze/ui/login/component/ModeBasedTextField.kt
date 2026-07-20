@@ -2,6 +2,7 @@ package com.example.pauze.ui.login.component
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -9,6 +10,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
@@ -47,7 +49,7 @@ fun ModeBasedTextField(
     onValueChanged: (String) -> Unit,
     onCheckClick: () -> Unit = {},
     imeAction: ImeAction
-) {
+): Boolean {
     val focusManager = LocalFocusManager.current
     var isFocused by remember { mutableStateOf(false) }
     var isVisible by remember { mutableStateOf(when(mode){
@@ -61,7 +63,9 @@ fun ModeBasedTextField(
             .fillMaxWidth().border(
                 width = 1.dp,
                 color = when {
-                    mode == TextFieldMode.UserName && value.length == 1 -> AppTheme.palette.secondary.getColor(4)
+                    (mode == TextFieldMode.UserName && value.length == 1)
+                            || (mode == TextFieldMode.SetPwd && !isFocused && value.length > 1 && value.length < 8 )
+                                 -> AppTheme.palette.secondary.getColor(4)
                     isFocused -> AppTheme.palette.gray.getColor(3)
                     else -> AppTheme.palette.gray.getColor(6)
                 },
@@ -127,13 +131,19 @@ fun ModeBasedTextField(
                             innerTextField()
                         }
                         when(mode){
-                            TextFieldMode.SetEmail -> Row {
+                            TextFieldMode.SetEmail -> Row(
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
                                 ActionButton(actions = Actions.Reset) { onValueChanged("") }
+                                Spacer(modifier = Modifier.width(8.dp))
                                 ActionButton(actions = Actions.Check) { onCheckClick }
                             }
                             TextFieldMode.Pwd -> ActionButton(actions = Actions.Pwd, isVisible = isVisible) { isVisible = !isVisible }
-                            TextFieldMode.SetPwd -> Row {
+                            TextFieldMode.SetPwd -> Row(
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
                                 ActionButton(actions = Actions.Reset) { onValueChanged("") }
+                                Spacer(modifier = Modifier.width(8.dp))
                                 ActionButton(actions = Actions.Pwd, isVisible = isVisible) { isVisible = !isVisible }
                             }
                             else -> ActionButton(actions = Actions.Reset) { onValueChanged("") }
@@ -145,24 +155,28 @@ fun ModeBasedTextField(
             textStyle = bodyTextLgMedium.copy(color = AppTheme.palette.gray.getColor(2))
         )
     }
+    return isFocused
 }
 
 @Composable
 fun ActionButton(actions: Actions, isVisible: Boolean = false, onClick: () -> Unit){
     when(actions){
-        Actions.Reset -> IconButton(onClick = onClick) {
-            Image(painter = painterResource(R.drawable.cancel_circle), contentDescription = "cancel")
-        }
-        Actions.Pwd -> IconButton(onClick = onClick) {
-            Image(
-                painter = if(isVisible) painterResource(R.drawable.pwd_eye_on)
+        Actions.Reset -> Image(
+            modifier = Modifier.clickable(onClick = onClick).padding(0.dp),
+            painter = painterResource(R.drawable.cancel_circle),
+            contentDescription = "cancel"
+        )
+        Actions.Pwd -> Image(
+            modifier = Modifier.clickable(onClick = onClick).padding(vertical = 8.dp, horizontal = 0.dp),
+            painter = if(isVisible) painterResource(R.drawable.pwd_eye_on)
                 else painterResource(R.drawable.pwd_eye_off),
-                contentDescription = "hide and show password"
-            )
-        }
-        Actions.Check -> TextButton(onClick = onClick) {
-            Text("중복확인", color = AppTheme.palette.gray.getColor(2),
-                style = bodyTextMdRegular,)
-        }
+            contentDescription = "hide and show password"
+        )
+        Actions.Check -> Text(
+            "중복확인",
+            modifier = Modifier.clickable(onClick = onClick),
+            color = AppTheme.palette.gray.getColor(2),
+            style = bodyTextMdRegular
+        )
     }
 }

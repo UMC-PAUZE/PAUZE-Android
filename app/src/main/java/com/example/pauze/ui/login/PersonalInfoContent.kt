@@ -78,7 +78,7 @@ fun PersonalInfoContent(): Boolean {
                 else AppTheme.palette.gray.getColor(5)
         )
         Spacer(modifier = Modifier.height(12.dp))
-        NameAndBirthday(
+        SetBirthday(
             birthday = birthday?.format(customDateFormat) ?: "생년월일을 입력해주세요",
             onClick = { showBottomSheet = true }
         )
@@ -95,7 +95,7 @@ fun PersonalInfoContent(): Boolean {
 }
 
 @Composable
-fun NameAndBirthday(
+fun SetBirthday(
     birthday: String,
     onClick: () -> Unit,
 ){

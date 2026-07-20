@@ -33,6 +33,7 @@ import com.example.pauze.ui.theme.AppTheme
 import com.example.pauze.ui.theme.MainPaletteTheme
 import com.example.pauze.ui.theme.PAUZEAndroidTheme
 import com.example.pauze.ui.theme.headingMdMedium
+import java.sql.DriverManager.println
 
 class SignUpActivity : ComponentActivity() {
 
@@ -49,7 +50,7 @@ class SignUpActivity : ComponentActivity() {
 
 @Composable
 fun SignUpScreen(){
-    var phase by remember { mutableIntStateOf(0) }
+    var phase by remember { mutableIntStateOf(1) }
     var isCompleted by remember { mutableStateOf(false) }
 
     Column(
@@ -64,11 +65,7 @@ fun SignUpScreen(){
             modifier = Modifier.fillMaxWidth()
         ) {
             PhaseBar(modifier = Modifier.weight(1f), isWaiting = false)
-            Spacer(modifier = Modifier.border(
-                shape = RoundedCornerShape(91.7.dp),
-                width = 1.dp,
-                color = AppTheme.palette.gray.getColor(9),
-            ).width(4.dp))
+            Spacer(modifier = Modifier.width(4.dp))
             PhaseBar(modifier = Modifier.weight(1f), isWaiting = phase == 0)
         }
         Spacer(modifier = Modifier.height(24.dp))
@@ -78,13 +75,13 @@ fun SignUpScreen(){
             color = AppTheme.palette.gray.getColor(2)
         )
         Spacer(modifier = Modifier.height(48.dp))
-        isCompleted = PersonalInfoContent()
+        isCompleted = if(phase == 0) PersonalInfoContent() else SetEmailAndPwdContent()
         Spacer(modifier = Modifier.weight(1f))
         Button(
-            "다음",
+            if(phase == 0) "다음" else "가입하기",
             onClick = {
                 if(isCompleted){
-                    phase = phase++
+                    phase = phase + 1
                 }
             },
             modifier = Modifier.fillMaxWidth().padding(bottom = 48.dp),
