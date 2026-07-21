@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -19,40 +20,44 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.pauze.R
 import com.example.pauze.ui.login.component.ModeBasedTextField
 import com.example.pauze.ui.login.component.TextFieldMode
 import com.example.pauze.ui.theme.AppTheme
 import com.example.pauze.ui.theme.bodyTextMdMedium
 import com.example.pauze.ui.theme.bodyTextSmRegular
+import java.sql.DriverManager.println
 
 @Composable
-fun SetEmailAndPwdContent(): Boolean{
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-    var isChecked by remember { mutableStateOf(false) }
+fun SetEmailAndPwdContent(
+    viewModel: SignUpViewModel
+): Boolean{
+
+    val isAgreed = viewModel.isAgreed
     var isFocused by remember { mutableStateOf(false) }
 
     Column {
         ModeBasedTextField(
             mode = TextFieldMode.SetEmail,
-            value = email,
-            onValueChanged = { email = it },
+            value = viewModel.email,
+            onValueChanged = { viewModel.email = it },
             imeAction = ImeAction.Next
         )
         Spacer(modifier = Modifier.height(12.dp))
         isFocused = ModeBasedTextField(
             mode = TextFieldMode.SetPwd,
-            value = password,
-            onValueChanged = { password = it },
+            value = viewModel.password,
+            onValueChanged = { viewModel.password = it },
             imeAction = ImeAction.Done
         )
         Spacer(modifier = Modifier.height(4.dp))
         Text(
-            if(!isFocused && password.length > 1 && password.length < 8) "비밀번호는 8자리 이상이어야 해요"
+            if(!isFocused && viewModel.password.length > 1 &&viewModel.password.length < 8) "비밀번호는 8자리 이상이어야 해요"
                 else "영문,숫자,특수문자 포함 8자 이상 입력해주세요",
             style = bodyTextSmRegular,
-            color = if(!isFocused && password.length > 1 && password.length < 8) AppTheme.palette.secondary.getColor(5)
+            color = if(!isFocused && viewModel.password.length > 1 && viewModel.password.length < 8) AppTheme.palette.secondary.getColor(5)
                 else AppTheme.palette.gray.getColor(5)
         )
         Spacer(modifier = Modifier.height(48.dp))
@@ -61,9 +66,9 @@ fun SetEmailAndPwdContent(): Boolean{
         ) {
             Image(
                 modifier = Modifier.clickable{
-                    isChecked = !isChecked
+                    viewModel.updateIsAgreed(!isAgreed)
                 },
-                painter = painterResource(if(isChecked) R.drawable.ic_checkbox_checked
+                painter = painterResource(if(isAgreed) R.drawable.ic_checkbox_checked
                     else R.drawable.ic_checkbox_unchecked
                 ),
                 contentDescription = "checkbox for privacy policy"
@@ -86,7 +91,7 @@ fun SetEmailAndPwdContent(): Boolean{
             Spacer(modifier = Modifier.width(12.dp))
             Image(
                 modifier = Modifier.clickable{
-                    // 네비게이션 로직 작성
+                    viewModel.checkPolicy()
                 },
                 painter = painterResource(R.drawable.ic_arrow_forward),
                 contentDescription = "Navigate to privacy policy screen",
@@ -95,5 +100,5 @@ fun SetEmailAndPwdContent(): Boolean{
         }
     }
 
-    return email != "" && password.length > 7 && isChecked
+    return viewModel.email != "" && viewModel.password.length > 7 && isAgreed
 }

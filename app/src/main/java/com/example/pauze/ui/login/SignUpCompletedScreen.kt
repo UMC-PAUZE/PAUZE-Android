@@ -1,9 +1,7 @@
 package com.example.pauze.ui.login
 
-import android.os.Bundle
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
+import android.content.Context
+import android.content.Intent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -16,33 +14,36 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat.startActivity
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import com.example.pauze.R
 import com.example.pauze.ui.component.Button
 import com.example.pauze.ui.theme.AppTheme
-import com.example.pauze.ui.theme.MainPaletteTheme
 import com.example.pauze.ui.theme.bodyTextMdRegular
 import com.example.pauze.ui.theme.headingMdBold
 
-class SignUpCompletedActivity : ComponentActivity() {
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
-        setContent {
-            MainPaletteTheme {
-                SignUpCompletedScreen(name = "홍길동")
+@Composable
+fun SignUpCompletedScreen(
+    context: Context,
+    viewModel: SignUpCompletedViewModel = viewModel()
+){
+    LaunchedEffect(viewModel.effect) {
+        viewModel.effect.collect { effect ->
+            when(effect){
+                SignUpCompletedEffect.NavigateToHome -> {
+                    val intent = Intent(context, Class.forName("com.example.pauze.ui.home.HomeActivity"))
+                    startActivity(context, intent, null)
+                }
             }
         }
     }
-}
-
-@Composable
-fun SignUpCompletedScreen(name : String){
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -65,7 +66,7 @@ fun SignUpCompletedScreen(name : String){
         )
         Spacer(modifier = Modifier.height(16.dp))
         Text(
-            "${name}님이 일상에서 안정을 찾아가는\n여정을 시작해볼게요",
+            "${viewModel.name}님이 일상에서 안정을 찾아가는\n여정을 시작해볼게요",
             style = bodyTextMdRegular,
             color = AppTheme.palette.gray.getColor(2),
             textAlign = TextAlign.Center
@@ -76,6 +77,7 @@ fun SignUpCompletedScreen(name : String){
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = 16.dp, start = 24.dp, end = 24.dp, bottom = 48.dp),
+            onClick = { viewModel.navigateToHome() },
             enabled = true
         )
     }

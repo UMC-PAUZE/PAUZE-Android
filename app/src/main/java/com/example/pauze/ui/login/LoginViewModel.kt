@@ -33,6 +33,9 @@ class LoginViewModel: BaseViewModel<LoginEffect>() {
     }
 
     fun toGuestMode(){
+        sendEffect(LoginEffect.NavigateToHome)
+    }
+    fun toSignUp(){
         sendEffect(LoginEffect.NavigateToSignUp)
     }
 }

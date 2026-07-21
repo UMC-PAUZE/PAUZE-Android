@@ -49,9 +49,9 @@ import kotlinx.datetime.format
 import kotlinx.datetime.format.char
 
 @Composable
-fun PersonalInfoContent(): Boolean {
-    var name by remember { mutableStateOf("") }
-    var birthday by remember { mutableStateOf<LocalDate?>(null) }
+fun PersonalInfoContent(
+    viewModel: SignUpViewModel
+): Boolean {
     var tempDay by remember { mutableStateOf<LocalDate?>(null)}
     var showBottomSheet by remember { mutableStateOf(false) }
 
@@ -66,20 +66,20 @@ fun PersonalInfoContent(): Boolean {
     Column{
         ModeBasedTextField(
             mode = TextFieldMode.UserName,
-            value = name,
-            onValueChanged = { name = it },
+            value = viewModel.name,
+            onValueChanged = { viewModel.name = it },
             imeAction = ImeAction.Done
         )
         Spacer(modifier = Modifier.height(4.dp))
         Text(
             "2자 이상 입력해주세요",
             style = bodyTextSmRegular,
-            color = if(name.length == 1) AppTheme.palette.secondary.getColor(4)
+            color = if(viewModel.name.length == 1) AppTheme.palette.secondary.getColor(4)
                 else AppTheme.palette.gray.getColor(5)
         )
         Spacer(modifier = Modifier.height(12.dp))
         SetBirthday(
-            birthday = birthday?.format(customDateFormat) ?: "생년월일을 입력해주세요",
+            birthday = viewModel.birthday?.format(customDateFormat) ?: "생년월일을 입력해주세요",
             onClick = { showBottomSheet = true }
         )
 
@@ -87,11 +87,11 @@ fun PersonalInfoContent(): Boolean {
             BirthdayBottomSheet(
                 onDismissRequest = { showBottomSheet = false },
                 onDateChanged = { tempDay = it },
-                onClick = { birthday = tempDay; showBottomSheet = false }
+                onClick = { viewModel.birthday = tempDay; showBottomSheet = false }
             )
         }
     }
-    return name.length > 1 && birthday != null
+    return viewModel.name.length > 1 && viewModel.birthday != null
 }
 
 @Composable
