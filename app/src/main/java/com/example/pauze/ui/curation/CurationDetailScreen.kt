@@ -1,7 +1,10 @@
 package com.example.pauze.ui.curation
 
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -54,6 +57,7 @@ import com.example.pauze.ui.theme.bodyTextSmRegular
 
 private val sectionTitlePattern = Regex("""^\d+\..+""")
 private val paragraphSeparatorPattern = Regex("""\n\s*\n""")
+private const val PAUZE_PACKAGE_NAME = "com.example.pauze"
 
 @Composable
 fun CurationDetailScreen(
@@ -66,6 +70,9 @@ fun CurationDetailScreen(
     onShareClick: (Long) -> Unit = {},
 ) {
     val context = LocalContext.current
+    val resolvedShareUrl = remember(post.postId, shareUrl) {
+        shareUrl ?: createCurationShareUrl(post.postId)
+    }
 
     var isLiked by rememberSaveable(post.postId, post.isLiked) {
         mutableStateOf(post.isLiked)
@@ -175,6 +182,10 @@ fun CurationDetailScreen(
                 showShareBottomSheet = false
             },
             onCopyLinkClick = {
+                copyCurationLink(
+                    context = context,
+                    shareUrl = resolvedShareUrl,
+                )
                 onCopyLinkClick(post.postId)
             },
             onShareClick = {
@@ -182,7 +193,7 @@ fun CurationDetailScreen(
                 shareCurationPost(
                     context = context,
                     post = post,
-                    shareUrl = shareUrl,
+                    shareUrl = resolvedShareUrl,
                 )
                 onShareClick(post.postId)
             },
@@ -453,6 +464,36 @@ private fun CurationShareOption(
             color = textColor,
         )
     }
+}
+
+private fun createCurationShareUrl(postId: Long): String {
+    val playStoreUrl =
+        "https://play.google.com/store/apps/details" +
+            "?id=$PAUZE_PACKAGE_NAME"
+    val encodedFallbackUrl = Uri.encode(playStoreUrl)
+
+    return buildString {
+        append("intent://curation/$postId")
+        append("#Intent;")
+        append("scheme=pauze;")
+        append("package=$PAUZE_PACKAGE_NAME;")
+        append("S.browser_fallback_url=$encodedFallbackUrl;")
+        append("end")
+    }
+}
+
+private fun copyCurationLink(
+    context: Context,
+    shareUrl: String,
+) {
+    val clipboardManager =
+        context.getSystemService(ClipboardManager::class.java)
+    val clipData = ClipData.newPlainText(
+        "PAUZE 큐레이션 링크",
+        shareUrl,
+    )
+
+    clipboardManager.setPrimaryClip(clipData)
 }
 
 private fun shareCurationPost(
