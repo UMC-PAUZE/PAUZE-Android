@@ -111,7 +111,8 @@ fun PauzeSoundScreen(
             Column(
                 modifier = modifier
                     .fillMaxSize()
-                    .background(AppTheme.palette.base.getColor(0))
+                    .background(AppTheme.palette.base.getColor(0)),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 // =================--- 1. 헤더 영역 (공통 TopBar 컴포넌트 사용) ---=================
                 TopBar(
@@ -132,20 +133,27 @@ fun PauzeSoundScreen(
                 SearchBar(
                     query = searchQuery,
                     onQueryChange = { searchQuery = it },
-                    modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp)
+                    modifier = Modifier.padding(top = 16.dp)
                 )
 
                 // =================--- 3. 조건별 서브 필터/칩 영역 ---=================
                 Row(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(start = 16.dp, end = 16.dp, top = 12.dp),
+                        .width(312.dp)
+                        .padding(top = 12.dp),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     categories.forEach { category ->
                         val isSelected = selectedCategory == category
+                        val buttonWidth = when (category) {
+                            "전체" -> 50.dp
+                            "자연소리" -> 75.dp
+                            "ASMR" -> 62.dp
+                            else -> 63.dp
+                        }
                         Box(
                             modifier = Modifier
+                                .size(buttonWidth, 34.dp)
                                 .clip(RoundedCornerShape(20.dp))
                                 .background(
                                     if (isSelected) AppTheme.palette.primary.getColor(3)
@@ -157,7 +165,7 @@ fun PauzeSoundScreen(
                                     RoundedCornerShape(20.dp)
                                 )
                                 .clickable { selectedCategory = category }
-                                .padding(horizontal = 16.dp, vertical = 8.dp),
+                                .padding(horizontal = 8.dp),
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
@@ -190,7 +198,9 @@ fun PauzeSoundScreen(
                             if (it.id == id) it.copy(isBookmarked = !it.isBookmarked) else it
                         }
                     },
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier
+                        .weight(1f)
+                        .width(312.dp)
                 )
             }
         }
@@ -211,9 +221,9 @@ fun SoundList(
     modifier: Modifier = Modifier
 ) {
     LazyColumn(
-        modifier = modifier.fillMaxWidth(),
-        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+        modifier = modifier,
+        contentPadding = PaddingValues(),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         items(sounds, key = { it.id }) { sound ->
             SoundItem(

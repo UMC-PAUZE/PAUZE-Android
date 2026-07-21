@@ -99,8 +99,8 @@ fun PauzeSoundStashScreen(
             modifier = Modifier
                 .weight(1f)
                 .width(312.dp),
-            contentPadding = PaddingValues(vertical = 8.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            contentPadding = PaddingValues(vertical = 0.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             items(filteredSounds, key = { it.id }) { sound ->
                 SoundItem(

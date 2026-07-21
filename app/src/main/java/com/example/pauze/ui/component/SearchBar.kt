@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.Icon
@@ -35,7 +36,7 @@ fun SearchBar(
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = modifier
-            .fillMaxWidth()
+            .width(312.dp)
             .height(48.dp)
             .background(AppTheme.palette.gray.getColor(9), CircleShape)
             .border(BorderStroke(1.dp, AppTheme.palette.gray.getColor(8)), CircleShape)
