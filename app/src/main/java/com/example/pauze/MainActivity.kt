@@ -21,7 +21,11 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             MainPaletteTheme {
-                startActivity(Intent(this, Class.forName("com.example.pauze.ui.login.LoginActivity")))
+                val intent = Intent(
+                    this,
+                    Class.forName("com.example.pauze.ui.login.LoginActivity")
+                )
+                startActivity(intent)
                 finish()
             }
         }

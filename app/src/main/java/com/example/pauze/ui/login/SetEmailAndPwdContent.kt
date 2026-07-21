@@ -28,6 +28,7 @@ import com.example.pauze.ui.login.component.TextFieldMode
 import com.example.pauze.ui.theme.AppTheme
 import com.example.pauze.ui.theme.bodyTextMdMedium
 import com.example.pauze.ui.theme.bodyTextSmRegular
+import org.intellij.lang.annotations.RegExp
 import java.sql.DriverManager.println
 
 @Composable
@@ -37,6 +38,7 @@ fun SetEmailAndPwdContent(
 
     val isAgreed = viewModel.isAgreed
     var isFocused by remember { mutableStateOf(false) }
+    val pwdCheck = java.util.regex.Pattern.matches("^(?=.*[0-9])(?=.*[a-zA-Z])(?=.*[!@#$%^&*]).+$", viewModel.password)
 
     Column {
         ModeBasedTextField(
@@ -54,10 +56,14 @@ fun SetEmailAndPwdContent(
         )
         Spacer(modifier = Modifier.height(4.dp))
         Text(
-            if(!isFocused && viewModel.password.length > 1 &&viewModel.password.length < 8) "비밀번호는 8자리 이상이어야 해요"
-                else "영문,숫자,특수문자 포함 8자 이상 입력해주세요",
+            if(viewModel.password == "") "영문,숫자,특수문자 포함 8자 이상 입력해주세요"
+            else if(!isFocused && viewModel.password.length < 8) "비밀번호는 8자리 이상이어야 해요"
+            else if(!isFocused && !pwdCheck) "영문, 숫자, 특수문자를 최소 한 글자 이상 포함해주세요"
+            else "사용 가능한 비밀번호입니다",
             style = bodyTextSmRegular,
-            color = if(!isFocused && viewModel.password.length > 1 && viewModel.password.length < 8) AppTheme.palette.secondary.getColor(5)
+            color = if(viewModel.password == "") AppTheme.palette.gray.getColor(5)
+                else if(!isFocused && (viewModel.password.length > 1 && viewModel.password.length < 8 || !pwdCheck) )
+                AppTheme.palette.secondary.getColor(4)
                 else AppTheme.palette.gray.getColor(5)
         )
         Spacer(modifier = Modifier.height(48.dp))

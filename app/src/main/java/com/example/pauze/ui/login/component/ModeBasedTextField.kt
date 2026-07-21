@@ -57,14 +57,19 @@ fun ModeBasedTextField(
         TextFieldMode.SetPwd -> false
         else -> true
     }) }
+    val pwdCheck = java.util.regex.Pattern.matches("^(?=.*[0-9])(?=.*[a-zA-Z])(?=.*[!@#$%^&*]).+$", value)
 
     Column(
         modifier = Modifier
             .fillMaxWidth().border(
                 width = 1.dp,
                 color = when {
+                    value == "" -> AppTheme.palette.gray.getColor(6)
                     (mode == TextFieldMode.UserName && value.length == 1)
-                            || (mode == TextFieldMode.SetPwd && !isFocused && value.length > 1 && value.length < 8 )
+                            || (mode == TextFieldMode.SetPwd
+                            && !isFocused
+                            && (value.length > 1 && value.length < 8
+                            || !pwdCheck))
                                  -> AppTheme.palette.secondary.getColor(4)
                     isFocused -> AppTheme.palette.gray.getColor(3)
                     else -> AppTheme.palette.gray.getColor(6)
