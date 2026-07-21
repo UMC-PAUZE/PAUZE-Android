@@ -76,15 +76,22 @@ fun CurationBoardScreen(
 ) {
     val curationState by viewModel.curationState.collectAsState()
     val context = LocalContext.current
-    val deepLinkPostId = remember(context) {
+    val deepLinkUri = remember(context) {
         (context as? Activity)
             ?.intent
             ?.data
-            ?.toCurationPostIdOrNull()
+    }
+    val deepLinkPostId = remember(deepLinkUri) {
+        deepLinkUri?.toCurationPostIdOrNull()
     }
 
-    LaunchedEffect(deepLinkPostId) {
-        deepLinkPostId?.let(viewModel::selectPost)
+    LaunchedEffect(deepLinkUri, deepLinkPostId) {
+        if (deepLinkUri != null && deepLinkPostId != null) {
+            viewModel.selectPostFromDeepLink(
+                deepLink = deepLinkUri.toString(),
+                postId = deepLinkPostId,
+            )
+        }
     }
 
     var isBookmarkScreenVisible by rememberSaveable {

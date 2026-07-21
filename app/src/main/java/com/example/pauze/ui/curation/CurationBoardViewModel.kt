@@ -48,6 +48,7 @@ data class CurationBoardState(
 class CurationBoardViewModel : BaseViewModel<Nothing>() {
     private val _curationState = MutableStateFlow(CurationBoardState())
     val curationState = _curationState.asStateFlow()
+    private var handledDeepLink: String? = null
 
     fun updateKeyword(keyword: String) {
         _curationState.update { state ->
@@ -71,6 +72,16 @@ class CurationBoardViewModel : BaseViewModel<Nothing>() {
         _curationState.update { state ->
             state.copy(selectedPostId = postId)
         }
+    }
+
+    fun selectPostFromDeepLink(
+        deepLink: String,
+        postId: Long,
+    ) {
+        if (handledDeepLink == deepLink) return
+
+        handledDeepLink = deepLink
+        selectPost(postId)
     }
 
     fun clearSelectedPost() {
