@@ -1,5 +1,6 @@
 package com.example.pauze
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -8,7 +9,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import com.example.pauze.ui.login.LoginScreen
+import com.example.pauze.ui.login.LoginActivity
 import com.example.pauze.ui.theme.AppTheme
 import com.example.pauze.ui.theme.MainPaletteTheme
 import com.example.pauze.ui.theme.PAUZEAndroidTheme
@@ -20,7 +21,12 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             MainPaletteTheme {
-                LoginScreen()
+                val intent = Intent(
+                    this,
+                    Class.forName("com.example.pauze.ui.login.LoginActivity")
+                )
+                startActivity(intent)
+                finish()
             }
         }
     }
