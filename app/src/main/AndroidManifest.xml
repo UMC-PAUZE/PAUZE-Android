@@ -36,6 +36,19 @@
                     android:scheme="pauze"
                     android:host="curation" />
             </intent-filter>
+
+            <!-- 큐레이션 HTTPS App Link로 실행 -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:scheme="https"
+                    android:host="pauze-39e6b.web.app"
+                    android:pathPrefix="/curation/" />
+            </intent-filter>
         </activity>
     </application>
 

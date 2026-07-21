@@ -77,18 +77,10 @@ fun CurationBoardScreen(
     val curationState by viewModel.curationState.collectAsState()
     val context = LocalContext.current
     val deepLinkPostId = remember(context) {
-        val uri = (context as? Activity)?.intent?.data
-
-        if (
-            uri?.scheme == "pauze" &&
-            uri.host == "curation"
-        ) {
-            uri.pathSegments
-                .firstOrNull()
-                ?.toLongOrNull()
-        } else {
-            null
-        }
+        (context as? Activity)
+            ?.intent
+            ?.data
+            ?.toCurationPostIdOrNull()
     }
 
     LaunchedEffect(deepLinkPostId) {

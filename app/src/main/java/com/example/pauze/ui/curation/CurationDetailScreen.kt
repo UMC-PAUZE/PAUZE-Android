@@ -4,7 +4,6 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
-import android.net.Uri
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -57,7 +56,6 @@ import com.example.pauze.ui.theme.bodyTextSmRegular
 
 private val sectionTitlePattern = Regex("""^\d+\..+""")
 private val paragraphSeparatorPattern = Regex("""\n\s*\n""")
-private const val PAUZE_PACKAGE_NAME = "com.example.pauze"
 
 @Composable
 fun CurationDetailScreen(
@@ -463,22 +461,6 @@ private fun CurationShareOption(
             style = bodyTextLgMedium,
             color = textColor,
         )
-    }
-}
-
-private fun createCurationShareUrl(postId: Long): String {
-    val playStoreUrl =
-        "https://play.google.com/store/apps/details" +
-            "?id=$PAUZE_PACKAGE_NAME"
-    val encodedFallbackUrl = Uri.encode(playStoreUrl)
-
-    return buildString {
-        append("intent://curation/$postId")
-        append("#Intent;")
-        append("scheme=pauze;")
-        append("package=$PAUZE_PACKAGE_NAME;")
-        append("S.browser_fallback_url=$encodedFallbackUrl;")
-        append("end")
     }
 }
 
