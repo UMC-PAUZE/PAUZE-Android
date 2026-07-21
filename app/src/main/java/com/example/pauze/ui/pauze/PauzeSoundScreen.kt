@@ -10,7 +10,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
@@ -19,7 +18,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -27,6 +25,8 @@ import androidx.compose.ui.unit.dp
 import com.example.pauze.R
 import com.example.pauze.data.dummies.Sounds
 import com.example.pauze.data.model.SoundItem
+import com.example.pauze.ui.component.SearchBar
+import com.example.pauze.ui.component.SoundItem
 import com.example.pauze.ui.component.TopBar
 import com.example.pauze.ui.theme.*
 import com.example.pauze.ui.pauze.PauzeSoundDetailScreen
@@ -129,47 +129,11 @@ fun PauzeSoundScreen(
                 )
 
                 // =================--- 2. 검색창 영역 ---=================
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(start = 16.dp, end = 16.dp, top = 16.dp)
-                        .height(48.dp)
-                        .clip(CircleShape)
-                        .background(AppTheme.palette.gray.getColor(9))
-                        .border(BorderStroke(1.dp, AppTheme.palette.gray.getColor(8)), CircleShape)
-                        .padding(horizontal = 16.dp),
-                    contentAlignment = Alignment.CenterStart
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        BasicTextField(
-                            value = searchQuery,
-                            onValueChange = { searchQuery = it },
-                            textStyle = bodyTextMdRegular.copy(color = AppTheme.palette.gray.getColor(0)),
-                            cursorBrush = SolidColor(AppTheme.palette.gray.getColor(0)),
-                            singleLine = true,
-                            modifier = Modifier.weight(1f),
-                            decorationBox = { innerTextField ->
-                                if (searchQuery.isEmpty()) {
-                                    Text(
-                                        text = "원하는 소리를 검색해보세요",
-                                        style = bodyTextMdRegular,
-                                        color = AppTheme.palette.gray.getColor(5)
-                                    )
-                                }
-                                innerTextField()
-                            }
-                        )
-                        Icon(
-                            painter = painterResource(id = android.R.drawable.ic_menu_search),
-                            contentDescription = "검색",
-                            tint = AppTheme.palette.gray.getColor(5),
-                            modifier = Modifier.size(24.dp)
-                        )
-                    }
-                }
+                SearchBar(
+                    query = searchQuery,
+                    onQueryChange = { searchQuery = it },
+                    modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp)
+                )
 
                 // =================--- 3. 조건별 서브 필터/칩 영역 ---=================
                 Row(
@@ -252,89 +216,11 @@ fun SoundList(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         items(sounds, key = { it.id }) { sound ->
-            SoundListItem(
+            SoundItem(
                 sound = sound,
-                onItemClick = onItemClick,
                 onToggleLike = onToggleLike,
-                onToggleBookmark = onToggleBookmark
-            )
-        }
-    }
-}
-
-/**
- * 개별 소리 항목을 구성하는 리스트 카드 아이템 컴포저블
- */
-@Composable
-fun SoundListItem(
-    sound: SoundItem,
-    onItemClick: (SoundItem) -> Unit,
-    onToggleLike: (String) -> Unit,
-    onToggleBookmark: (String) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(24.dp))
-            .background(AppTheme.palette.gray.getColor(8))
-            .clickable { onItemClick(sound) }
-            .padding(16.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        // 음원 이미지 영역
-        Box(
-            modifier = Modifier
-                .size(60.dp)
-                .clip(RoundedCornerShape(12.dp)),
-            contentAlignment = Alignment.Center
-        ) {
-            Image(
-                painter = painterResource(id = sound.imageResId),
-                contentDescription = sound.title,
-                modifier = Modifier.fillMaxSize(),
-                contentScale = ContentScale.Crop
-            )
-        }
-
-        Spacer(modifier = Modifier.width(16.dp))
-
-        // 음원 정보 영역 (제목, 카테고리)
-        Column(
-            modifier = Modifier.weight(1f)
-        ) {
-            Text(
-                text = sound.title,
-                style = bodyTextLgBold,
-                color = AppTheme.palette.gray.getColor(0)
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = sound.category,
-                style = bodyTextSmRegular,
-                color = AppTheme.palette.gray.getColor(5)
-            )
-        }
-
-        // 하트 (좋아요) 토글 버튼
-        IconButton(onClick = { onToggleLike(sound.id) }) {
-            Icon(
-                painter = painterResource(
-                    id = if (sound.isLiked) R.drawable.ic_heart_on else R.drawable.ic_heart_off
-                ),
-                contentDescription = "좋아요",
-                tint = Color.Unspecified,
-                modifier = Modifier.size(24.dp)
-            )
-        }
-
-        // 북마크 토글 버튼 (다운로드 형태 아이콘 유지)
-        IconButton(onClick = { onToggleBookmark(sound.id) }) {
-            Icon(
-                painter = painterResource(id = R.drawable.ic_download),
-                contentDescription = "북마크",
-                tint = Color.Unspecified,
-                modifier = Modifier.size(24.dp)
+                onToggleBookmark = onToggleBookmark,
+                onClick = { onItemClick(sound) }
             )
         }
     }

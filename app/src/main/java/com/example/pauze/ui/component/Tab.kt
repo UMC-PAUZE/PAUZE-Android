@@ -8,12 +8,16 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.material3.Icon
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.pauze.ui.theme.AppTheme
@@ -27,6 +31,7 @@ fun Tab(
     enabled: Boolean = true,
     onClick: () -> Unit = {},
     modifier: Modifier = Modifier,
+    leadingIconResId: Int? = null,
 ){
     Box(
         modifier = modifier
@@ -38,15 +43,27 @@ fun Tab(
             .padding(horizontal = 16.dp, vertical = 8.dp),
         contentAlignment = Alignment.Center
     ) {
-        Text(
-            text = text,
-            style = bodyTextLgBold,
-            color = when {
-                selected -> AppTheme.palette.gray.getColor(2)
-                !enabled -> AppTheme.palette.gray.getColor(7)
-                else -> AppTheme.palette.gray.getColor(4)
+        val contentColor = when {
+            selected -> AppTheme.palette.gray.getColor(2)
+            !enabled -> AppTheme.palette.gray.getColor(7)
+            else -> AppTheme.palette.gray.getColor(4)
+        }
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            leadingIconResId?.let { iconResId ->
+                Icon(
+                    painter = painterResource(iconResId),
+                    contentDescription = null,
+                    tint = contentColor,
+                    modifier = Modifier.size(20.dp)
+                )
+                Spacer(modifier = Modifier.size(6.dp))
             }
-        )
+            Text(
+                text = text,
+                style = bodyTextLgBold,
+                color = contentColor
+            )
+        }
     }
 }
 
