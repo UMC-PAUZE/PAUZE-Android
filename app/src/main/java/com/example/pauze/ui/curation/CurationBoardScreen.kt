@@ -1,5 +1,6 @@
 package com.example.pauze.ui.curation
 
+import android.app.Activity
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
@@ -29,6 +30,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -43,6 +45,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
@@ -72,6 +75,25 @@ fun CurationBoardScreen(
     viewModel: CurationBoardViewModel = viewModel(),
 ) {
     val curationState by viewModel.curationState.collectAsState()
+    val context = LocalContext.current
+    val deepLinkPostId = remember(context) {
+        val uri = (context as? Activity)?.intent?.data
+
+        if (
+            uri?.scheme == "pauze" &&
+            uri.host == "curation"
+        ) {
+            uri.pathSegments
+                .firstOrNull()
+                ?.toLongOrNull()
+        } else {
+            null
+        }
+    }
+
+    LaunchedEffect(deepLinkPostId) {
+        deepLinkPostId?.let(viewModel::selectPost)
+    }
 
     var isBookmarkScreenVisible by rememberSaveable {
         mutableStateOf(false)
