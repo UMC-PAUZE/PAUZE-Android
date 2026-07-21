@@ -83,10 +83,10 @@ fun PauzeSoundStashScreen(
                     selected = selectedTab == tab,
                     onClick = { selectedTab = tab },
                     modifier = Modifier.weight(1f),
-                    leadingIconResId = if (tab == "좋아요") {
-                        R.drawable.ic_heart_off
+                    icon = if (tab == "좋아요") {
+                        painterResource(R.drawable.ic_heart_off)
                     } else {
-                        R.drawable.ic_download
+                        painterResource(R.drawable.ic_download)
                     }
                 )
             }

@@ -69,16 +69,4 @@ fun SearchBar(
     }
 }
 
-@Preview(showBackground = true, backgroundColor = 0xFF101010)
-@Composable
-private fun SearchBarPreview() {
-    val query = remember { mutableStateOf("") }
 
-    PAUZEAndroidTheme(darkTheme = true, dynamicColor = false) {
-        SearchBar(
-            query = query.value,
-            onQueryChange = { query.value = it },
-            modifier = Modifier.padding(16.dp)
-        )
-    }
-}
