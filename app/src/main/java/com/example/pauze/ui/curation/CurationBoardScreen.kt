@@ -29,6 +29,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -70,6 +71,8 @@ fun CurationBoardScreen(
     onBookmarkListClick: () -> Unit = {},
     viewModel: CurationBoardViewModel = viewModel(),
 ) {
+    val curationState by viewModel.curationState.collectAsState()
+
     var isBookmarkScreenVisible by rememberSaveable {
         mutableStateOf(false)
     }
@@ -84,8 +87,8 @@ fun CurationBoardScreen(
         }
     }
 
-    val selectedPost = viewModel.selectedPost
-    val filteredPosts = viewModel.filteredPosts
+    val selectedPost = curationState.selectedPost
+    val filteredPosts = curationState.filteredPosts
 
     BackHandler(enabled = selectedPost != null) {
         viewModel.clearSelectedPost()
@@ -109,7 +112,7 @@ fun CurationBoardScreen(
 
     if (isBookmarkScreenVisible) {
         CurationBookmarkScreen(
-            bookmarkedPosts = viewModel.bookmarkedPosts,
+            bookmarkedPosts = curationState.bookmarkedPosts,
             onBackClick = {
                 isBookmarkScreenVisible = false
             },
@@ -151,9 +154,9 @@ fun CurationBoardScreen(
             )
 
             CurationSearchFilter(
-                keyword = viewModel.keyword,
+                keyword = curationState.keyword,
                 categories = curationCategories,
-                selectedCategoryId = viewModel.selectedCategoryId,
+                selectedCategoryId = curationState.selectedCategoryId,
                 onKeywordChange = viewModel::updateKeyword,
                 onSearch = viewModel::search,
                 onCategorySelected = viewModel::selectCategory,
