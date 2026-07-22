@@ -85,7 +85,8 @@ fun Button(
             text = label,
             style = textStyle,
             color = when {
-                !enabled -> AppTheme.palette.gray.getColor(2)
+                !enabled && variant == ButtonVariant.Solid -> AppTheme.palette.gray.getColor(9)
+                !enabled && variant == ButtonVariant.Stroke -> AppTheme.palette.gray.getColor(7)
                 variant == ButtonVariant.Stroke -> currentColor
                 else -> contentColor
             }
