@@ -9,7 +9,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.pauze.ui.login.LoginScreen
-import com.example.pauze.ui.pauze.PauzeTodayCondition
 import com.example.pauze.ui.theme.AppTheme
 import com.example.pauze.ui.theme.MainPaletteTheme
 import com.example.pauze.ui.theme.PAUZEAndroidTheme
@@ -21,7 +20,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             MainPaletteTheme {
-                PauzeTodayCondition()
+                LoginScreen()
             }
         }
     }
