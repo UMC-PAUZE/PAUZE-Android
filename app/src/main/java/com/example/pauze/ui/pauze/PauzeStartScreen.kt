@@ -64,7 +64,7 @@ fun PauzeStartScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(
-                        color = AppTheme.palette.primary.getColor(5),
+                        color = AppTheme.palette.tertiary.getColor(3),
                         shape = RoundedCornerShape(size = 20.dp)
                     )
                     .padding(16.dp)
@@ -88,19 +88,19 @@ fun PauzeStartScreen(
                             Text(
                                 text = "즉각 안정 시작하기",
                                 style = bodyTextXlBold,
-                                color = AppTheme.palette.primary.getColor(9)
+                                color = AppTheme.palette.tertiary.getColor(9)
                             )
                             Text(
                                 text = "1분 호흡으로 바로 안정해요.",
                                 style = bodyTextSmRegular,
-                                color = AppTheme.palette.primary.getColor(9)
+                                color = AppTheme.palette.tertiary.getColor(9)
                             )
                         }
                     }
                     Icon(
                         painter = painterResource(R.drawable.ic_arrow_forward),
                         contentDescription = "이동하기 > 화살표",
-                        tint = AppTheme.palette.primary.getColor(7)
+                        tint = AppTheme.palette.tertiary.getColor(7)
                     )
                 }
             }
