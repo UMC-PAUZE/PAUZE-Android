@@ -161,7 +161,7 @@ fun MainScreen(
         Box(modifier = Modifier.padding(innerPadding))
         NavHost(navController = navController, startDestination = BottomNavDestination.Home){
             composable<BottomNavDestination.Home>{
-                HomeScreen()
+                HomeScreen(context = context)
             }
             composable<BottomNavDestination.Report>{
 
