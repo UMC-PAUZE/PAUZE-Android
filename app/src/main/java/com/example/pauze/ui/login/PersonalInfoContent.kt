@@ -25,6 +25,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.DpSize
@@ -145,7 +146,7 @@ fun BirthdayBottomSheet(
         containerColor = AppTheme.palette.gray.getColor(9),
         dragHandle = null,
         shape = borderShape,
-        scrimColor = BottomSheetDefaults.ScrimColor
+        scrimColor = Color(0xCC2D2E28)
     ) {
         Column(
             modifier = Modifier

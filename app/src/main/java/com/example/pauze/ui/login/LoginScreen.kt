@@ -1,5 +1,7 @@
 package com.example.pauze.ui.login
 
+import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -38,6 +40,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat.startActivity
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
@@ -67,10 +70,7 @@ class LoginActivity : ComponentActivity() {
                 val navController = rememberNavController()
                 NavHost(navController = navController, startDestination = LoginNavDestination.Login){
                     composable<LoginNavDestination.Login> {
-                        LoginScreen(navController)
-                    }
-                    composable<LoginNavDestination.Home> {
-
+                        LoginScreen(this@LoginActivity, navController)
                     }
                     composable<LoginNavDestination.SignUp> {
                         SignUpScreen(navController)
@@ -90,6 +90,7 @@ class LoginActivity : ComponentActivity() {
 
 @Composable
 fun LoginScreen(
+    context: Context,
     navController: NavController,
     viewModel: LoginViewModel = viewModel()     // todo: Hilt로 변경
 ){
@@ -104,7 +105,11 @@ fun LoginScreen(
         viewModel.effect.collect { effect ->
             when(effect){
                 is LoginEffect.NavigateToHome -> {
-
+                    val intent = Intent(
+                        context,
+                        Class.forName("com.example.pauze.MainActivity")
+                    )
+                    startActivity(context, intent, null)
                 }
                 is LoginEffect.NavigateToSignUp -> {
                     navController.navigate(LoginNavDestination.SignUp(isAgreed = false))
