@@ -1,5 +1,6 @@
 package com.example.pauze.ui.mypage.component
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -9,7 +10,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -49,11 +49,10 @@ fun MySettings(
             verticalAlignment = Alignment.CenterVertically
         ) {
             if (icon != null) {
-                Icon(
+                Image(
                     painter = icon,
                     contentDescription = null,
-                    modifier = Modifier.size(32.dp),
-                    tint = AppTheme.palette.gray.getColor(2)
+                    modifier = Modifier.size(32.dp)
                 )
             }
             Column {
