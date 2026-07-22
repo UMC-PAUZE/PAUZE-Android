@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
@@ -61,7 +62,7 @@ fun ProfileEditScreen(
                     }
                     Box(
                         modifier = Modifier
-                            .align(Alignment.BottomEnd)
+                            .offset(x = 55.dp, y = 56.dp)
                             .size(40.dp)
                             .background(
                                 color = AppTheme.palette.gray.getColor(4),
