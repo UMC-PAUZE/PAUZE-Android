@@ -17,9 +17,12 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
@@ -30,6 +33,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.pauze.ui.component.TopBar
 import com.example.pauze.ui.theme.AppTheme
 import com.example.pauze.ui.theme.MainPaletteTheme
@@ -76,18 +80,24 @@ private val conditionQuestions = listOf(
 @Composable
 fun PauzeTodayCondition(
     modifier: Modifier = Modifier,
-    onExitClick: () -> Unit = {}
+    onExitClick: () -> Unit = {},
+    viewModel: PauzeTodayConditionViewModel = viewModel()
 ) {
-    val answers = remember { mutableStateListOf<Int?>(null, null, null, null, null) }
-    var currentQuestionIndex = remember { androidx.compose.runtime.mutableIntStateOf(0) }
-    val showExitDialog = remember { mutableStateOf(false) }
-    val showResult = remember { mutableStateOf(false) }
-    val currentQuestion = conditionQuestions[currentQuestionIndex.intValue]
-    val isPreviousEnabled = currentQuestionIndex.intValue > 0
-    val isNextEnabled = answers[currentQuestionIndex.intValue] != null
+    val conditionState by viewModel.state.collectAsState()
+    var showExitDialog by rememberSaveable { mutableStateOf(false) }
+    val currentQuestion = conditionQuestions[conditionState.currentQuestionIndex]
 
-    if (showResult.value) {
-        PauzeTodayConditionResult(score = 53)
+    LaunchedEffect(viewModel.effect) {
+        viewModel.effect.collect { effect ->
+            when (effect) {
+                TodayConditionEffect.ShowExitDialog -> showExitDialog = true
+                TodayConditionEffect.NavigateBack -> onExitClick()
+            }
+        }
+    }
+
+    if (conditionState.showResult) {
+        PauzeTodayConditionResult(score = conditionState.sensitivityScore)
         return
     }
 
@@ -99,7 +109,7 @@ fun PauzeTodayCondition(
     ) {
         TopBar(
             title = "오늘의 컨디션",
-            onBackClick = { showExitDialog.value = true },
+            onBackClick = viewModel::onBackClick,
             backgroundColor = AppTheme.palette.base.getColor(0)
         )
 
@@ -113,7 +123,7 @@ fun PauzeTodayCondition(
                         .weight(1f)
                         .height(6.dp)
                         .background(
-                            color = if (index <= currentQuestionIndex.intValue) {
+                            color = if (index <= conditionState.currentQuestionIndex) {
                                 AppTheme.palette.gray.getColor(1)
                             } else {
                                 AppTheme.palette.gray.getColor(8)
@@ -148,7 +158,7 @@ fun PauzeTodayCondition(
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             currentQuestion.choices.forEachIndexed { choiceIndex, choice ->
-                val isSelected = answers[currentQuestionIndex.intValue] == choiceIndex
+                val isSelected = conditionState.answers[conditionState.currentQuestionIndex] == choiceIndex
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -159,7 +169,7 @@ fun PauzeTodayCondition(
                             else AppTheme.palette.gray.getColor(6),
                             shape = RoundedCornerShape(32.dp)
                         )
-                        .clickable { answers[currentQuestionIndex.intValue] = choiceIndex },
+                        .clickable { viewModel.selectAnswer(choiceIndex) },
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
@@ -182,32 +192,26 @@ fun PauzeTodayCondition(
         ) {
             ConditionNavigationButton(
                 text = "이전",
-                enabled = isPreviousEnabled,
+                enabled = conditionState.isPreviousEnabled,
                 modifier = Modifier.weight(1f),
-                onClick = { currentQuestionIndex.intValue -= 1 }
+                onClick = viewModel::moveToPreviousQuestion
             )
             ConditionNavigationButton(
                 text = "다음",
-                enabled = isNextEnabled,
+                enabled = conditionState.isNextEnabled,
                 modifier = Modifier.weight(1f),
-                onClick = {
-                    if (currentQuestionIndex.intValue < conditionQuestions.lastIndex) {
-                        currentQuestionIndex.intValue += 1
-                    } else {
-                        showResult.value = true
-                    }
-                }
+                onClick = viewModel::moveToNextQuestion
             )
         }
     }
 
-    if (showExitDialog.value) {
+    if (showExitDialog) {
         ConditionExitDialog(
             onExitClick = {
-                showExitDialog.value = false
-                onExitClick()
+                showExitDialog = false
+                viewModel.confirmExit()
             },
-            onContinueClick = { showExitDialog.value = false }
+            onContinueClick = { showExitDialog = false }
         )
     }
 }
