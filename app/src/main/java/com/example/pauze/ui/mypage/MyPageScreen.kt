@@ -116,7 +116,7 @@ fun MyPageScreen(
                     title = "오프라인 콘텐츠",
                     caption = "사운드 미리 다운로드",
                     variant = MySettingsVariant.Toggle,
-                    toggleSelected = true
+                    toggleSelected = false
                 )
             }
 
