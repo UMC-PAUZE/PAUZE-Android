@@ -19,6 +19,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -28,7 +30,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.pauze.R
+import com.example.pauze.data.model.InstantAction
+import com.example.pauze.data.model.RestGuide
 import com.example.pauze.ui.component.Destination
 import com.example.pauze.ui.component.NavigationButton
 import com.example.pauze.ui.component.TopBar
@@ -39,7 +44,22 @@ import com.example.pauze.ui.theme.bodyTextSmMedium
 import com.example.pauze.ui.theme.bodyTextXlBold
 
 @Composable
-fun PauzeOverloadScreen(){
+fun PauzeOverloadScreen(
+    viewModel: PauzeOverloadViewModel = viewModel()
+){
+    val actions by viewModel.instantActions.collectAsState()
+    val guideList by viewModel.restGuideList.collectAsState()
+
+    LaunchedEffect(viewModel.effect) {
+        viewModel.effect.collect { effect ->
+            when(effect){
+                is PauzeOverloadEffect.BackStack -> {
+
+                }
+            }
+        }
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -49,14 +69,14 @@ fun PauzeOverloadScreen(){
         TopBar(
             "과한 에너지 소모",
             modifier = Modifier.padding(top = 40.dp, bottom = 16.dp),
-            onBackClick = {}
+            onBackClick = { viewModel.backStack() }
         )
         Spacer(modifier = Modifier.height(24.dp))
         Text("지금 바로 할 수 있어요", style = bodyTextXlBold, color = AppTheme.palette.gray.getColor(2))
         Spacer(modifier = Modifier.height(16.dp))
         LazyRow {
-            items(5){ index ->
-                InstantActions()
+            items(actions.size){ index ->
+                InstantActions(action = actions[index])
             }
         }
         Spacer(modifier = Modifier.height(48.dp))
@@ -65,8 +85,8 @@ fun PauzeOverloadScreen(){
         LazyColumn(
             modifier = Modifier.fillMaxWidth().weight(1f)
         ) {
-            items(5) { index ->
-                RestGuide()
+            items(guideList.size) { index ->
+                RestGuide(guide = guideList[index])
             }
         }
         Spacer(modifier = Modifier.height(48.dp))
@@ -75,7 +95,7 @@ fun PauzeOverloadScreen(){
 }
 
 @Composable
-fun InstantActions(){
+fun InstantActions(action: InstantAction){
     Box(
         modifier = Modifier
             .width(148.dp).height(158.dp)
@@ -92,15 +112,15 @@ fun InstantActions(){
                 contentDescription = "헤드셋"
             )
             Spacer(modifier = Modifier.height(24.dp))
-            TimeBox()
+            TimeBox(duration = action.duration)
             Spacer(modifier = Modifier.height(8.dp))
-            Text("눈 감고 10초 호흡", style = bodyTextLgBold, color = Color(0xFFFFFFFF))
+            Text(action.title, style = bodyTextLgBold, color = Color(0xFFFFFFFF))
         }
     }
 }
 
 @Composable
-fun RestGuide(){
+fun RestGuide(guide: RestGuide){
     var isExpanded by remember { mutableStateOf(false) }
     Box(
         modifier = Modifier
@@ -124,9 +144,9 @@ fun RestGuide(){
                 )
                 Spacer(modifier = Modifier.width(12.dp))
                 Column{
-                    TimeBox()
+                    TimeBox(duration = guide.duration)
                     Spacer(modifier = Modifier.height(4.dp))
-                    Text("혼자만의 공간 찾기", style = bodyTextLgBold, color = AppTheme.palette.gray.getColor(2))
+                    Text(guide.title, style = bodyTextLgBold, color = AppTheme.palette.gray.getColor(2))
                 }
                 Spacer(modifier = Modifier.weight(1f))
                 Icon(
@@ -138,14 +158,14 @@ fun RestGuide(){
             }
             if(isExpanded){
                 Spacer(modifier = Modifier.height(12.dp))
-                Text("5~10분간 혼자 있을 수 있는 조용한 곳으로 이동하세요. 화장실, 계단실, 빈 회의실도 좋아요.", style = bodyTextMdRegular, color = AppTheme.palette.gray.getColor(4))
+                Text(guide.content, style = bodyTextMdRegular, color = AppTheme.palette.gray.getColor(4))
             }
         }
     }
 }
 
 @Composable
-fun TimeBox(){
+fun TimeBox(duration: Int){
     Box(
         modifier = Modifier
             .background(
@@ -154,6 +174,12 @@ fun TimeBox(){
             )
             .padding(horizontal = 12.dp, vertical = 4.dp)
     ){
-        Text("10초", style = bodyTextSmMedium, color = AppTheme.palette.gray.getColor(2))
+        Text(
+            if(duration == 0) "즉시"
+            else if(duration >= 60) "${duration / 60}분"
+            else "${duration}초",
+            style = bodyTextSmMedium,
+            color = AppTheme.palette.gray.getColor(2)
+        )
     }
 }

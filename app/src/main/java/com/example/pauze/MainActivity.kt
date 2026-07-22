@@ -165,7 +165,7 @@ fun MainScreen(
                 HomeScreen(context = context)
             }
             composable<BottomNavDestination.Report>{
-                PauzeOverloadScreen()
+
             }
             composable<BottomNavDestination.Find>{
 
