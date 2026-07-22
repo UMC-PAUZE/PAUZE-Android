@@ -16,12 +16,14 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
 import com.example.pauze.ui.component.TopBar
 import com.example.pauze.ui.theme.AppTheme
 import com.example.pauze.ui.theme.bodyTextLgBold
@@ -65,10 +67,12 @@ private val conditionQuestions = listOf(
 
 @Composable
 fun PauzeTodayCondition(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onExitClick: () -> Unit = {}
 ) {
     val answers = remember { mutableStateListOf<Int?>(null, null, null, null, null) }
     var currentQuestionIndex = remember { androidx.compose.runtime.mutableIntStateOf(0) }
+    val showExitDialog = remember { mutableStateOf(false) }
     val currentQuestion = conditionQuestions[currentQuestionIndex.intValue]
     val isPreviousEnabled = currentQuestionIndex.intValue > 0
     val isNextEnabled = answers[currentQuestionIndex.intValue] != null
@@ -81,7 +85,7 @@ fun PauzeTodayCondition(
     ) {
         TopBar(
             title = "오늘의 컨디션",
-            onBackClick = {},
+            onBackClick = { showExitDialog.value = true },
             backgroundColor = AppTheme.palette.base.getColor(0)
         )
 
@@ -178,6 +182,102 @@ fun PauzeTodayCondition(
                     }
                 }
             )
+        }
+    }
+
+    if (showExitDialog.value) {
+        ConditionExitDialog(
+            onExitClick = {
+                showExitDialog.value = false
+                onExitClick()
+            },
+            onContinueClick = { showExitDialog.value = false }
+        )
+    }
+}
+
+@Composable
+private fun ConditionExitDialog(
+    onExitClick: () -> Unit,
+    onContinueClick: () -> Unit
+) {
+    Dialog(onDismissRequest = onContinueClick) {
+        Column(
+            modifier = Modifier
+                .width(292.dp)
+                .background(
+                    color = AppTheme.palette.base.getColor(0),
+                    shape = RoundedCornerShape(24.dp)
+                ),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Spacer(modifier = Modifier.height(32.dp))
+
+            Text(
+                text = "오늘의 컨디션 작성하기를\n중단하시겠어요?",
+                style = bodyTextXlBold,
+                color = AppTheme.palette.gray.getColor(1),
+                textAlign = TextAlign.Center
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Text(
+                text = "작성한 내용은 저장되지 않습니다.",
+                style = bodyTextMdRegular,
+                color = AppTheme.palette.gray.getColor(2),
+                textAlign = TextAlign.Center
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(1.dp)
+                    .background(AppTheme.palette.gray.getColor(7))
+            )
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxSize()
+                        .clickable(onClick = onExitClick),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "중단하기",
+                        style = bodyTextLgBold,
+                        color = AppTheme.palette.gray.getColor(2)
+                    )
+                }
+
+                Box(
+                    modifier = Modifier
+                        .width(1.dp)
+                        .fillMaxSize()
+                        .background(AppTheme.palette.gray.getColor(7))
+                )
+
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxSize()
+                        .clickable(onClick = onContinueClick),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "계속하기",
+                        style = bodyTextLgBold,
+                        color = AppTheme.palette.gray.getColor(2)
+                    )
+                }
+            }
         }
     }
 }
