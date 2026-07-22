@@ -38,7 +38,7 @@ fun SignUpCompletedScreen(
         viewModel.effect.collect { effect ->
             when(effect){
                 SignUpCompletedEffect.NavigateToHome -> {
-                    val intent = Intent(context, Class.forName("com.example.pauze.ui.home.HomeActivity"))
+                    val intent = Intent(context, Class.forName("com.example.pauze.MainActivity"))
                     startActivity(context, intent, null)
                 }
             }
