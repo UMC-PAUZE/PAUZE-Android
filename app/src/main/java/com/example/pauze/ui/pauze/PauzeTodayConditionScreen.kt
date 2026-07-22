@@ -3,6 +3,7 @@ package com.example.pauze.ui.pauze
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -21,14 +22,21 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.example.pauze.ui.component.TopBar
 import com.example.pauze.ui.theme.AppTheme
+import com.example.pauze.ui.theme.MainPaletteTheme
 import com.example.pauze.ui.theme.bodyTextLgBold
 import com.example.pauze.ui.theme.bodyTextXlBold
 import com.example.pauze.ui.theme.bodyTextMdRegular
+import com.example.pauze.ui.theme.bodyTextSmRegular
 import com.example.pauze.ui.theme.headingMdBold
 
 private data class ConditionQuestion(
@@ -73,9 +81,15 @@ fun PauzeTodayCondition(
     val answers = remember { mutableStateListOf<Int?>(null, null, null, null, null) }
     var currentQuestionIndex = remember { androidx.compose.runtime.mutableIntStateOf(0) }
     val showExitDialog = remember { mutableStateOf(false) }
+    val showResult = remember { mutableStateOf(false) }
     val currentQuestion = conditionQuestions[currentQuestionIndex.intValue]
     val isPreviousEnabled = currentQuestionIndex.intValue > 0
     val isNextEnabled = answers[currentQuestionIndex.intValue] != null
+
+    if (showResult.value) {
+        PauzeTodayConditionResult(score = 53)
+        return
+    }
 
     Column(
         modifier = modifier
@@ -179,6 +193,8 @@ fun PauzeTodayCondition(
                 onClick = {
                     if (currentQuestionIndex.intValue < conditionQuestions.lastIndex) {
                         currentQuestionIndex.intValue += 1
+                    } else {
+                        showResult.value = true
                     }
                 }
             )
@@ -193,6 +209,184 @@ fun PauzeTodayCondition(
             },
             onContinueClick = { showExitDialog.value = false }
         )
+    }
+}
+
+@Composable
+private fun PauzeTodayConditionResult(score: Int) {
+    val normalizedScore = score.coerceIn(0, 100)
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(AppTheme.palette.base.getColor(0)),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Spacer(modifier = Modifier.height(184.dp))
+
+        Column(
+            modifier = Modifier
+                .width(312.dp)
+                .background(
+                    color = AppTheme.palette.gray.getColor(8),
+                    shape = RoundedCornerShape(24.dp)
+                )
+                .padding(28.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = "측정 완료!",
+                style = headingMdBold,
+                color = AppTheme.palette.gray.getColor(1)
+            )
+            Spacer(modifier = Modifier.height(12.dp))
+            Text(
+                text = "오늘의 예민도",
+                style = bodyTextLgBold,
+                color = AppTheme.palette.gray.getColor(3)
+            )
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Row(verticalAlignment = Alignment.Bottom) {
+                Text(
+                    text = normalizedScore.toString(),
+                    style = headingMdBold.copy(fontSize = 64.sp, lineHeight = 64.sp),
+                    color = AppTheme.palette.gray.getColor(1)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "/ 100",
+                    style = bodyTextXlBold,
+                    color = AppTheme.palette.gray.getColor(5),
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+            SensitivityScoreBar(score = normalizedScore)
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(
+                    modifier = Modifier
+                        .background(
+                            color = AppTheme.palette.tertiary.getColor(8),
+                            shape = RoundedCornerShape(16.dp)
+                        )
+                        .padding(horizontal = 16.dp, vertical = 6.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "보통",
+                        style = bodyTextSmRegular,
+                        color = AppTheme.palette.tertiary.getColor(1)
+                    )
+                }
+                Spacer(modifier = Modifier.weight(1f))
+                Text(
+                    text = "비교적 안정적인 상태예요",
+                    style = bodyTextSmRegular,
+                    color = AppTheme.palette.gray.getColor(4)
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
+        Text(
+            text = "오늘의 컨디션 분석을 완료했어요.\n자세한 결과는 홈 화면에서 확인할 수 있어요.",
+            style = bodyTextMdRegular,
+            color = AppTheme.palette.gray.getColor(5),
+            textAlign = TextAlign.Center,
+            lineHeight = 24.sp
+        )
+
+        Spacer(modifier = Modifier.weight(1f))
+
+        Row(
+            modifier = Modifier
+                .width(312.dp)
+                .padding(bottom = 48.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            ResultActionButton(
+                text = "홈으로",
+                isPrimary = false,
+                modifier = Modifier.weight(1f)
+            )
+            ResultActionButton(
+                text = "지금 안정하기",
+                isPrimary = true,
+                modifier = Modifier.weight(1f)
+            )
+        }
+    }
+}
+
+@Composable
+private fun SensitivityScoreBar(score: Int) {
+    val trackColor = AppTheme.palette.base.getColor(0)
+    val gradientColors = arrayOf(
+        0f to AppTheme.palette.primary.getColor(3),
+        0.5f to AppTheme.palette.tertiary.getColor(3),
+        1f to AppTheme.palette.secondary.getColor(4)
+    )
+
+    Canvas(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(32.dp)
+    ) {
+        val cornerRadius = CornerRadius(size.height / 2f, size.height / 2f)
+        val fillWidth = size.width * (score / 100f)
+
+        drawRoundRect(
+            color = trackColor,
+            cornerRadius = cornerRadius
+        )
+        drawRoundRect(
+            brush = Brush.horizontalGradient(
+                colorStops = gradientColors,
+                endX = size.width
+            ),
+            size = Size(fillWidth, size.height),
+            cornerRadius = cornerRadius
+        )
+    }
+}
+
+@Composable
+private fun ResultActionButton(
+    text: String,
+    isPrimary: Boolean,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier
+            .height(56.dp)
+            .background(
+                color = if (isPrimary) AppTheme.palette.gray.getColor(1)
+                else AppTheme.palette.gray.getColor(7),
+                shape = RoundedCornerShape(28.dp)
+            ),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = text,
+            style = bodyTextLgBold,
+            color = if (isPrimary) AppTheme.palette.base.getColor(0)
+            else AppTheme.palette.gray.getColor(1)
+        )
+    }
+}
+
+@Preview(showBackground = true, device = "spec:width=360dp,height=800dp,dpi=441")
+@Composable
+private fun PauzeTodayConditionPreview() {
+    MainPaletteTheme {
+        PauzeTodayCondition()
     }
 }
 
