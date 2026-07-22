@@ -33,6 +33,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.pauze.ui.home.HomeScreen
+import com.example.pauze.ui.pauze.PauzeOverloadScreen
 import com.example.pauze.ui.pauze.PauzeStartScreen
 import com.example.pauze.ui.theme.AppTheme
 import com.example.pauze.ui.theme.MainPaletteTheme
@@ -164,7 +165,7 @@ fun MainScreen(
                 HomeScreen(context = context)
             }
             composable<BottomNavDestination.Report>{
-
+                PauzeOverloadScreen()
             }
             composable<BottomNavDestination.Find>{
 
