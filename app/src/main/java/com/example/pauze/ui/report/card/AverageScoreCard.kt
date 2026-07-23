@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -14,6 +15,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.pauze.data.model.AverageScoreUiState
 import com.example.pauze.ui.theme.AppTheme
@@ -52,21 +54,19 @@ fun AverageScoreCard(state: AverageScoreUiState){
                 }
             }
 
-            Row(
-                modifier = Modifier.weight(1f),
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                verticalAlignment = Alignment.Bottom
-            ) {
+            Column(modifier = Modifier.weight(1f)) {
                 val chartHeight = 165.dp
-                state.bars.forEach { bar ->
-                    Column(
-                        modifier = Modifier.weight(1f),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(chartHeight),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    verticalAlignment = Alignment.Bottom
+                ) {
+                    state.bars.forEach { bar ->
                         Box(
                             modifier = Modifier
-                                .fillMaxWidth()
+                                .weight(1f)
                                 .height(chartHeight * (bar.score / 100f))
                                 .background(
                                     brush = Brush.verticalGradient(
@@ -81,7 +81,23 @@ fun AverageScoreCard(state: AverageScoreUiState){
                                     )
                                 )
                         )
-                        Text(text = bar.label, style = bodyTextSmRegular, color = AppTheme.palette.gray.getColor(2))
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    state.bars.forEach { bar ->
+                        Text(
+                            text = bar.label,
+                            style = bodyTextSmRegular,
+                            color = AppTheme.palette.gray.getColor(2),
+                            modifier = Modifier.weight(1f),
+                            textAlign = TextAlign.Center
+                        )
                     }
                 }
             }
@@ -93,7 +109,7 @@ fun AverageScoreCard(state: AverageScoreUiState){
                 Text(text = state.bestDay, color= AppTheme.palette.secondary.getColor(4), style = bodyTextMdBold)
             }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)){
-                Text(text = "출석", color = AppTheme.palette.gray.getColor(2), style = bodyTextMdRegular)
+                Text(text = "Pauze 실행", color = AppTheme.palette.gray.getColor(2), style = bodyTextMdRegular)
                 Text(text = "${state.attendanceCount}회", color= AppTheme.palette.primary.getColor(4), style = bodyTextMdBold)
             }
         }

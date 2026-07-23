@@ -37,7 +37,11 @@ class ReportViewModel : BaseViewModel<ReportEffect>() {
         }
 
     val triggers: List<TriggerUiState>
-        get() = ReportDummyData.triggers
+        get() = if (selectedPeriod == ReportPeriod.DAILY) {
+            ReportDummyData.dailyTriggers
+        } else {
+            ReportDummyData.weeklyTriggers
+        }
 
     fun onConditionInputClick(){
         sendEffect(ReportEffect.NavigateToConditionInput)

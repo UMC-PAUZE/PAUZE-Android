@@ -33,11 +33,19 @@ object ReportDummyData { //ui 확인하기 위한 데이터
         attendanceCount = 7
     )
 
-    val triggers = listOf(
+    val dailyTriggers = listOf(
         TriggerUiState("소음 노출", 0.40f, TriggerColorToken.NOISE),
         TriggerUiState("수면 부족", 0.20f, TriggerColorToken.SLEEP),
         TriggerUiState("사회 피로", 0.20f, TriggerColorToken.SOCIAL),
         TriggerUiState("업무 스트레스", 0.15f, TriggerColorToken.WORK),
+        TriggerUiState("혼잡한 공간", 0.05f, TriggerColorToken.CROWDED)
+    )
+
+    val weeklyTriggers = listOf(
+        TriggerUiState("소음 노출", 0.25f, TriggerColorToken.NOISE),
+        TriggerUiState("수면 부족", 0.30f, TriggerColorToken.SLEEP),
+        TriggerUiState("사회 피로", 0.05f, TriggerColorToken.SOCIAL),
+        TriggerUiState("업무 스트레스", 0.35f, TriggerColorToken.WORK),
         TriggerUiState("혼잡한 공간", 0.05f, TriggerColorToken.CROWDED)
     )
 
