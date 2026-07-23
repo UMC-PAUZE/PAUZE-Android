@@ -53,12 +53,15 @@ fun PauzeStartScreen(
                 is PauzeStartEffect.NavigateToGuide -> {
                     // todo: 과한 에너지 소모로 이동
                 }
+                is PauzeStartEffect.NavigateToHome -> {
+                    // todo: 홈 화면으로 이동
+                }
             }
         }
     }
 
     Column {
-        TopBar("Pauze")
+        TopBar("Pauze", onBackClick = viewModel::onBackClick)
 
         Column(
             modifier = Modifier
