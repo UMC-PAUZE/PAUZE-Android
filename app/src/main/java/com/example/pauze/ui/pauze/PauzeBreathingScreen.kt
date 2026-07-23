@@ -59,6 +59,7 @@ fun PauzeBreathingScreen(
 
     // 애니메이션
     val progress = when (viewModel.breathState.phase) {
+        BreathPhase.READY -> 0f
         BreathPhase.INHALE -> viewModel.breathState.second.toFloat() / pattern.inhale
         BreathPhase.HOLD -> 1f
         BreathPhase.EXHALE -> 1f - (viewModel.breathState.second.toFloat() / pattern.exhale)
@@ -115,17 +116,36 @@ fun PauzeBreathingScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(48.dp)
         ) {
-            Text(
-                text = when(viewModel.breathState.phase){
-                    BreathPhase.INHALE -> "들이쉬세요"
-                    BreathPhase.HOLD -> "참으세요"
-                    BreathPhase.EXHALE -> "내쉬세요"
-                },
-                style = headingLgBold,
-                color = AppTheme.palette.gray.getColor(2),
-                textAlign = TextAlign.Center
-            )
-
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(24.dp)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(60.dp)
+                        .background(color = AppTheme.palette.gray.getColor(8), shape = CircleShape)
+                        .clickable(onClick = { viewModel.togglePlayPause() }),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        painter = painterResource(if (viewModel.isPlaying) R.drawable.ic_play else R.drawable.ic_pause),
+                        contentDescription = if (viewModel.isPlaying) "멈춤" else "재생",
+                        tint = AppTheme.palette.gray.getColor(4),
+                        modifier = Modifier.size(44.dp)
+                    )
+                }
+                Text(
+                    text = when(viewModel.breathState.phase){
+                        BreathPhase.READY -> "준비하세요"
+                        BreathPhase.INHALE -> "들이쉬세요"
+                        BreathPhase.HOLD -> "참으세요"
+                        BreathPhase.EXHALE -> "내쉬세요"
+                    },
+                    style = headingLgBold,
+                    color = AppTheme.palette.gray.getColor(2),
+                    textAlign = TextAlign.Center
+                )
+            }
             Row(
                 horizontalArrangement = Arrangement.spacedBy(24.dp)
             ) {
