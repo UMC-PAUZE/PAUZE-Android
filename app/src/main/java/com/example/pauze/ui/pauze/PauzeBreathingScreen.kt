@@ -128,7 +128,7 @@ fun PauzeBreathingScreen(
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
-                        painter = painterResource(if (viewModel.isPlaying) R.drawable.ic_play else R.drawable.ic_pause),
+                        painter = painterResource(if (viewModel.isPlaying) R.drawable.ic_pause else R.drawable.ic_play),
                         contentDescription = if (viewModel.isPlaying) "멈춤" else "재생",
                         tint = AppTheme.palette.gray.getColor(4),
                         modifier = Modifier.size(44.dp)
