@@ -24,6 +24,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.pauze.R
+import com.example.pauze.ui.component.Destination
+import com.example.pauze.ui.component.NavigationButton
 import com.example.pauze.ui.component.TopBar
 import com.example.pauze.ui.theme.AppTheme
 import com.example.pauze.ui.theme.PAUZEAndroidTheme
@@ -60,50 +62,7 @@ fun PauzeStartScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(
-                        color = AppTheme.palette.primary.getColor(5),
-                        shape = RoundedCornerShape(size = 20.dp)
-                    )
-                    .padding(16.dp)
-                    .clickable(onClick = onStartBreathingClick)
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(12.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Image(
-                            painter = painterResource(R.drawable.ic_logo),
-                            contentDescription = "로고",
-                            modifier = Modifier.size(48.dp)
-                        )
-                        Column {
-                            Text(
-                                text = "즉각 안정 시작하기",
-                                style = bodyTextXlBold,
-                                color = AppTheme.palette.primary.getColor(9)
-                            )
-                            Text(
-                                text = "1분 호흡으로 바로 안정해요.",
-                                style = bodyTextSmRegular,
-                                color = AppTheme.palette.primary.getColor(7)
-                            )
-                        }
-                    }
-                    Icon(
-                        painter = painterResource(R.drawable.ic_arrow_forward),
-                        contentDescription = "이동하기 > 화살표",
-                        tint = AppTheme.palette.primary.getColor(7)
-                    )
-                }
-            }
+            NavigationButton(Destination.PauzeBreathing, onStartBreathingClick)
 
             Spacer(modifier = Modifier.height(48.dp))
 
@@ -187,7 +146,7 @@ fun SelectionCard(
                     Text(
                         text = description,
                         style = bodyTextSmRegular,
-                        color = AppTheme.palette.gray.getColor(5),
+                        color = AppTheme.palette.gray.getColor(4),
                         modifier = Modifier.width(152.dp)
                     )
                 }
