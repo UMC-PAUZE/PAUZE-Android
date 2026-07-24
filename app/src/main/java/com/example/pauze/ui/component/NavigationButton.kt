@@ -55,13 +55,15 @@ fun NavigationButton(toWhere: Destination, onClick: () -> Unit){
                     if(toWhere == Destination.PauzeBreathing) "즉각 안정 시작하기"
                             else "HSP 이해하러 가기",
                     style = bodyTextXlBold,
-                    color = AppTheme.palette.tertiary.getColor(9)
+                    color = if(toWhere == Destination.PauzeBreathing) AppTheme.palette.tertiary.getColor(9)
+                        else AppTheme.palette.primary.getColor(9)
                 )
                 Text(
                     if(toWhere == Destination.PauzeBreathing) "1분 호흡으로 바로 안정해요"
                     else "발견 탭으로 이동하여 나를 이해하는\n시간을 가져요.",
                     style = bodyTextSmRegular,
-                    color = AppTheme.palette.tertiary.getColor(9)
+                    color = if(toWhere == Destination.PauzeBreathing) AppTheme.palette.tertiary.getColor(9)
+                        else AppTheme.palette.primary.getColor(9)
                 )
             }
             Spacer(modifier = Modifier.weight(1f))
