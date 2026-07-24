@@ -1,5 +1,7 @@
 package com.example.pauze.ui.login
 
+import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -19,9 +21,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
@@ -34,8 +34,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat.startActivity
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import com.example.pauze.R
 import com.example.pauze.ui.component.Button
 import com.example.pauze.ui.component.Dialog
@@ -43,8 +49,6 @@ import com.example.pauze.ui.login.component.ModeBasedTextField
 import com.example.pauze.ui.login.component.TextFieldMode
 import com.example.pauze.ui.theme.AppTheme
 import com.example.pauze.ui.theme.MainPaletteTheme
-import com.example.pauze.ui.theme.PAUZEAndroidTheme
-import com.example.pauze.ui.theme.bodyTextLgBold
 import com.example.pauze.ui.theme.bodyTextMdBold
 import com.example.pauze.ui.theme.bodyTextMdMedium
 import com.example.pauze.ui.theme.bodyTextSmRegular
@@ -57,7 +61,21 @@ class LoginActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             MainPaletteTheme {
-                LoginScreen()
+                val navController = rememberNavController()
+                NavHost(navController = navController, startDestination = LoginNavDestination.Login){
+                    composable<LoginNavDestination.Login> {
+                        LoginScreen(this@LoginActivity, navController)
+                    }
+                    composable<LoginNavDestination.SignUp> {
+                        SignUpScreen(navController)
+                    }
+                    composable<LoginNavDestination.Policy> {
+                        PrivacyPolicyScreen(navController)
+                    }
+                    composable<LoginNavDestination.Completed> {
+                        SignUpCompletedScreen(context = this@LoginActivity)
+                    }
+                }
             }
         }
     }
@@ -65,13 +83,15 @@ class LoginActivity : ComponentActivity() {
 
 
 @Composable
-fun LoginScreen(){
-    val viewModel = LoginViewModel()        // todo: Hilt로 변경
+fun LoginScreen(
+    context: Context,
+    navController: NavController,
+    viewModel: LoginViewModel = viewModel()     // todo: Hilt로 변경
+){
 
     val focusManager = LocalFocusManager.current
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-    var isPwdVisible by remember { mutableStateOf(false) }
     var showDialog by rememberSaveable { mutableStateOf(false) }
 
     // 로그인 성공 여부 collect하기
@@ -79,10 +99,14 @@ fun LoginScreen(){
         viewModel.effect.collect { effect ->
             when(effect){
                 is LoginEffect.NavigateToHome -> {
-
+                    val intent = Intent(
+                        context,
+                        Class.forName("com.example.pauze.MainActivity")
+                    )
+                    startActivity(context, intent, null)
                 }
                 is LoginEffect.NavigateToSignUp -> {
-
+                    navController.navigate(LoginNavDestination.SignUp(isAgreed = false))
                 }
                 is LoginEffect.ShowDialog -> {
                     showDialog = true
@@ -106,7 +130,7 @@ fun LoginScreen(){
         verticalArrangement = Arrangement.Center,
     ) {
         Image(
-            painter = painterResource(id = R.drawable.pauze_logo),
+            painter = painterResource(id = R.drawable.pauze_login),
             contentDescription = "pauze app logo",
         )
         Spacer(modifier = Modifier.height(48.dp))
@@ -114,23 +138,25 @@ fun LoginScreen(){
             mode = TextFieldMode.Email,
             value = email,
             onValueChanged = { email = it },
+            imeAction = ImeAction.Next
         )
         Spacer(modifier = Modifier.height(12.dp))
         ModeBasedTextField(
             mode = TextFieldMode.Pwd,
             value = password,
             onValueChanged = { password = it },
+            imeAction = ImeAction.Done
         )
         Spacer(modifier = Modifier.height(32.dp))
         Button(
             "로그인",
             onClick = {
-                if(email.isNotEmpty() && password.isNotEmpty()){
+                if(email != "" && password != ""){
                     viewModel.login(email, password)
                 }
             },
             modifier = Modifier.fillMaxWidth(),
-            color = if(email.isNotEmpty() && password.isNotEmpty()) AppTheme.palette.gray.getColor(2) else AppTheme.palette.gray.getColor(8),
+            color = if(email != "" && password != "") AppTheme.palette.gray.getColor(2) else AppTheme.palette.gray.getColor(8),
             contentColor = AppTheme.palette.gray.getColor(9),
         )
         Spacer(modifier = Modifier.height(12.dp))
@@ -186,7 +212,7 @@ fun LoginScreen(){
         Spacer(modifier = Modifier.height(12.dp))
         Button(
             "게스트로 둘러보기",
-            onClick = { /*홈화면 이동*/},
+            onClick = { viewModel.toGuestMode() },
             modifier = Modifier.fillMaxWidth()
         )
         Spacer(modifier = Modifier.height(20.dp))
@@ -199,7 +225,7 @@ fun LoginScreen(){
             Text(
                 "회원가입",
                 modifier = Modifier.clickable{
-                    // todo: 회원가입 스크린으로 이동
+                    viewModel.toSignUp()
                 },
                 style = bodyTextMdBold,
                 color = AppTheme.palette.gray.getColor(2)
@@ -214,13 +240,5 @@ fun LoginScreen(){
                 onDismissRequest = { showDialog = false}
             )
         }
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun LoginScreenPreview(){
-    PAUZEAndroidTheme {
-        LoginScreen()
     }
 }
