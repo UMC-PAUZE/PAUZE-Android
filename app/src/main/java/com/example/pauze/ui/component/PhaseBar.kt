@@ -11,7 +11,7 @@ import com.example.pauze.ui.theme.AppTheme
 @Composable
 fun PhaseBar(
     isWaiting: Boolean,
-    modifier: Modifier
+    modifier: Modifier = Modifier
 ){
     HorizontalDivider(
         thickness = 4.dp,
