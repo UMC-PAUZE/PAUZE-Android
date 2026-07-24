@@ -18,11 +18,13 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.pauze.R
 import com.example.pauze.ui.component.TopBar
 import com.example.pauze.ui.theme.AppTheme
@@ -34,10 +36,32 @@ import com.example.pauze.ui.theme.headingMdBold
 
 @Composable
 fun PauzeStartScreen(
-    onStartBreathingClick: () -> Unit = {},
+    viewModel: PauzeStartViewModel = viewModel()
 ) {
+    LaunchedEffect(viewModel.effect) {
+        viewModel.effect.collect { effect ->
+            when (effect) {
+                is PauzeStartEffect.NavigateToBreathing -> {
+                    // todo: 즉각 안정 화면으로 이동
+                }
+                is PauzeStartEffect.NavigateToAuditory -> {
+                    // todo: 청각 화면으로 이동
+                }
+                is PauzeStartEffect.NavigateToVisual -> {
+                    // todo: 시각 화면으로 이동
+                }
+                is PauzeStartEffect.NavigateToGuide -> {
+                    // todo: 과한 에너지 소모로 이동
+                }
+                is PauzeStartEffect.NavigateToHome -> {
+                    // todo: 홈 화면으로 이동
+                }
+            }
+        }
+    }
+
     Column {
-        TopBar("Pauze")
+        TopBar("Pauze", onBackClick = viewModel::onBackClick)
 
         Column(
             modifier = Modifier
@@ -68,7 +92,7 @@ fun PauzeStartScreen(
                         shape = RoundedCornerShape(size = 20.dp)
                     )
                     .padding(16.dp)
-                    .clickable(onClick = onStartBreathingClick)
+                    .clickable(onClick = viewModel::onStartBreathingClick)
             ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -123,19 +147,19 @@ fun PauzeStartScreen(
                     iconRes = R.drawable.ic_headset,
                     title = "청각",
                     description = "자연소리와 ASMR로 \n청각 자극을 낮춰요",
-                    onClick = { /* TODO: 청각 화면 연결 */ }
+                    onClick = viewModel::onAuditoryClick
                 )
                 SelectionCard(
                     iconRes = R.drawable.ic_headset,
                     title = "시각",
                     description = "화면을 어둡게 하고 명상 또는 호흡에 집중해요",
-                    onClick = { /* TODO: 시각 화면 연결 */ }
+                    onClick = viewModel::onVisualClick
                 )
                 SelectionCard(
                     iconRes = R.drawable.ic_headset,
                     title = "과한 에너지 소모",
                     description = "쉼 가이드를 따르거나 HSP \n큐레이션 게시판으로 이동해요.",
-                    onClick = { /* TODO: 큐레이션 게시판 연결 */ }
+                    onClick = viewModel::onGuideClick
                 )
             }
         }
