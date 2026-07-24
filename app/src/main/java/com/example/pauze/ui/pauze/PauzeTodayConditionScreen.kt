@@ -1,0 +1,516 @@
+package com.example.pauze.ui.pauze
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.pauze.ui.component.TopBar
+import com.example.pauze.ui.theme.AppTheme
+import com.example.pauze.ui.theme.MainPaletteTheme
+import com.example.pauze.ui.theme.bodyTextLgBold
+import com.example.pauze.ui.theme.bodyTextXlBold
+import com.example.pauze.ui.theme.bodyTextMdRegular
+import com.example.pauze.ui.theme.bodyTextSmRegular
+import com.example.pauze.ui.theme.headingMdBold
+
+private data class ConditionQuestion(
+    val title: String,
+    val description: String,
+    val choices: List<String>
+)
+
+private val conditionQuestions = listOf(
+    ConditionQuestion(
+        title = "지난 밤, 몇 시간동안\n수면을 취했나요?",
+        description = "수면의 양과 질은 예민함에 큰 영향을 줘요.",
+        choices = listOf("4시간 미만", "4~6시간", "6~8시간", "8시간 이상")
+    ),
+    ConditionQuestion(
+        title = "오늘 소음 노출은\n어느 정도였나요?",
+        description = "대중교통, 사무실 소음 등 모든 소음을 포함해요",
+        choices = listOf("조용했어요", "감당 가능한 정도였어요", "불편했어요", "힘들 정도였어요")
+    ),
+    ConditionQuestion(
+        title = "오늘의 시각 정보량은\n어땠나요?",
+        description = "화면 시청, 광고, 밝은 조명 등 시각 자극 전체를 포함해요",
+        choices = listOf("거의 없음", "약간 있음", "꽤 많았어요", "매우 많았어요")
+    ),
+    ConditionQuestion(
+        title = "오늘은 사회적 활동을\n얼마나 했나요?",
+        description = "대화, 회의, 모임 등 타인과의 상호작용 시간을\n알려주세요",
+        choices = listOf("혼자였어요", "조금 있었어요", "꽤 있었어요", "많았어요")
+    ),
+    ConditionQuestion(
+        title = "지금 가지고 있는 에너지는\n얼마나 되나요?",
+        description = "현재 느끼는 신체적, 정서적 에너지를 알려주세요.",
+        choices = listOf("완전 방전", "낮아요", "보통이에요", "충분해요")
+    )
+)
+
+@Composable
+fun PauzeTodayCondition(
+    modifier: Modifier = Modifier,
+    onExitClick: () -> Unit = {},
+    viewModel: PauzeTodayConditionViewModel = viewModel()
+) {
+    val conditionState by viewModel.state.collectAsState()
+    var showExitDialog by rememberSaveable { mutableStateOf(false) }
+    val currentQuestion = conditionQuestions[conditionState.currentQuestionIndex]
+
+    LaunchedEffect(viewModel.effect) {
+        viewModel.effect.collect { effect ->
+            when (effect) {
+                TodayConditionEffect.ShowExitDialog -> showExitDialog = true
+                TodayConditionEffect.NavigateBack -> onExitClick()
+            }
+        }
+    }
+
+    if (conditionState.showResult) {
+        PauzeTodayConditionResult(score = conditionState.sensitivityScore)
+        return
+    }
+
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .background(AppTheme.palette.base.getColor(0)),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        TopBar(
+            title = "오늘의 컨디션",
+            onBackClick = viewModel::onBackClick,
+            backgroundColor = AppTheme.palette.base.getColor(0)
+        )
+
+        Row(
+            modifier = Modifier.width(312.dp),
+            horizontalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            conditionQuestions.indices.forEach { index ->
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(6.dp)
+                        .background(
+                            color = if (index <= conditionState.currentQuestionIndex) {
+                                AppTheme.palette.gray.getColor(1)
+                            } else {
+                                AppTheme.palette.gray.getColor(8)
+                            },
+                            shape = RoundedCornerShape(50)
+                        )
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        Column(modifier = Modifier.width(312.dp)) {
+            Text(
+                text = currentQuestion.title,
+                style = headingMdBold,
+                color = AppTheme.palette.gray.getColor(1)
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = currentQuestion.description,
+                style = bodyTextMdRegular,
+                color = AppTheme.palette.gray.getColor(5)
+            )
+        }
+
+        // TopBar 하단에서 첫 번째 선택지까지 194dp 간격을 유지합니다.
+        Spacer(modifier = Modifier.height(70.dp))
+
+        Column(
+            modifier = Modifier.width(312.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            currentQuestion.choices.forEachIndexed { choiceIndex, choice ->
+                val isSelected = conditionState.answers[conditionState.currentQuestionIndex] == choiceIndex
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(64.dp)
+                        .border(
+                            width = 2.dp,
+                            color = if (isSelected) AppTheme.palette.gray.getColor(1)
+                            else AppTheme.palette.gray.getColor(6),
+                            shape = RoundedCornerShape(32.dp)
+                        )
+                        .clickable { viewModel.selectAnswer(choiceIndex) },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = choice,
+                        style = bodyTextXlBold,
+                        color = if (isSelected) AppTheme.palette.gray.getColor(1)
+                        else AppTheme.palette.gray.getColor(4)
+                    )
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.weight(1f))
+
+        Row(
+            modifier = Modifier
+                .width(312.dp)
+                .padding(bottom = 48.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            ConditionNavigationButton(
+                text = "이전",
+                enabled = conditionState.isPreviousEnabled,
+                modifier = Modifier.weight(1f),
+                onClick = viewModel::moveToPreviousQuestion
+            )
+            ConditionNavigationButton(
+                text = "다음",
+                enabled = conditionState.isNextEnabled,
+                modifier = Modifier.weight(1f),
+                onClick = viewModel::moveToNextQuestion
+            )
+        }
+    }
+
+    if (showExitDialog) {
+        ConditionExitDialog(
+            onExitClick = {
+                showExitDialog = false
+                viewModel.confirmExit()
+            },
+            onContinueClick = { showExitDialog = false }
+        )
+    }
+}
+
+@Composable
+private fun PauzeTodayConditionResult(score: Int) {
+    val normalizedScore = score.coerceIn(0, 100)
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(AppTheme.palette.base.getColor(0)),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Spacer(modifier = Modifier.height(184.dp))
+
+        Column(
+            modifier = Modifier
+                .width(312.dp)
+                .background(
+                    color = AppTheme.palette.gray.getColor(8),
+                    shape = RoundedCornerShape(24.dp)
+                )
+                .padding(28.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = "측정 완료!",
+                style = headingMdBold,
+                color = AppTheme.palette.gray.getColor(1)
+            )
+            Spacer(modifier = Modifier.height(12.dp))
+            Text(
+                text = "오늘의 예민도",
+                style = bodyTextLgBold,
+                color = AppTheme.palette.gray.getColor(3)
+            )
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Row(verticalAlignment = Alignment.Bottom) {
+                Text(
+                    text = normalizedScore.toString(),
+                    style = headingMdBold.copy(fontSize = 64.sp, lineHeight = 64.sp),
+                    color = AppTheme.palette.gray.getColor(1)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "/ 100",
+                    style = bodyTextXlBold,
+                    color = AppTheme.palette.gray.getColor(5),
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+            SensitivityScoreBar(score = normalizedScore)
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(
+                    modifier = Modifier
+                        .background(
+                            color = AppTheme.palette.tertiary.getColor(8),
+                            shape = RoundedCornerShape(16.dp)
+                        )
+                        .padding(horizontal = 16.dp, vertical = 6.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "보통",
+                        style = bodyTextSmRegular,
+                        color = AppTheme.palette.tertiary.getColor(1)
+                    )
+                }
+                Spacer(modifier = Modifier.weight(1f))
+                Text(
+                    text = "비교적 안정적인 상태예요",
+                    style = bodyTextSmRegular,
+                    color = AppTheme.palette.gray.getColor(4)
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
+        Text(
+            text = "오늘의 컨디션 분석을 완료했어요.\n자세한 결과는 홈 화면에서 확인할 수 있어요.",
+            style = bodyTextMdRegular,
+            color = AppTheme.palette.gray.getColor(5),
+            textAlign = TextAlign.Center,
+            lineHeight = 24.sp
+        )
+
+        Spacer(modifier = Modifier.weight(1f))
+
+        Row(
+            modifier = Modifier
+                .width(312.dp)
+                .padding(bottom = 48.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            ResultActionButton(
+                text = "홈으로",
+                isPrimary = false,
+                modifier = Modifier.weight(1f)
+            )
+            ResultActionButton(
+                text = "지금 안정하기",
+                isPrimary = true,
+                modifier = Modifier.weight(1f)
+            )
+        }
+    }
+}
+
+@Composable
+private fun SensitivityScoreBar(score: Int) {
+    val trackColor = AppTheme.palette.base.getColor(0)
+    val gradientColors = arrayOf(
+        0f to AppTheme.palette.primary.getColor(3),
+        0.5f to AppTheme.palette.tertiary.getColor(3),
+        1f to AppTheme.palette.secondary.getColor(4)
+    )
+
+    Canvas(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(32.dp)
+    ) {
+        val cornerRadius = CornerRadius(size.height / 2f, size.height / 2f)
+        val fillWidth = size.width * (score / 100f)
+
+        drawRoundRect(
+            color = trackColor,
+            cornerRadius = cornerRadius
+        )
+        drawRoundRect(
+            brush = Brush.horizontalGradient(
+                colorStops = gradientColors,
+                endX = size.width
+            ),
+            size = Size(fillWidth, size.height),
+            cornerRadius = cornerRadius
+        )
+    }
+}
+
+@Composable
+private fun ResultActionButton(
+    text: String,
+    isPrimary: Boolean,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier
+            .height(56.dp)
+            .background(
+                color = if (isPrimary) AppTheme.palette.gray.getColor(1)
+                else AppTheme.palette.gray.getColor(7),
+                shape = RoundedCornerShape(28.dp)
+            ),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = text,
+            style = bodyTextLgBold,
+            color = if (isPrimary) AppTheme.palette.base.getColor(0)
+            else AppTheme.palette.gray.getColor(1)
+        )
+    }
+}
+
+@Preview(showBackground = true, device = "spec:width=360dp,height=800dp,dpi=441")
+@Composable
+private fun PauzeTodayConditionPreview() {
+    MainPaletteTheme {
+        PauzeTodayCondition()
+    }
+}
+
+@Composable
+private fun ConditionExitDialog(
+    onExitClick: () -> Unit,
+    onContinueClick: () -> Unit
+) {
+    Dialog(onDismissRequest = onContinueClick) {
+        Column(
+            modifier = Modifier
+                .width(292.dp)
+                .background(
+                    color = AppTheme.palette.base.getColor(0),
+                    shape = RoundedCornerShape(24.dp)
+                ),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Spacer(modifier = Modifier.height(32.dp))
+
+            Text(
+                text = "오늘의 컨디션 작성하기를\n중단하시겠어요?",
+                style = bodyTextXlBold,
+                color = AppTheme.palette.gray.getColor(1),
+                textAlign = TextAlign.Center
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Text(
+                text = "작성한 내용은 저장되지 않습니다.",
+                style = bodyTextMdRegular,
+                color = AppTheme.palette.gray.getColor(2),
+                textAlign = TextAlign.Center
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(1.dp)
+                    .background(AppTheme.palette.gray.getColor(7))
+            )
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxSize()
+                        .clickable(onClick = onExitClick),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "중단하기",
+                        style = bodyTextLgBold,
+                        color = AppTheme.palette.gray.getColor(2)
+                    )
+                }
+
+                Box(
+                    modifier = Modifier
+                        .width(1.dp)
+                        .fillMaxSize()
+                        .background(AppTheme.palette.gray.getColor(7))
+                )
+
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxSize()
+                        .clickable(onClick = onContinueClick),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "계속하기",
+                        style = bodyTextLgBold,
+                        color = AppTheme.palette.gray.getColor(2)
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ConditionNavigationButton(
+    text: String,
+    enabled: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier
+            .height(56.dp)
+            .background(
+                color = if (enabled) {
+                    if (text == "다음") AppTheme.palette.gray.getColor(1)
+                    else AppTheme.palette.gray.getColor(7)
+                } else {
+                    AppTheme.palette.gray.getColor(8)
+                },
+                shape = RoundedCornerShape(28.dp)
+            )
+            .clickable(enabled = enabled, onClick = onClick),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = text,
+            style = bodyTextLgBold,
+            color = if (enabled) {
+                if (text == "다음") AppTheme.palette.base.getColor(0)
+                else AppTheme.palette.gray.getColor(1)
+            } else {
+                AppTheme.palette.gray.getColor(9)
+            }
+        )
+    }
+}
