@@ -29,7 +29,7 @@ import androidx.compose.ui.unit.sp
 import com.example.pauze.ui.theme.AppTheme
 import com.example.pauze.R
 import com.example.pauze.ui.component.Button
-import com.example.pauze.ui.component.ConditionBar
+import com.example.pauze.ui.component.SensitivityScoreBar
 import com.example.pauze.ui.theme.bodyTextLgBold
 import com.example.pauze.ui.theme.bodyTextLgRegular
 import com.example.pauze.ui.theme.bodyTextMdMedium
@@ -103,7 +103,7 @@ fun HomeScreen(
                     Text("/ 100", style = bodyTextMdRegular.copy(fontSize = 24.sp), color = AppTheme.palette.gray.getColor(4))
                 }
                 Spacer(modifier = Modifier.height(12.dp))
-                ConditionBar(56, conditionBarWidth.dp)
+                SensitivityScoreBar(56)
                 Spacer(modifier = Modifier.height(16.dp))
                 Row(
                     modifier = Modifier.fillMaxWidth(),
