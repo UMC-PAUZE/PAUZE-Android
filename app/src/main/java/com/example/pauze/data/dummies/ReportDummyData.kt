@@ -1,13 +1,27 @@
 package com.example.pauze.data.dummies
 
+import com.example.pauze.data.model.Activity
 import com.example.pauze.data.model.AverageScoreUiState
 import com.example.pauze.data.model.ChartBar
+import com.example.pauze.data.model.Condition
 import com.example.pauze.data.model.InsightSegment
 import com.example.pauze.data.model.InsightUiState
+import com.example.pauze.data.model.Noise
+import com.example.pauze.data.model.OverallIndex
+import com.example.pauze.data.model.Sleeping
 import com.example.pauze.data.model.TriggerColorToken
 import com.example.pauze.data.model.TriggerUiState
 
 object ReportDummyData { //ui 확인하기 위한 데이터
+
+    val todayCondition = Condition(
+        score = 44,
+        index = OverallIndex.Moderate,
+        sleeping = Sleeping.Moderate,
+        noise = Noise.Low,
+        activity = Activity.Moderate
+    )
+
     val dailyAverageScore = AverageScoreUiState(
         title = "이번 주 평균 민감 지수",
         score = 55,

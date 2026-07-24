@@ -1,5 +1,7 @@
 package com.example.pauze.ui.report
 
+import android.content.Context
+import android.content.Intent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -19,6 +21,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -29,6 +32,7 @@ import com.example.pauze.data.model.ReportPeriod
 import com.example.pauze.ui.component.Button
 import com.example.pauze.ui.component.Tab
 import com.example.pauze.ui.component.TopBar
+import com.example.pauze.ui.login.LoginActivity
 import com.example.pauze.ui.report.component.InsightCard
 import com.example.pauze.ui.report.component.TriggerCard
 import com.example.pauze.ui.report.component.AverageScoreCard
@@ -39,15 +43,20 @@ import com.example.pauze.ui.theme.bodyTextMdRegular
 import com.example.pauze.ui.theme.headingSmBold
 
 @Composable
-fun ReportScreen(isGuest: Boolean = true, viewModel: ReportViewModel = viewModel()) {
+fun ReportScreen(
+    context: Context,
+    isGuest: Boolean = true,
+    viewModel: ReportViewModel = viewModel()
+) {
     LaunchedEffect(viewModel.effect) {
         viewModel.effect.collect { effect ->
             when (effect){
                 is ReportEffect.NavigateToConditionInput -> {
                     // todo: 오늘의 컨디션 입력 화면으로 이동
+                    // context.startActivity(Intent(context, PauzeTodayConditionActivity::class.java))
                 }
                 is ReportEffect.NavigateToLogin -> {
-                    // todo: 로그인 화면으로 이동
+                    context.startActivity(Intent(context, LoginActivity::class.java))
                 }
             }
         }
@@ -102,7 +111,7 @@ fun ReportScreen(isGuest: Boolean = true, viewModel: ReportViewModel = viewModel
                     modifier = Modifier.padding(horizontal = 24.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    TodayConditionCard(viewModel::onConditionInputClick)
+                    TodayConditionCard(viewModel.todayCondition, viewModel::onConditionInputClick)
                     AverageScoreCard(viewModel.averageScore)
                     TriggerCard(viewModel.triggers)
                     InsightCard(viewModel.insight)
@@ -167,7 +176,7 @@ private fun ReportScreenGuestPreview() {
                 .fillMaxSize()
                 .background(AppTheme.palette.gray.getColor(9))
         ) {
-            ReportScreen(isGuest = false)
+            ReportScreen(isGuest = false, context = LocalContext.current)
         }
     }
 }

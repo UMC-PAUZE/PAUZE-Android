@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.example.pauze.data.dummies.ReportDummyData
 import com.example.pauze.data.model.AverageScoreUiState
+import com.example.pauze.data.model.Condition
 import com.example.pauze.data.model.InsightUiState
 import com.example.pauze.data.model.ReportPeriod
 import com.example.pauze.data.model.TriggerUiState
@@ -21,6 +22,8 @@ class ReportViewModel : BaseViewModel<ReportEffect>() {
     fun selectPeriod(period: ReportPeriod) {
         selectedPeriod = period
     }
+
+    val todayCondition: Condition? = ReportDummyData.todayCondition // todo: 오늘의 컨디션 api 연동 시 교체
 
     val averageScore: AverageScoreUiState
         get() = if (selectedPeriod == ReportPeriod.DAILY) {
