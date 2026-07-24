@@ -1,7 +1,8 @@
 package com.example.pauze.ui.curation
 
-import android.app.Activity
+import android.content.Intent
 import androidx.activity.compose.BackHandler
+import androidx.activity.ComponentActivity
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -30,6 +31,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
@@ -51,6 +53,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.core.util.Consumer
 import com.example.pauze.R
 import com.example.pauze.data.dummies.curationCategories
 import com.example.pauze.data.model.CurationCategory
@@ -75,12 +78,22 @@ fun CurationBoardScreen(
     viewModel: CurationBoardViewModel = viewModel(),
 ) {
     val curationState by viewModel.curationState.collectAsState()
-    val context = LocalContext.current
-    val deepLinkUri = remember(context) {
-        (context as? Activity)
-            ?.intent
-            ?.data
+    val activity = LocalContext.current as? ComponentActivity
+    var deepLinkUri by remember(activity) {
+        mutableStateOf(activity?.intent?.data)
     }
+
+    DisposableEffect(activity) {
+        val newIntentListener = Consumer<Intent> { newIntent ->
+            deepLinkUri = newIntent.data
+        }
+        activity?.addOnNewIntentListener(newIntentListener)
+
+        onDispose {
+            activity?.removeOnNewIntentListener(newIntentListener)
+        }
+    }
+
     val deepLinkPostId = remember(deepLinkUri) {
         deepLinkUri?.toCurationPostIdOrNull()
     }
