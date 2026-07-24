@@ -1,4 +1,4 @@
-package com.example.pauze.ui.report.card
+package com.example.pauze.ui.report.component
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column

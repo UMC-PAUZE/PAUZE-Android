@@ -1,4 +1,4 @@
-package com.example.pauze.ui.report.card
+package com.example.pauze.ui.report.component
 
 import android.graphics.Paint
 import android.graphics.Path

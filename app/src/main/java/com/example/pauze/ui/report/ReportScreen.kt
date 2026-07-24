@@ -29,10 +29,10 @@ import com.example.pauze.data.model.ReportPeriod
 import com.example.pauze.ui.component.Button
 import com.example.pauze.ui.component.Tab
 import com.example.pauze.ui.component.TopBar
-import com.example.pauze.ui.report.card.InsightCard
-import com.example.pauze.ui.report.card.TriggerCard
-import com.example.pauze.ui.report.card.AverageScoreCard
-import com.example.pauze.ui.report.card.TodayConditionCard
+import com.example.pauze.ui.report.component.InsightCard
+import com.example.pauze.ui.report.component.TriggerCard
+import com.example.pauze.ui.report.component.AverageScoreCard
+import com.example.pauze.ui.report.component.TodayConditionCard
 import com.example.pauze.ui.theme.AppTheme
 import com.example.pauze.ui.theme.PAUZEAndroidTheme
 import com.example.pauze.ui.theme.bodyTextMdRegular

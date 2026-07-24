@@ -1,4 +1,4 @@
-package com.example.pauze.ui.report.card
+package com.example.pauze.ui.report.component
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
