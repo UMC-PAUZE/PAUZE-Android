@@ -38,7 +38,7 @@ import com.example.pauze.data.model.Noise
 import com.example.pauze.data.model.OverallIndex
 import com.example.pauze.data.model.Sleeping
 import com.example.pauze.ui.component.Button
-import com.example.pauze.ui.component.ConditionBar
+import com.example.pauze.ui.component.SensitivityScoreBar
 import com.example.pauze.ui.component.Destination
 import com.example.pauze.ui.component.NavigationButton
 import com.example.pauze.ui.theme.bodyTextLgBold
@@ -164,7 +164,7 @@ fun ConditionBox(condition: Condition?, boxPadding: Int, barWidth: Int){
                     Text("/ 100", style = bodyTextMdRegular.copy(fontSize = 24.sp), color = AppTheme.palette.gray.getColor(4))
                 }
                 Spacer(modifier = Modifier.height(12.dp))
-                ConditionBar(condition.score, barWidth.dp)
+                SensitivityScoreBar(condition.score)
                 Spacer(modifier = Modifier.height(16.dp))
                 ConditionDetailBox(condition = condition)
             }
