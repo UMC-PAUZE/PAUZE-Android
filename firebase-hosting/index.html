@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#17171b" />
+    <meta property="og:title" content="PAUZE 큐레이션" />
+    <meta
+      property="og:description"
+      content="PAUZE 앱에서 큐레이션 게시글을 확인해 보세요."
+    />
+    <title>PAUZE 앱으로 이동 중</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      }
+
+      body {
+        align-items: center;
+        background: #17171b;
+        color: #f7f7f8;
+        display: flex;
+        justify-content: center;
+        margin: 0;
+        min-height: 100vh;
+        text-align: center;
+      }
+
+      main {
+        padding: 32px;
+      }
+
+      a {
+        background: #8b7cff;
+        border-radius: 24px;
+        color: #ffffff;
+        display: inline-block;
+        margin-top: 16px;
+        padding: 12px 20px;
+        text-decoration: none;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>PAUZE</h1>
+      <p>앱 설치 페이지로 이동하고 있어요.</p>
+      <a
+        id="store-link"
+        href="https://play.google.com/store/apps/details?id=com.example.pauze"
+      >Play 스토어에서 설치하기</a>
+    </main>
+    <script>
+      const storeUrl = document.getElementById("store-link").href;
+      window.setTimeout(() => window.location.replace(storeUrl), 300);
+    </script>
+  </body>
+</html>
