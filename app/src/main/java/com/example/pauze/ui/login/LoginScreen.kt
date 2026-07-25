@@ -42,6 +42,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.pauze.MainActivity
 import com.example.pauze.R
 import com.example.pauze.ui.component.Button
 import com.example.pauze.ui.component.Dialog
@@ -99,10 +100,9 @@ fun LoginScreen(
         viewModel.effect.collect { effect ->
             when(effect){
                 is LoginEffect.NavigateToHome -> {
-                    val intent = Intent(
-                        context,
-                        Class.forName("com.example.pauze.MainActivity")
-                    )
+                    val intent = Intent(context, MainActivity::class.java).apply{
+                        flags = Intent.FLAG_ACTIVITY_CLEAR_TASK
+                    }
                     startActivity(context, intent, null)
                 }
                 is LoginEffect.NavigateToSignUp -> {
