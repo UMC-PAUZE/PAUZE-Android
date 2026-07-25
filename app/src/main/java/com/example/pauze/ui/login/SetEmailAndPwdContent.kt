@@ -106,5 +106,5 @@ fun SetEmailAndPwdContent(
         }
     }
 
-    return viewModel.email != "" && viewModel.password.length > 7 && isAgreed
+    return viewModel.email != "" && viewModel.password.length > 7 && pwdCheck && isAgreed
 }

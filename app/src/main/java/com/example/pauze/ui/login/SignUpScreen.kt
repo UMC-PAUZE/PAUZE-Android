@@ -1,6 +1,8 @@
 package com.example.pauze.ui.login
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -20,6 +22,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -37,6 +40,7 @@ fun SignUpScreen(
     navController: NavController,
     viewModel: SignUpViewModel = viewModel()      // todo: Hilt로 변경
 ){
+    val focusManager = LocalFocusManager.current
     val currentBackStackEntry by navController.currentBackStackEntryAsState()
     var isCompleted by remember { mutableStateOf(false) }
 
@@ -67,6 +71,12 @@ fun SignUpScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(AppTheme.palette.gray.getColor(9))
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null
+            ){
+                focusManager.clearFocus()
+            }
             .padding(horizontal = 24.dp)
     ) {
         TopBar(
@@ -102,8 +112,7 @@ fun SignUpScreen(
                 }
             },
             modifier = Modifier.fillMaxWidth().padding(bottom = 48.dp),
-            color = if(isCompleted) AppTheme.palette.gray.getColor(2)
-                else AppTheme.palette.gray.getColor(8),
-            contentColor = AppTheme.palette.gray.getColor(9),)
+            enabled = isCompleted,
+        )
     }
 }
