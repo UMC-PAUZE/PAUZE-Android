@@ -1,6 +1,7 @@
 package com.example.pauze
 
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -33,6 +34,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.pauze.ui.home.HomeScreen
+import com.example.pauze.ui.pauze.PauzeStartActivity
 import com.example.pauze.ui.pauze.PauzeStartScreen
 import com.example.pauze.ui.theme.AppTheme
 import com.example.pauze.ui.theme.MainPaletteTheme
@@ -104,11 +106,7 @@ fun MainScreen(
                     )
                     IconButton(
                         onClick = {
-//                            val intent = Intent(
-//                                context,
-//                                Class.forName("com.example.pauze.ui.PauzeStartScreen")
-//                            )
-//                            startActivity(context, intent, null)
+                            context.startActivity(Intent(context, PauzeStartActivity::class.java))
                         }
                     ) {
                         Image(

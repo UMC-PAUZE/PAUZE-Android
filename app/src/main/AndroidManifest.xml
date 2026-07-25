@@ -24,6 +24,8 @@
         </activity>
         <activity android:name=".MainActivity"
             android:exported="false"/>
+        <activity android:name=".ui.pauze.PauzeStartActivity"
+            android:exported="false"/>
     </application>
 
 </manifest>
