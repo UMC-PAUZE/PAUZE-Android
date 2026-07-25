@@ -68,7 +68,7 @@ class PauzeStartActivity: ComponentActivity() {
                         PauzeSoundScreen(onBackClick = {navController.popBackStack()})
                     }
                     composable<PauzeNavDestination.Visual> {
-                        PauzeVisualScreen()
+                        PauzeVisualScreen(navController)
                     }
                 }
             }
