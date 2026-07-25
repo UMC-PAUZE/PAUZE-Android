@@ -35,21 +35,21 @@ import androidx.compose.animation.core.tween
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.unit.lerp
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.example.pauze.data.model.BreathPhase
 
 @Composable
 fun PauzeBreathingScreen(
+    navController: NavController,
     viewModel: PauzeBreathingViewModel = viewModel()
 ) {
 
     LaunchedEffect(viewModel.effect) {
         viewModel.effect.collect { effect ->
             when (effect) {
-                is BreathingEffect.NavigateToMain -> {
-                    // todo: 메인 화면(PZ002, 478호흡 처음 화면)으로 이동
-                }
                 is BreathingEffect.NavigateToBack -> {
-                    // todo: PauzeStartScreen으로 이동
+                    navController.popBackStack()
                 }
             }
         }
@@ -280,6 +280,6 @@ private fun BreathStepText(label: String, seconds: Int, isActive: Boolean){
 @Composable
 private fun PauzeBreathingPreview(){
     PAUZEAndroidTheme(darkTheme = true, dynamicColor = false){
-        PauzeBreathingScreen()
+        PauzeBreathingScreen(rememberNavController())
     }
 }

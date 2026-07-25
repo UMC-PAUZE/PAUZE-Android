@@ -1,5 +1,11 @@
 package com.example.pauze.ui.pauze
 
+import android.content.Context
+import android.content.Intent
+import android.os.Bundle
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -21,46 +27,88 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import com.example.pauze.MainActivity
 import com.example.pauze.R
+import com.example.pauze.ui.component.Destination
+import com.example.pauze.ui.component.NavigationButton
 import com.example.pauze.ui.component.TopBar
 import com.example.pauze.ui.theme.AppTheme
+import com.example.pauze.ui.theme.MainPaletteTheme
 import com.example.pauze.ui.theme.PAUZEAndroidTheme
 import com.example.pauze.ui.theme.bodyTextMdRegular
 import com.example.pauze.ui.theme.bodyTextSmRegular
 import com.example.pauze.ui.theme.bodyTextXlBold
 import com.example.pauze.ui.theme.headingMdBold
 
+
+class PauzeStartActivity: ComponentActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
+        setContent{
+            MainPaletteTheme {
+                val navController = rememberNavController()
+                NavHost(navController = navController, startDestination = PauzeNavDestination.Start){
+                    composable<PauzeNavDestination.Start> {
+                        PauzeStartScreen(this@PauzeStartActivity, navController)
+                    }
+                    composable<PauzeNavDestination.Breathing> {
+                        PauzeBreathingScreen(navController)
+                    }
+                    composable<PauzeNavDestination.Sound> {
+                        PauzeSoundScreen(onBackClick = {navController.popBackStack()})
+                    }
+                    composable<PauzeNavDestination.Visual> {
+                        PauzeVisualScreen()
+                    }
+                }
+            }
+        }
+    }
+}
+
 @Composable
 fun PauzeStartScreen(
+    context: Context = LocalContext.current,
+    navController: NavController = rememberNavController(),
     viewModel: PauzeStartViewModel = viewModel()
 ) {
     LaunchedEffect(viewModel.effect) {
         viewModel.effect.collect { effect ->
             when (effect) {
                 is PauzeStartEffect.NavigateToBreathing -> {
-                    // todo: 즉각 안정 화면으로 이동
+                    navController.navigate(PauzeNavDestination.Breathing)
                 }
                 is PauzeStartEffect.NavigateToAuditory -> {
-                    // todo: 청각 화면으로 이동
+                    navController.navigate(PauzeNavDestination.Sound)
                 }
                 is PauzeStartEffect.NavigateToVisual -> {
-                    // todo: 시각 화면으로 이동
+                    navController.navigate(PauzeNavDestination.Visual)
                 }
                 is PauzeStartEffect.NavigateToGuide -> {
                     // todo: 과한 에너지 소모로 이동
                 }
                 is PauzeStartEffect.NavigateToHome -> {
-                    // todo: 홈 화면으로 이동
+                   context.startActivity(Intent(context, MainActivity::class.java))
                 }
             }
         }
     }
 
-    Column {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(AppTheme.palette.gray.getColor(9))
+    ){
         TopBar("Pauze", onBackClick = viewModel::onBackClick)
 
         Column(
@@ -84,50 +132,7 @@ fun PauzeStartScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(
-                        color = AppTheme.palette.primary.getColor(5),
-                        shape = RoundedCornerShape(size = 20.dp)
-                    )
-                    .padding(16.dp)
-                    .clickable(onClick = viewModel::onStartBreathingClick)
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(12.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Image(
-                            painter = painterResource(R.drawable.ic_logo),
-                            contentDescription = "로고",
-                            modifier = Modifier.size(48.dp)
-                        )
-                        Column {
-                            Text(
-                                text = "즉각 안정 시작하기",
-                                style = bodyTextXlBold,
-                                color = AppTheme.palette.primary.getColor(9)
-                            )
-                            Text(
-                                text = "1분 호흡으로 바로 안정해요.",
-                                style = bodyTextSmRegular,
-                                color = AppTheme.palette.primary.getColor(7)
-                            )
-                        }
-                    }
-                    Icon(
-                        painter = painterResource(R.drawable.ic_arrow_forward),
-                        contentDescription = "이동하기 > 화살표",
-                        tint = AppTheme.palette.primary.getColor(7)
-                    )
-                }
-            }
+            NavigationButton(Destination.PauzeBreathing, viewModel::onStartBreathingClick)
 
             Spacer(modifier = Modifier.height(48.dp))
 
@@ -211,7 +216,7 @@ fun SelectionCard(
                     Text(
                         text = description,
                         style = bodyTextSmRegular,
-                        color = AppTheme.palette.gray.getColor(5),
+                        color = AppTheme.palette.gray.getColor(4),
                         modifier = Modifier.width(152.dp)
                     )
                 }
@@ -236,7 +241,7 @@ private fun PauzeStartPreview(){
                 .fillMaxSize()
                 .background(AppTheme.palette.gray.getColor(9))
         ){
-            PauzeStartScreen()
+            PauzeStartScreen(LocalContext.current, rememberNavController())
         }
 
     }

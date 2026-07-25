@@ -13,7 +13,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 sealed interface BreathingEffect {
-    object NavigateToMain : BreathingEffect
     object NavigateToBack: BreathingEffect
 }
 
@@ -83,7 +82,7 @@ class PauzeBreathingViewModel: BaseViewModel<BreathingEffect>() {
                 }
                 currentCycle++
             }
-            sendEffect(BreathingEffect.NavigateToMain)
+            startBreathing(resume = true)
         }
     }
 
