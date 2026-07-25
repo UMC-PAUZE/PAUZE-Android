@@ -1,5 +1,6 @@
 package com.example.pauze.ui.pauze
 
+import com.example.pauze.data.model.SoundStashTab
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column

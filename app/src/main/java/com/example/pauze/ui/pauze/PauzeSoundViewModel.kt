@@ -1,40 +1,12 @@
 package com.example.pauze.ui.pauze
 
-import com.example.pauze.data.dummies.Sounds
+import com.example.pauze.data.model.PauzeSoundState
 import com.example.pauze.data.model.SoundItem
+import com.example.pauze.data.model.SoundStashTab
 import com.example.pauze.ui.BaseViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
-
-enum class SoundStashTab {
-    LIKED,
-    SAVED
-}
-
-data class PauzeSoundState(
-    val sounds: List<SoundItem> = Sounds.items,
-    val searchQuery: String = "",
-    val selectedCategory: String = "전체",
-    val stashSearchQuery: String = "",
-    val selectedStashTab: SoundStashTab = SoundStashTab.LIKED
-) {
-    val filteredSounds: List<SoundItem>
-        get() = sounds.filter { sound ->
-            val matchesCategory = selectedCategory == "전체" || sound.category == selectedCategory
-            val matchesSearch = sound.title.contains(searchQuery, ignoreCase = true)
-            matchesCategory && matchesSearch
-        }
-
-    val filteredStashSounds: List<SoundItem>
-        get() = sounds.filter { sound ->
-            val matchesTab = when (selectedStashTab) {
-                SoundStashTab.LIKED -> sound.isLiked
-                SoundStashTab.SAVED -> sound.isBookmarked
-            }
-            matchesTab && sound.title.contains(stashSearchQuery, ignoreCase = true)
-        }
-}
 
 enum class SoundDestination {
     LIST,
