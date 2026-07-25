@@ -34,6 +34,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.pauze.data.model.ConditionQuestion
 import com.example.pauze.ui.component.TopBar
 import com.example.pauze.ui.theme.AppTheme
 import com.example.pauze.ui.theme.MainPaletteTheme
@@ -42,12 +43,6 @@ import com.example.pauze.ui.theme.bodyTextXlBold
 import com.example.pauze.ui.theme.bodyTextMdRegular
 import com.example.pauze.ui.theme.bodyTextSmRegular
 import com.example.pauze.ui.theme.headingMdBold
-
-private data class ConditionQuestion(
-    val title: String,
-    val description: String,
-    val choices: List<String>
-)
 
 private val conditionQuestions = listOf(
     ConditionQuestion(
