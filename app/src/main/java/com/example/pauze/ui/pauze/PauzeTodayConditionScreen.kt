@@ -34,6 +34,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.pauze.ui.component.PhaseBar
 import com.example.pauze.ui.component.TopBar
 import com.example.pauze.ui.theme.AppTheme
 import com.example.pauze.ui.theme.MainPaletteTheme
@@ -85,18 +86,9 @@ fun PauzeTodayCondition(
             horizontalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             conditionQuestions.indices.forEach { index ->
-                Box(
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(6.dp)
-                        .background(
-                            color = if (index <= conditionState.currentQuestionIndex) {
-                                AppTheme.palette.gray.getColor(1)
-                            } else {
-                                AppTheme.palette.gray.getColor(8)
-                            },
-                            shape = RoundedCornerShape(50)
-                        )
+                PhaseBar(
+                    isWaiting = index > conditionState.currentQuestionIndex,
+                    modifier = Modifier.weight(1f)
                 )
             }
         }
