@@ -3,16 +3,20 @@ package com.example.pauze.ui.pauze
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.pauze.data.model.BreathPattern
 import com.example.pauze.data.model.BreathPhase
 import com.example.pauze.data.model.BreathState
+import com.example.pauze.ui.BaseViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-class PauzeBreathingViewModel: ViewModel() {
+sealed interface BreathingEffect {
+    object NavigateToBack: BreathingEffect
+}
+
+class PauzeBreathingViewModel: BaseViewModel<BreathingEffect>() {
     val patterns = listOf(
         BreathPattern(4, 7, 8), // 478 호흡
         BreathPattern(4, 4, 4), // 박스 호흡
@@ -28,8 +32,6 @@ class PauzeBreathingViewModel: ViewModel() {
     var currentCycle by mutableStateOf(0)
         private set
     var isPlaying by mutableStateOf(true)
-        private set
-    var isFinished by mutableStateOf(false)
         private set
 
     private var timerJob: Job? = null
@@ -54,7 +56,6 @@ class PauzeBreathingViewModel: ViewModel() {
     private fun startBreathing(resume: Boolean) {
         timerJob?.cancel()
         currentCycle = 0
-        isFinished = false
         isPlaying = resume
 
         val pattern = patterns[selectedTabIndex]
@@ -75,7 +76,7 @@ class PauzeBreathingViewModel: ViewModel() {
                 }
                 currentCycle++
             }
-            isFinished = true // 메인 화면 이동
+            startBreathing(resume = true)
         }
     }
 
@@ -84,4 +85,6 @@ class PauzeBreathingViewModel: ViewModel() {
             delay(100)
         }
     }
+
+    fun onBackClick() = sendEffect(BreathingEffect.NavigateToBack)
 }

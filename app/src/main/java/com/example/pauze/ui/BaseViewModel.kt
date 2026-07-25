@@ -12,7 +12,7 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.lang.Exception
-import kotlin.contracts.ExperimentalContracts
+import java.sql.DriverManager.println
 
 abstract class BaseViewModel<EFFECT> : ViewModel() {
     // UI 상태 클래스를 Flow로 다룸
@@ -20,9 +20,7 @@ abstract class BaseViewModel<EFFECT> : ViewModel() {
     val uiState = _uiState.asStateFlow()
 
     // 단발성 이벤트를 처리하는 함수
-    @OptIn(ExperimentalContracts::class)
     private val _effect = Channel<EFFECT>(Channel.BUFFERED)
-    @OptIn(ExperimentalContracts::class)
     val effect = _effect.receiveAsFlow()
 
 
