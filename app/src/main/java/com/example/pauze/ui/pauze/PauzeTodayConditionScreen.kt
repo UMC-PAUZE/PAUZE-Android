@@ -2,7 +2,6 @@ package com.example.pauze.ui.pauze
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -24,9 +23,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.CornerRadius
-import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -35,6 +31,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.pauze.ui.component.CondtionAnswer
 import com.example.pauze.ui.component.PhaseBar
+import com.example.pauze.ui.component.SensitivityScoreBar
 import com.example.pauze.ui.component.TopBar
 import com.example.pauze.ui.theme.AppTheme
 import com.example.pauze.ui.theme.MainPaletteTheme
@@ -270,38 +267,6 @@ private fun PauzeTodayConditionResult(score: Int) {
                 modifier = Modifier.weight(1f)
             )
         }
-    }
-}
-
-@Composable
-private fun SensitivityScoreBar(score: Int) {
-    val trackColor = AppTheme.palette.base.getColor(0)
-    val gradientColors = arrayOf(
-        0f to AppTheme.palette.primary.getColor(3),
-        0.5f to AppTheme.palette.tertiary.getColor(3),
-        1f to AppTheme.palette.secondary.getColor(4)
-    )
-
-    Canvas(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(32.dp)
-    ) {
-        val cornerRadius = CornerRadius(size.height / 2f, size.height / 2f)
-        val fillWidth = size.width * (score / 100f)
-
-        drawRoundRect(
-            color = trackColor,
-            cornerRadius = cornerRadius
-        )
-        drawRoundRect(
-            brush = Brush.horizontalGradient(
-                colorStops = gradientColors,
-                endX = size.width
-            ),
-            size = Size(fillWidth, size.height),
-            cornerRadius = cornerRadius
-        )
     }
 }
 
