@@ -12,6 +12,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -28,12 +29,13 @@ fun TopBar(
     showBackButton: Boolean = true,
     onBackClick: () -> Unit = {},
     rightIcon: (@Composable () -> Unit)? = null,
+    backgroundColor: Color = AppTheme.palette.gray.getColor(9),
 ) {
     Box(
         modifier = modifier
             .fillMaxWidth()
             .height(80.dp)
-            .background(AppTheme.palette.gray.getColor(9))
+            .background(backgroundColor)
     ) {
         Box(
             modifier = Modifier

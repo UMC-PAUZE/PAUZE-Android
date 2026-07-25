@@ -32,14 +32,28 @@ import com.example.pauze.ui.theme.*
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.unit.lerp
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.example.pauze.data.model.BreathPhase
 
 @Composable
 fun PauzeBreathingScreen(
+    navController: NavController,
     viewModel: PauzeBreathingViewModel = viewModel()
 ) {
+
+    LaunchedEffect(viewModel.effect) {
+        viewModel.effect.collect { effect ->
+            when (effect) {
+                is BreathingEffect.NavigateToBack -> {
+                    navController.popBackStack()
+                }
+            }
+        }
+    }
 
     val pattern = viewModel.patterns[viewModel.selectedTabIndex]
 
@@ -55,7 +69,7 @@ fun PauzeBreathingScreen(
             .fillMaxSize()
             .background(AppTheme.palette.gray.getColor(9))
     ) {
-        TopBar("즉각 안정")
+        TopBar("즉각 안정", onBackClick = viewModel::onBackClick)
         BreathTabBar(
             selectedIndex = viewModel.selectedTabIndex,
             onTabSelected = { viewModel.selectTab(it) }
@@ -246,6 +260,6 @@ private fun BreathStepText(label: String, seconds: Int, isActive: Boolean){
 @Composable
 private fun PauzeBreathingPreview(){
     PAUZEAndroidTheme(darkTheme = true, dynamicColor = false){
-        PauzeBreathingScreen()
+        PauzeBreathingScreen(rememberNavController())
     }
 }
