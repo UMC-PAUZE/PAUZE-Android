@@ -82,7 +82,8 @@ class PauzeBreathingViewModel: BaseViewModel<BreathingEffect>() {
                 }
                 currentCycle++
             }
-            startBreathing(resume = true)
+            delay(1000)
+            sendEffect(BreathingEffect.NavigateToBack)
         }
     }
 
