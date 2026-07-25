@@ -1,5 +1,6 @@
 package com.example.pauze.ui.pauze
 
+import android.content.Intent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -23,12 +24,14 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.pauze.MainActivity
 import com.example.pauze.ui.component.CondtionAnswer
 import com.example.pauze.ui.component.PhaseBar
 import com.example.pauze.ui.component.SensitivityScoreBar
@@ -47,6 +50,7 @@ fun PauzeTodayCondition(
     onExitClick: () -> Unit = {},
     viewModel: PauzeTodayConditionViewModel = viewModel()
 ) {
+    val context = LocalContext.current
     val conditionState by viewModel.state.collectAsState()
     val conditionQuestions by viewModel.conditionQuestions.collectAsState()
     var showExitDialog by rememberSaveable { mutableStateOf(false) }
@@ -57,12 +61,27 @@ fun PauzeTodayCondition(
             when (effect) {
                 TodayConditionEffect.ShowExitDialog -> showExitDialog = true
                 TodayConditionEffect.NavigateBack -> onExitClick()
+                TodayConditionEffect.NavigateToMainActivity -> {
+                    context.startActivity(
+                        Intent(context, MainActivity::class.java).apply {
+                            flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or
+                                Intent.FLAG_ACTIVITY_SINGLE_TOP
+                        }
+                    )
+                }
+                TodayConditionEffect.NavigateToPauzeStartActivity -> {
+                    context.startActivity(Intent(context, PauzeStartActivity::class.java))
+                }
             }
         }
     }
 
     if (conditionState.showResult) {
-        PauzeTodayConditionResult(score = conditionState.sensitivityScore)
+        PauzeTodayConditionResult(
+            score = conditionState.sensitivityScore,
+            onHomeClick = viewModel::navigateToMainActivity,
+            onPauzeStartClick = viewModel::navigateToPauzeStartActivity
+        )
         return
     }
 
@@ -158,7 +177,11 @@ fun PauzeTodayCondition(
 }
 
 @Composable
-private fun PauzeTodayConditionResult(score: Int) {
+private fun PauzeTodayConditionResult(
+    score: Int,
+    onHomeClick: () -> Unit,
+    onPauzeStartClick: () -> Unit
+) {
     val normalizedScore = score.coerceIn(0, 100)
 
     Column(
@@ -259,12 +282,14 @@ private fun PauzeTodayConditionResult(score: Int) {
             ResultActionButton(
                 text = "홈으로",
                 isPrimary = false,
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f),
+                onClick = onHomeClick
             )
             ResultActionButton(
                 text = "지금 안정하기",
                 isPrimary = true,
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f),
+                onClick = onPauzeStartClick
             )
         }
     }
@@ -274,7 +299,8 @@ private fun PauzeTodayConditionResult(score: Int) {
 private fun ResultActionButton(
     text: String,
     isPrimary: Boolean,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit
 ) {
     Box(
         modifier = modifier
@@ -283,7 +309,8 @@ private fun ResultActionButton(
                 color = if (isPrimary) AppTheme.palette.gray.getColor(1)
                 else AppTheme.palette.gray.getColor(7),
                 shape = RoundedCornerShape(28.dp)
-            ),
+            )
+            .clickable(onClick = onClick),
         contentAlignment = Alignment.Center
     ) {
         Text(

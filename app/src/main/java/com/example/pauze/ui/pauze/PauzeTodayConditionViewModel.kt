@@ -22,6 +22,8 @@ data class TodayConditionState(
 sealed interface TodayConditionEffect {
     data object ShowExitDialog : TodayConditionEffect
     data object NavigateBack : TodayConditionEffect
+    data object NavigateToMainActivity : TodayConditionEffect
+    data object NavigateToPauzeStartActivity : TodayConditionEffect
 }
 
 class PauzeTodayConditionViewModel : BaseViewModel<TodayConditionEffect>() {
@@ -95,6 +97,14 @@ class PauzeTodayConditionViewModel : BaseViewModel<TodayConditionEffect>() {
 
     fun confirmExit() {
         sendEffect(TodayConditionEffect.NavigateBack)
+    }
+
+    fun navigateToMainActivity() {
+        sendEffect(TodayConditionEffect.NavigateToMainActivity)
+    }
+
+    fun navigateToPauzeStartActivity() {
+        sendEffect(TodayConditionEffect.NavigateToPauzeStartActivity)
     }
 }
 
