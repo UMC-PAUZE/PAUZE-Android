@@ -4,6 +4,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -26,6 +27,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.DpSize
@@ -53,6 +55,7 @@ import kotlinx.datetime.format.char
 fun PersonalInfoContent(
     viewModel: SignUpViewModel
 ): Boolean {
+    val focusManager = LocalFocusManager.current
     var tempDay by remember { mutableStateOf<LocalDate?>(null)}
     var showBottomSheet by remember { mutableStateOf(false) }
 
@@ -64,7 +67,14 @@ fun PersonalInfoContent(
         day()
     }
 
-    Column{
+    Column(
+        modifier = Modifier.clickable(
+                interactionSource = remember { MutableInteractionSource() },
+        indication = null
+        ){
+            focusManager.clearFocus()
+        }
+    ){
         ModeBasedTextField(
             mode = TextFieldMode.UserName,
             value = viewModel.name,
@@ -81,7 +91,10 @@ fun PersonalInfoContent(
         Spacer(modifier = Modifier.height(12.dp))
         SetBirthday(
             birthday = viewModel.birthday?.format(customDateFormat) ?: "생년월일을 입력해주세요",
-            onClick = { showBottomSheet = true }
+            onClick = {
+                focusManager.clearFocus()
+                showBottomSheet = true
+            }
         )
 
         if(showBottomSheet){
