@@ -80,13 +80,13 @@ fun ReportScreen(
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Tab(
-                text = "일별",
+                text = "주간",
                 selected = viewModel.selectedPeriod == ReportPeriod.DAILY,
                 onClick = { viewModel.selectPeriod(ReportPeriod.DAILY) },
                 modifier = Modifier.weight(1f)
             )
             Tab(
-                text = "주별",
+                text = "월간",
                 selected = viewModel.selectedPeriod == ReportPeriod.WEEKLY,
                 onClick = { viewModel.selectPeriod(ReportPeriod.WEEKLY) },
                 modifier = Modifier.weight(1f)

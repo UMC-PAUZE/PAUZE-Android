@@ -10,10 +10,12 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.pauze.data.model.Condition
+import com.example.pauze.data.model.OverallIndex
 import com.example.pauze.ui.component.Button
 import com.example.pauze.ui.component.ButtonSize
 import com.example.pauze.ui.component.SensitivityScoreBar
@@ -40,7 +42,7 @@ fun TodayConditionCard(
                 Text(
                     text = condition.index.label,
                     style = bodyTextLgBold,
-                    color = AppTheme.palette.tertiary.getColor(3)
+                    color = condition.index.toColor()
                 )
             }
         } else {
@@ -79,4 +81,11 @@ fun TodayConditionCard(
             )
         }
     }
+}
+
+@Composable
+private fun OverallIndex.toColor(): Color = when (this) {
+    OverallIndex.Low -> AppTheme.palette.primary.getColor(4)
+    OverallIndex.Moderate -> AppTheme.palette.tertiary.getColor(3)
+    OverallIndex.High -> AppTheme.palette.secondary.getColor(3)
 }

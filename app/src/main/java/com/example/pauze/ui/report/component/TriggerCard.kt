@@ -119,5 +119,5 @@ private fun TriggerColorToken.toColor(): Color = when (this) {
     TriggerColorToken.SLEEP -> AppTheme.palette.purple.getColor(2)
     TriggerColorToken.SOCIAL -> AppTheme.palette.primary.getColor(4)
     TriggerColorToken.WORK -> AppTheme.palette.secondary.getColor(3)
-    TriggerColorToken.CROWDED -> AppTheme.palette.blue.getColor(2)
+    TriggerColorToken.OVERSTIMULATION -> AppTheme.palette.blue.getColor(2)
 }

@@ -15,8 +15,8 @@ import com.example.pauze.data.model.TriggerUiState
 object ReportDummyData { //ui 확인하기 위한 데이터
 
     val todayCondition = Condition(
-        score = 44,
-        index = OverallIndex.Moderate,
+        score = 26,
+        index = OverallIndex.Low,
         sleeping = Sleeping.Moderate,
         noise = Noise.Low,
         activity = Activity.Moderate
@@ -31,8 +31,9 @@ object ReportDummyData { //ui 확인하기 위한 데이터
             ChartBar("목", 75), ChartBar("금", 51),
             ChartBar("토", 64)
         ),
-        bestDay = "금요일",
-        attendanceCount = 7
+        bestLabel = "최고 민감 요일",
+        bestValue = "금요일",
+        executionCount = 7
     )
 
     val weeklyAverageScore = AverageScoreUiState(
@@ -43,8 +44,9 @@ object ReportDummyData { //ui 확인하기 위한 데이터
             ChartBar("3주", 93), ChartBar("4주", 68),
             ChartBar("5주", 75)
         ),
-        bestDay = "금요일",
-        attendanceCount = 7
+        bestLabel = "최고 민감 주차",
+        bestValue = "2주",
+        executionCount = 7
     )
 
     val dailyTriggers = listOf(
@@ -52,7 +54,7 @@ object ReportDummyData { //ui 확인하기 위한 데이터
         TriggerUiState("수면 부족", 0.20f, TriggerColorToken.SLEEP),
         TriggerUiState("사회 피로", 0.20f, TriggerColorToken.SOCIAL),
         TriggerUiState("업무 스트레스", 0.15f, TriggerColorToken.WORK),
-        TriggerUiState("혼잡한 공간", 0.05f, TriggerColorToken.CROWDED)
+        TriggerUiState("과한 정보자극", 0.05f, TriggerColorToken.OVERSTIMULATION)
     )
 
     val weeklyTriggers = listOf(
@@ -60,7 +62,7 @@ object ReportDummyData { //ui 확인하기 위한 데이터
         TriggerUiState("수면 부족", 0.30f, TriggerColorToken.SLEEP),
         TriggerUiState("사회 피로", 0.05f, TriggerColorToken.SOCIAL),
         TriggerUiState("업무 스트레스", 0.35f, TriggerColorToken.WORK),
-        TriggerUiState("혼잡한 공간", 0.05f, TriggerColorToken.CROWDED)
+        TriggerUiState("과한 정보자극", 0.05f, TriggerColorToken.OVERSTIMULATION)
     )
 
     val dailyInsight = InsightUiState(

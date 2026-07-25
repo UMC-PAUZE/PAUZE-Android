@@ -15,6 +15,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.pauze.data.model.AverageScoreUiState
@@ -56,6 +57,10 @@ fun AverageScoreCard(state: AverageScoreUiState){
 
             Column(modifier = Modifier.weight(1f)) {
                 val chartHeight = 165.dp
+                val redColor = AppTheme.palette.secondary.getColor(4)
+                val orangeColor = AppTheme.palette.tertiary.getColor(3)
+                val greenColor = Color(0xFFC3D7B6)
+
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -64,21 +69,30 @@ fun AverageScoreCard(state: AverageScoreUiState){
                     verticalAlignment = Alignment.Bottom
                 ) {
                     state.bars.forEach { bar ->
+                        val score = bar.score.coerceIn(1, 100)
+                        val stops = when {
+                            score >= 75 -> arrayOf(
+                                (1f - 75f / score) to redColor,
+                                (1f - 43f / score) to orangeColor,
+                                1f to greenColor
+                            )
+                            score > 43 -> arrayOf(
+                                0f to lerp(orangeColor, redColor, (score - 43) / 32f),
+                                (1f - 43f / score) to orangeColor,
+                                1f to greenColor
+                            )
+                            else -> arrayOf(
+                                0f to lerp(greenColor, orangeColor, score / 43f),
+                                1f to greenColor
+                            )
+                        }
                         Box(
                             modifier = Modifier
                                 .weight(1f)
                                 .height(chartHeight * (bar.score / 100f))
                                 .background(
-                                    brush = Brush.verticalGradient(
-                                        colors = listOf(
-                                            AppTheme.palette.tertiary.getColor(3),
-                                            Color(0xFFC3D7B6)
-                                        )
-                                    ),
-                                    shape = RoundedCornerShape(
-                                        topStartPercent = 50,
-                                        topEndPercent = 50
-                                    )
+                                    brush = Brush.verticalGradient(colorStops = stops),
+                                    shape = RoundedCornerShape(topStartPercent = 50, topEndPercent = 50)
                                 )
                         )
                     }
@@ -105,12 +119,12 @@ fun AverageScoreCard(state: AverageScoreUiState){
 
         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)){
-                Text(text = "최고 민감 요일", color = AppTheme.palette.gray.getColor(2), style = bodyTextMdRegular)
-                Text(text = state.bestDay, color= AppTheme.palette.secondary.getColor(4), style = bodyTextMdBold)
+                Text(text = state.bestLabel, color = AppTheme.palette.gray.getColor(2), style = bodyTextMdRegular)
+                Text(text = state.bestValue, color= AppTheme.palette.secondary.getColor(4), style = bodyTextMdBold)
             }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)){
                 Text(text = "Pauze 실행", color = AppTheme.palette.gray.getColor(2), style = bodyTextMdRegular)
-                Text(text = "${state.attendanceCount}회", color= AppTheme.palette.primary.getColor(4), style = bodyTextMdBold)
+                Text(text = "${state.executionCount}회", color= AppTheme.palette.primary.getColor(4), style = bodyTextMdBold)
             }
         }
     }
