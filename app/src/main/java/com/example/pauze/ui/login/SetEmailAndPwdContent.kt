@@ -17,6 +17,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
@@ -36,6 +37,7 @@ fun SetEmailAndPwdContent(
     viewModel: SignUpViewModel
 ): Boolean{
 
+    val focusManager = LocalFocusManager.current
     val isAgreed = viewModel.isAgreed
     var isFocused by remember { mutableStateOf(false) }
     val pwdCheck = java.util.regex.Pattern.matches("^(?=.*[0-9])(?=.*[a-zA-Z])(?=.*[!@#$%^&*]).+$", viewModel.password)
@@ -73,6 +75,7 @@ fun SetEmailAndPwdContent(
             Image(
                 modifier = Modifier.clickable{
                     viewModel.updateIsAgreed(!isAgreed)
+                    focusManager.clearFocus()
                 },
                 painter = painterResource(if(isAgreed) R.drawable.ic_checkbox_checked
                     else R.drawable.ic_checkbox_unchecked
