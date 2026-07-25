@@ -1,7 +1,6 @@
 package com.example.pauze.ui.pauze
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
@@ -34,6 +33,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.pauze.ui.component.CondtionAnswer
 import com.example.pauze.ui.component.PhaseBar
 import com.example.pauze.ui.component.TopBar
 import com.example.pauze.ui.theme.AppTheme
@@ -118,26 +118,11 @@ fun PauzeTodayCondition(
         ) {
             currentQuestion.choices.forEachIndexed { choiceIndex, choice ->
                 val isSelected = conditionState.answers[conditionState.currentQuestionIndex] == choiceIndex
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(64.dp)
-                        .border(
-                            width = 2.dp,
-                            color = if (isSelected) AppTheme.palette.gray.getColor(1)
-                            else AppTheme.palette.gray.getColor(6),
-                            shape = RoundedCornerShape(32.dp)
-                        )
-                        .clickable { viewModel.selectAnswer(choiceIndex) },
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = choice,
-                        style = bodyTextXlBold,
-                        color = if (isSelected) AppTheme.palette.gray.getColor(1)
-                        else AppTheme.palette.gray.getColor(4)
-                    )
-                }
+                CondtionAnswer(
+                    text = choice,
+                    isSelected = isSelected,
+                    onClick = { viewModel.selectAnswer(choiceIndex) }
+                )
             }
         }
 
