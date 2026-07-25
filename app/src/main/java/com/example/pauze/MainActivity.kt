@@ -69,7 +69,11 @@ fun MainScreen(
                     NavigationBarItem(
                         selected = isSelected(navController, BottomNavDestination.Home),
                         onClick = {
-                            navController.navigate(BottomNavDestination.Home)
+                            navController.navigate(BottomNavDestination.Home){
+                                popUpTo(BottomNavDestination.Home)
+                                launchSingleTop = true
+                                restoreState = true
+                            }
                         },
                         icon = {
                             Image(
@@ -89,7 +93,11 @@ fun MainScreen(
                     NavigationBarItem(
                         selected = isSelected(navController, BottomNavDestination.Report),
                         onClick = {
-                            navController.navigate(BottomNavDestination.Report)
+                            navController.navigate(BottomNavDestination.Report){
+                                popUpTo(BottomNavDestination.Report)
+                                launchSingleTop = true
+                                restoreState = true
+                            }
                         },
                         icon = { Image(
                             modifier = Modifier.size(24.dp),
@@ -118,7 +126,11 @@ fun MainScreen(
                     NavigationBarItem(
                         selected = isSelected(navController, BottomNavDestination.Find),
                         onClick = {
-                            navController.navigate(BottomNavDestination.Find)
+                            navController.navigate(BottomNavDestination.Find){
+                                popUpTo(BottomNavDestination.Find)
+                                launchSingleTop = true
+                                restoreState = true
+                            }
                         },
                         icon = { Image(
                             modifier = Modifier.size(24.dp),
@@ -136,7 +148,11 @@ fun MainScreen(
                     NavigationBarItem(
                         selected = isSelected(navController, BottomNavDestination.MyPage),
                         onClick = {
-                            navController.navigate(BottomNavDestination.MyPage)
+                            navController.navigate(BottomNavDestination.MyPage){
+                                popUpTo(BottomNavDestination.MyPage)
+                                launchSingleTop = true
+                                restoreState = true
+                            }
                         },
                         icon = { Image(
                             modifier = Modifier.size(24.dp),
@@ -156,8 +172,11 @@ fun MainScreen(
         },
     ) {
         innerPadding ->
-        Box(modifier = Modifier.padding(innerPadding))
-        NavHost(navController = navController, startDestination = BottomNavDestination.Home){
+        NavHost(
+            modifier = Modifier.padding(innerPadding),
+            navController = navController,
+            startDestination = BottomNavDestination.Home
+        ){
             composable<BottomNavDestination.Home>{
                 HomeScreen(context = context)
             }
