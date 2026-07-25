@@ -85,6 +85,8 @@ class CurationBoardViewModel : BaseViewModel<Nothing>() {
     }
 
     fun clearSelectedPost() {
+        handledDeepLink = null
+
         _curationState.update { state ->
             state.copy(selectedPostId = null)
         }
