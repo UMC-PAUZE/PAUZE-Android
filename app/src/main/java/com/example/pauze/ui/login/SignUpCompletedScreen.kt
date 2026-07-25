@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat.startActivity
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.example.pauze.MainActivity
 import com.example.pauze.R
 import com.example.pauze.ui.component.Button
 import com.example.pauze.ui.theme.AppTheme
@@ -38,7 +39,9 @@ fun SignUpCompletedScreen(
         viewModel.effect.collect { effect ->
             when(effect){
                 SignUpCompletedEffect.NavigateToHome -> {
-                    val intent = Intent(context, Class.forName("com.example.pauze.MainActivity"))
+                    val intent = Intent(context, MainActivity::class.java).apply{
+                        flags = Intent.FLAG_ACTIVITY_CLEAR_TASK
+                    }
                     startActivity(context, intent, null)
                 }
             }
