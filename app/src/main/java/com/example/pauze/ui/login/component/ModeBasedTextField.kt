@@ -141,7 +141,7 @@ fun ModeBasedTextField(
                             ) {
                                 ActionButton(actions = Actions.Reset) { onValueChanged("") }
                                 Spacer(modifier = Modifier.width(8.dp))
-                                ActionButton(actions = Actions.Check) { onCheckClick }
+                                ActionButton(actions = Actions.Check) { onCheckClick() }
                             }
                             TextFieldMode.Pwd -> ActionButton(actions = Actions.Pwd, isVisible = isVisible) { isVisible = !isVisible }
                             TextFieldMode.SetPwd -> Row(

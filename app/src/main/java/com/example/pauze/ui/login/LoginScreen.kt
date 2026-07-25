@@ -156,8 +156,7 @@ fun LoginScreen(
                 }
             },
             modifier = Modifier.fillMaxWidth(),
-            color = if(email != "" && password != "") AppTheme.palette.gray.getColor(2) else AppTheme.palette.gray.getColor(8),
-            contentColor = AppTheme.palette.gray.getColor(9),
+            enabled = email != "" && password != "",
         )
         Spacer(modifier = Modifier.height(12.dp))
         Row(
