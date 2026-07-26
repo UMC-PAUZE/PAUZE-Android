@@ -2,6 +2,7 @@ package com.example.pauze.ui.report
 
 import android.content.Context
 import android.content.Intent
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -15,7 +16,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -80,15 +80,15 @@ fun ReportScreen(
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Tab(
-                text = "주간",
-                selected = viewModel.selectedPeriod == ReportPeriod.DAILY,
-                onClick = { viewModel.selectPeriod(ReportPeriod.DAILY) },
+                text = "이번 주",
+                selected = !isGuest && viewModel.selectedPeriod == ReportPeriod.WEEKLY,
+                onClick = { viewModel.selectPeriod(ReportPeriod.WEEKLY) },
                 modifier = Modifier.weight(1f)
             )
             Tab(
-                text = "월간",
-                selected = viewModel.selectedPeriod == ReportPeriod.WEEKLY,
-                onClick = { viewModel.selectPeriod(ReportPeriod.WEEKLY) },
+                text = "이번 달",
+                selected = !isGuest && viewModel.selectedPeriod == ReportPeriod.MONTHLY,
+                onClick = { viewModel.selectPeriod(ReportPeriod.MONTHLY) },
                 modifier = Modifier.weight(1f)
             )
         }
@@ -129,14 +129,13 @@ private fun GuestContent(onLoginClick: () -> Unit) {
             .padding(horizontal = 24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Icon(
-            painter = painterResource(R.drawable.ic_headset),
-            contentDescription = "게스트모드 헤드셋",
-            modifier = Modifier.size(107.dp),
-            tint = AppTheme.palette.gray.getColor(2)
+        Image(
+            painter = painterResource(R.drawable.pauze_mascot_question),
+            contentDescription = "Pauze 로고 Question",
+            modifier = Modifier.size(160.dp)
         )
 
-        Spacer(modifier = Modifier.height(32.dp))
+        Spacer(modifier = Modifier.height(24.dp))
 
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
