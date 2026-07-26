@@ -24,8 +24,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.pauze.R
-import com.example.pauze.ui.login.component.ModeBasedTextField
-import com.example.pauze.ui.login.component.TextFieldMode
+import com.example.pauze.ui.component.ModeBasedTextField
+import com.example.pauze.ui.component.TextFieldMode
 import com.example.pauze.ui.theme.AppTheme
 import com.example.pauze.ui.theme.bodyTextMdMedium
 import com.example.pauze.ui.theme.bodyTextSmRegular

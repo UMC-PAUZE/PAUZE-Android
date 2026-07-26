@@ -34,8 +34,8 @@ import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import com.example.pauze.R
 import com.example.pauze.ui.component.Button
-import com.example.pauze.ui.login.component.ModeBasedTextField
-import com.example.pauze.ui.login.component.TextFieldMode
+import com.example.pauze.ui.component.ModeBasedTextField
+import com.example.pauze.ui.component.TextFieldMode
 import com.example.pauze.ui.theme.AppTheme
 import com.example.pauze.ui.theme.bodyTextLgMedium
 import com.example.pauze.ui.theme.bodyTextMdRegular
