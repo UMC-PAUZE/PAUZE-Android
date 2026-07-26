@@ -42,6 +42,7 @@ import com.example.pauze.ui.component.Button
 import com.example.pauze.ui.component.SensitivityScoreBar
 import com.example.pauze.ui.component.Destination
 import com.example.pauze.ui.component.NavigationButton
+import com.example.pauze.ui.pauze.PauzeStartActivity
 import com.example.pauze.ui.pauze.PauzeTodayConditionActivity
 import com.example.pauze.ui.theme.bodyTextLgBold
 import com.example.pauze.ui.theme.bodyTextLgRegular
@@ -71,7 +72,9 @@ fun HomeScreen(
                     context.startActivity(Intent(context, PauzeTodayConditionActivity::class.java))
                 }
                 is HomeEffect.MoveToBreathingBtn -> {
-
+                    val intent = Intent(context, PauzeStartActivity::class.java)
+                    intent.putExtra("Pauze Destination", "PauzeBreathing")
+                    context.startActivity(intent)
                 }
             }
         }

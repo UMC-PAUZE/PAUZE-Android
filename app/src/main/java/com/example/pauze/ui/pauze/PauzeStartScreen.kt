@@ -57,6 +57,13 @@ class PauzeStartActivity: ComponentActivity() {
         setContent{
             MainPaletteTheme {
                 val navController = rememberNavController()
+                // 홈에서 호흡 화면으로 바로 이동
+                val destination = intent.getStringExtra("Pauze Destination")
+                LaunchedEffect(destination) {
+                    if(destination == "PauzeBreathing"){
+                        navController.navigate(PauzeNavDestination.Breathing)
+                    }
+                }
                 NavHost(navController = navController, startDestination = PauzeNavDestination.Start){
                     composable<PauzeNavDestination.Start> {
                         PauzeStartScreen(this@PauzeStartActivity, navController)
