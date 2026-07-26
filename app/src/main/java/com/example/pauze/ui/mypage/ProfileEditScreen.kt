@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -25,6 +26,9 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.example.pauze.R
 import com.example.pauze.ui.component.Button
 import com.example.pauze.ui.component.ModeBasedTextField
@@ -40,10 +44,21 @@ import kotlinx.datetime.format.char
 
 @Composable
 fun ProfileEditScreen(
-    onBackClick: () -> Unit = {},
+    navController: NavController,
     onCameraClick: () -> Unit = {},
     onSaveClick: () -> Unit = {},
+    viewModel: MyPageViewModel = viewModel()
 ) {
+    LaunchedEffect(viewModel.effect) {
+        viewModel.effect.collect { effect ->
+            when (effect) {
+                is MyPageEffect.NavigateToBack -> navController.popBackStack()
+                is MyPageEffect.NavigateToEdit -> {}
+                is MyPageEffect.NavigateToAccount -> {}
+            }
+        }
+    }
+
     var nickname by remember { mutableStateOf("") }
     var bio by remember { mutableStateOf("") }
     var birthday by remember { mutableStateOf<LocalDate?>(null) }
@@ -61,7 +76,7 @@ fun ProfileEditScreen(
             .fillMaxSize()
             .background(color = AppTheme.palette.gray.getColor(9))
     ) {
-        TopBar("프로필 편집", onBackClick = onBackClick)
+        TopBar("프로필 편집", onBackClick = viewModel::onBackClick)
 
         Column(modifier = Modifier.weight(1f)) {
             Box(
@@ -162,6 +177,6 @@ fun ProfileEditScreen(
 @Composable
 private fun ProfileEditScreenPreview() {
     PAUZEAndroidTheme(darkTheme = true, dynamicColor = false) {
-        ProfileEditScreen()
+        ProfileEditScreen(navController = rememberNavController())
     }
 }

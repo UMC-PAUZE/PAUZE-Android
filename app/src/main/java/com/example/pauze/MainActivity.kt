@@ -7,12 +7,10 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -26,7 +24,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import androidx.core.content.ContextCompat.startActivity
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.compose.NavHost
@@ -34,8 +31,11 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.pauze.ui.home.HomeScreen
+import com.example.pauze.ui.mypage.AccountInfoScreen
+import com.example.pauze.ui.mypage.MyPageNavDestination
+import com.example.pauze.ui.mypage.MyPageScreen
+import com.example.pauze.ui.mypage.ProfileEditScreen
 import com.example.pauze.ui.pauze.PauzeStartActivity
-import com.example.pauze.ui.pauze.PauzeStartScreen
 import com.example.pauze.ui.report.ReportScreen
 import com.example.pauze.ui.theme.AppTheme
 import com.example.pauze.ui.theme.MainPaletteTheme
@@ -190,7 +190,13 @@ fun MainScreen(
 
             }
             composable<BottomNavDestination.MyPage> {
-
+                MyPageScreen(navController = navController)
+            }
+            composable<MyPageNavDestination.ProfileEdit> {
+                ProfileEditScreen(navController = navController)
+            }
+            composable<MyPageNavDestination.AccountInfo> {
+                AccountInfoScreen(onBackClick = { navController.popBackStack() })
             }
         }
     }

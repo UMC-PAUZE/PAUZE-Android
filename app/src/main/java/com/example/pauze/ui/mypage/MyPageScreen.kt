@@ -19,12 +19,16 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.example.pauze.R
 import com.example.pauze.ui.component.TopBar
 import com.example.pauze.ui.mypage.component.MySettings
@@ -40,9 +44,19 @@ import com.example.pauze.ui.theme.headingSmBold
 
 @Composable
 fun MyPageScreen(
-    onProfileClick: () -> Unit = {},
-    onAccountInfoClick: () -> Unit = {},
+    navController: NavController,
+    viewModel: MyPageViewModel = viewModel()
 ){
+    LaunchedEffect(viewModel.effect) {
+        viewModel.effect.collect { effect ->
+            when (effect) {
+                is MyPageEffect.NavigateToEdit -> navController.navigate(MyPageNavDestination.ProfileEdit)
+                is MyPageEffect.NavigateToAccount -> navController.navigate(MyPageNavDestination.AccountInfo)
+                is MyPageEffect.NavigateToBack -> {} // MyPageScreen엔 뒤로가기 없음
+            }
+        }
+    }
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -60,7 +74,7 @@ fun MyPageScreen(
             ProfileCard(
                 nickname = "조용한달빛님",
                 loginProvider = "카카오 계정 연동",
-                onClick = onProfileClick
+                onClick = viewModel::onProfileClick
             )
 
             Column {
@@ -90,13 +104,15 @@ fun MyPageScreen(
                     title = "일일 측정 리마인더",
                     caption = "매일 컨디션 입력 알림",
                     variant = MySettingsVariant.Toggle,
-                    toggleSelected = true
+                    toggleSelected = viewModel.dailyReminder,
+                    onClick = viewModel::toggleDailyReminder
                 )
                 MySettings(
                     title = "예민함 위험 알림",
                     caption = "수치가 높을 때 즉시 알림",
                     variant = MySettingsVariant.Toggle,
-                    toggleSelected = true
+                    toggleSelected = viewModel.riskAlert,
+                    onClick = viewModel::toggleRiskAlert
                 )
             }
 
@@ -105,19 +121,22 @@ fun MyPageScreen(
                     title = "호흡 가이드",
                     caption = "기본 안정 방법으로 사용",
                     variant = MySettingsVariant.Toggle,
-                    toggleSelected = true
+                    toggleSelected = viewModel.breathingGuide,
+                    onClick = viewModel::toggleBreathingGuide
                 )
                 MySettings(
                     title = "안정 사운드",
                     caption = "사운드 재생 활성화",
                     variant = MySettingsVariant.Toggle,
-                    toggleSelected = true
+                    toggleSelected = viewModel.stabilitySound,
+                    onClick = viewModel::toggleStabilitySound
                 )
                 MySettings(
                     title = "오프라인 콘텐츠",
                     caption = "사운드 미리 다운로드",
                     variant = MySettingsVariant.Toggle,
-                    toggleSelected = false
+                    toggleSelected = viewModel.offlineContent,
+                    onClick = viewModel::toggleOfflineContent
                 )
             }
 
@@ -126,7 +145,7 @@ fun MyPageScreen(
                     title = "계정 정보",
                     icon = painterResource(R.drawable.ic_information),
                     variant = MySettingsVariant.Button,
-                    onClick = onAccountInfoClick
+                    onClick = viewModel::onAccountInfoClick
                 )
                 MySettings(
                     title = "문의 및 피드백",
@@ -229,6 +248,6 @@ private fun SettingsSection(
 @Composable
 private fun MyPagePreview(){
     PAUZEAndroidTheme(darkTheme = true, dynamicColor = false){
-        MyPageScreen()
+        MyPageScreen(navController = rememberNavController())
     }
 }
