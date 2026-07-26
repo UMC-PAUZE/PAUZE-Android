@@ -44,11 +44,14 @@ fun SetBirthday(
 ){
     Column(
         modifier = Modifier
-            .fillMaxWidth().border(
+            .fillMaxWidth()
+            .border(
                 width = 1.dp,
                 color = AppTheme.palette.gray.getColor(6),
                 shape = RoundedCornerShape(size = 16.dp)
-            ).padding(
+            )
+            .clickable(onClick = onClick)
+            .padding(
                 horizontal = 16.dp, vertical = 14.dp
             )
     ){
@@ -67,7 +70,7 @@ fun SetBirthday(
                     else AppTheme.palette.gray.getColor(2)
             )
             Image(
-                modifier = Modifier.clickable(onClick = onClick),
+                modifier = Modifier,
                 painter = painterResource(R.drawable.ic_dropdown),
                 contentDescription = "dropdown button"
             )

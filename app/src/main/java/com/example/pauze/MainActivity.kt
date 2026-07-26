@@ -35,6 +35,7 @@ import com.example.pauze.ui.mypage.AccountInfoScreen
 import com.example.pauze.ui.mypage.MyPageNavDestination
 import com.example.pauze.ui.mypage.MyPageScreen
 import com.example.pauze.ui.mypage.ProfileEditScreen
+import com.example.pauze.ui.login.LoginActivity
 import com.example.pauze.ui.pauze.PauzeStartActivity
 import com.example.pauze.ui.report.ReportScreen
 import com.example.pauze.ui.theme.AppTheme
@@ -196,7 +197,11 @@ fun MainScreen(
                 ProfileEditScreen(navController = navController)
             }
             composable<MyPageNavDestination.AccountInfo> {
-                AccountInfoScreen(onBackClick = { navController.popBackStack() })
+                AccountInfoScreen(
+                    onBackClick = { navController.popBackStack() },
+                    onLogoutClick = { context.startActivity(Intent(context, LoginActivity::class.java)) },
+                    onWithdrawClick = { context.startActivity(Intent(context, LoginActivity::class.java)) }
+                )
             }
         }
     }

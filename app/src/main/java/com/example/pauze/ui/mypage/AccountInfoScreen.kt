@@ -10,9 +10,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.pauze.ui.component.Dialog
 import com.example.pauze.ui.component.TopBar
 import com.example.pauze.ui.mypage.component.MySettings
 import com.example.pauze.ui.mypage.component.MySettingsVariant
@@ -30,6 +35,8 @@ fun AccountInfoScreen(
     onLogoutClick: () -> Unit = {},
     onWithdrawClick: () -> Unit = {},
 ){
+    var showWithdrawDialog by remember { mutableStateOf(false) }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -71,7 +78,21 @@ fun AccountInfoScreen(
                 MySettings(
                     title = "회원 탈퇴",
                     titleColor = AppTheme.palette.secondary.getColor(4),
-                    onClick = onWithdrawClick
+                    onClick = { showWithdrawDialog = true }
+                )
+            }
+
+            if (showWithdrawDialog) {
+                Dialog(
+                    title = "탈퇴하시겠습니까?",
+                    content = "탈퇴 시 저장된 데이터가 모두 사라집니다.",
+                    btnCancel = "아니오",
+                    btnContinue = "예",
+                    onDismissRequest = { showWithdrawDialog = false },
+                    onContinue = {
+                        showWithdrawDialog = false
+                        onWithdrawClick()
+                    }
                 )
             }
         }
