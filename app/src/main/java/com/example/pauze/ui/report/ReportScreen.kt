@@ -33,6 +33,7 @@ import com.example.pauze.ui.component.Button
 import com.example.pauze.ui.component.Tab
 import com.example.pauze.ui.component.TopBar
 import com.example.pauze.ui.login.LoginActivity
+import com.example.pauze.ui.pauze.PauzeTodayConditionActivity
 import com.example.pauze.ui.report.component.InsightCard
 import com.example.pauze.ui.report.component.TriggerCard
 import com.example.pauze.ui.report.component.AverageScoreCard
@@ -52,8 +53,7 @@ fun ReportScreen(
         viewModel.effect.collect { effect ->
             when (effect){
                 is ReportEffect.NavigateToConditionInput -> {
-                    // todo: 오늘의 컨디션 입력 화면으로 이동
-                    // context.startActivity(Intent(context, PauzeTodayConditionActivity::class.java))
+                    context.startActivity(Intent(context, PauzeTodayConditionActivity::class.java))
                 }
                 is ReportEffect.NavigateToLogin -> {
                     context.startActivity(Intent(context, LoginActivity::class.java))
@@ -115,7 +115,6 @@ fun ReportScreen(
                     AverageScoreCard(viewModel.averageScore)
                     TriggerCard(viewModel.triggers)
                     InsightCard(viewModel.insight)
-                    Spacer(modifier = Modifier.height(136.dp)) // 네비게이션 바 자리
                 }
             }
         }
