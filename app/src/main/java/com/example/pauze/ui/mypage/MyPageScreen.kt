@@ -41,6 +41,7 @@ import com.example.pauze.ui.theme.headingSmBold
 @Composable
 fun MyPageScreen(
     onProfileClick: () -> Unit = {},
+    onAccountInfoClick: () -> Unit = {},
 ){
     Column(
         modifier = Modifier
@@ -124,7 +125,8 @@ fun MyPageScreen(
                 MySettings(
                     title = "계정 정보",
                     icon = painterResource(R.drawable.ic_information),
-                    variant = MySettingsVariant.Button
+                    variant = MySettingsVariant.Button,
+                    onClick = onAccountInfoClick
                 )
                 MySettings(
                     title = "문의 및 피드백",
