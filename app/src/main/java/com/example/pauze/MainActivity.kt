@@ -39,7 +39,6 @@ import com.example.pauze.ui.pauze.PauzeStartScreen
 import com.example.pauze.ui.theme.AppTheme
 import com.example.pauze.ui.theme.MainPaletteTheme
 import com.example.pauze.ui.theme.captionTextMedium
-import com.example.pauze.ui.pauze.PauzeTodayCondition
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -57,21 +56,17 @@ fun MainScreen(
     context: Context,
 ){
     val navController = rememberNavController()
-    val navBackStackEntry by navController.currentBackStackEntryAsState()
-    val isTodayConditionScreen =
-        navBackStackEntry?.destination?.hasRoute(BottomNavDestination.TodayCondition::class) == true
 
     Scaffold(
         containerColor = AppTheme.palette.gray.getColor(9),
         bottomBar = {
-            if (!isTodayConditionScreen) {
-                NavigationBar(
-                    containerColor = AppTheme.palette.gray.getColor(9),
-                ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically
-                    ){
+            NavigationBar(
+                containerColor = AppTheme.palette.gray.getColor(9),
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ){
                     NavigationBarItem(
                         selected = isSelected(navController, BottomNavDestination.Home),
                         onClick = {
@@ -173,7 +168,6 @@ fun MainScreen(
                             indicatorColor = Color.Transparent,
                         )
                     )
-                    }
                 }
             }
         },
@@ -185,12 +179,7 @@ fun MainScreen(
             startDestination = BottomNavDestination.Home
         ){
             composable<BottomNavDestination.Home>{
-                HomeScreen(
-                    context = context,
-                    onNavigateToTodayCondition = {
-                        navController.navigate(BottomNavDestination.TodayCondition)
-                    }
-                )
+                HomeScreen(context = context)
             }
             composable<BottomNavDestination.Report>{
 
@@ -200,17 +189,6 @@ fun MainScreen(
             }
             composable<BottomNavDestination.MyPage> {
 
-            }
-            composable<BottomNavDestination.TodayCondition> {
-                PauzeTodayCondition(
-                    onExitClick = { navController.popBackStack() },
-                    onNavigateHome = {
-                        navController.navigate(BottomNavDestination.Home) {
-                            popUpTo(BottomNavDestination.Home)
-                            launchSingleTop = true
-                        }
-                    }
-                )
             }
         }
     }

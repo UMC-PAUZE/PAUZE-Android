@@ -1,6 +1,10 @@
 package com.example.pauze.ui.pauze
 
 import android.content.Intent
+import android.os.Bundle
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -29,10 +33,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.pauze.MainActivity
 import com.example.pauze.ui.component.CondtionAnswer
+import com.example.pauze.ui.component.Dialog
 import com.example.pauze.ui.component.PhaseBar
 import com.example.pauze.ui.component.SensitivityScoreBar
 import com.example.pauze.ui.component.TopBar
@@ -44,11 +48,22 @@ import com.example.pauze.ui.theme.bodyTextMdRegular
 import com.example.pauze.ui.theme.bodyTextSmRegular
 import com.example.pauze.ui.theme.headingMdBold
 
+class PauzeTodayConditionActivity : ComponentActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
+        setContent {
+            MainPaletteTheme {
+                PauzeTodayCondition(onExitClick = ::finish)
+            }
+        }
+    }
+}
+
 @Composable
 fun PauzeTodayCondition(
     modifier: Modifier = Modifier,
     onExitClick: () -> Unit = {},
-    onNavigateHome: (() -> Unit)? = null,
     viewModel: PauzeTodayConditionViewModel = viewModel()
 ) {
     val context = LocalContext.current
@@ -63,16 +78,12 @@ fun PauzeTodayCondition(
                 TodayConditionEffect.ShowExitDialog -> showExitDialog = true
                 TodayConditionEffect.NavigateBack -> onExitClick()
                 TodayConditionEffect.NavigateToMainActivity -> {
-                    if (onNavigateHome != null) {
-                        onNavigateHome()
-                    } else {
-                        context.startActivity(
-                            Intent(context, MainActivity::class.java).apply {
-                                flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or
-                                    Intent.FLAG_ACTIVITY_SINGLE_TOP
-                            }
-                        )
-                    }
+                    context.startActivity(
+                        Intent(context, MainActivity::class.java).apply {
+                            flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or
+                                Intent.FLAG_ACTIVITY_SINGLE_TOP
+                        }
+                    )
                 }
                 TodayConditionEffect.NavigateToPauzeStartActivity -> {
                     context.startActivity(Intent(context, PauzeStartActivity::class.java))
@@ -171,12 +182,16 @@ fun PauzeTodayCondition(
     }
 
     if (showExitDialog) {
-        ConditionExitDialog(
-            onExitClick = {
+        Dialog(
+            title = "오늘의 컨디션 작성하기를\n중단하시겠어요?",
+            content = "작성한 내용은 저장되지 않습니다.",
+            btnCancel = "중단하기",
+            btnContinue = "계속하기",
+            onDismissRequest = {
                 showExitDialog = false
                 viewModel.confirmExit()
             },
-            onContinueClick = { showExitDialog = false }
+            onContinue = { showExitDialog = false }
         )
     }
 }
@@ -332,92 +347,6 @@ private fun ResultActionButton(
 private fun PauzeTodayConditionPreview() {
     MainPaletteTheme {
         PauzeTodayCondition()
-    }
-}
-
-@Composable
-private fun ConditionExitDialog(
-    onExitClick: () -> Unit,
-    onContinueClick: () -> Unit
-) {
-    Dialog(onDismissRequest = onContinueClick) {
-        Column(
-            modifier = Modifier
-                .width(292.dp)
-                .background(
-                    color = AppTheme.palette.base.getColor(0),
-                    shape = RoundedCornerShape(24.dp)
-                ),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Spacer(modifier = Modifier.height(32.dp))
-
-            Text(
-                text = "오늘의 컨디션 작성하기를\n중단하시겠어요?",
-                style = bodyTextXlBold,
-                color = AppTheme.palette.gray.getColor(1),
-                textAlign = TextAlign.Center
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Text(
-                text = "작성한 내용은 저장되지 않습니다.",
-                style = bodyTextMdRegular,
-                color = AppTheme.palette.gray.getColor(2),
-                textAlign = TextAlign.Center
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(1.dp)
-                    .background(AppTheme.palette.gray.getColor(7))
-            )
-
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(56.dp)
-            ) {
-                Box(
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxSize()
-                        .clickable(onClick = onExitClick),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "중단하기",
-                        style = bodyTextLgBold,
-                        color = AppTheme.palette.gray.getColor(2)
-                    )
-                }
-
-                Box(
-                    modifier = Modifier
-                        .width(1.dp)
-                        .fillMaxSize()
-                        .background(AppTheme.palette.gray.getColor(7))
-                )
-
-                Box(
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxSize()
-                        .clickable(onClick = onContinueClick),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "계속하기",
-                        style = bodyTextLgBold,
-                        color = AppTheme.palette.gray.getColor(2)
-                    )
-                }
-            }
-        }
     }
 }
 

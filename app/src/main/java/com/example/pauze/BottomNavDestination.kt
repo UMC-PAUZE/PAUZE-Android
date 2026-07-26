@@ -20,8 +20,4 @@ sealed interface BottomNavDestination {
     object MyPage: BottomNavDestination {
         override val route = "MyPage"
     }
-    @Serializable
-    object TodayCondition: BottomNavDestination {
-        override val route = "TodayCondition"
-    }
 }

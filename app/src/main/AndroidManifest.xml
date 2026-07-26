@@ -54,6 +54,8 @@
             android:exported="false"/>
         <activity android:name=".ui.pauze.PauzeStartActivity"
             android:exported="false"/>
+        <activity android:name=".ui.pauze.PauzeTodayConditionActivity"
+            android:exported="false"/>
     </application>
 
 </manifest>
