@@ -20,6 +20,7 @@ import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -29,11 +30,14 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat.startActivity
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination.Companion.hasRoute
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.example.pauze.ui.curation.CurationBoardScreen
 import com.example.pauze.ui.home.HomeScreen
+import com.example.pauze.ui.pauze.PauzeNavDestination
 import com.example.pauze.ui.pauze.PauzeStartActivity
 import com.example.pauze.ui.pauze.PauzeStartScreen
 import com.example.pauze.ui.report.ReportScreen
@@ -47,7 +51,19 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             MainPaletteTheme {
-                MainScreen(context = this)
+                val navController = rememberNavController()
+                // PauzeOverloadScreen에서 발견 탭으로 이동
+                val destination = intent.getStringExtra("Bottom Navigation Destination")
+                LaunchedEffect(destination) {
+                    if(destination == "Find"){
+                        navController.navigate(BottomNavDestination.Find){
+                            popUpTo(BottomNavDestination.Find)
+                            launchSingleTop = true
+                            restoreState = true
+                        }
+                    }
+                }
+                MainScreen(this, navController)
             }
         }
     }
@@ -55,9 +71,8 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun MainScreen(
     context: Context,
+    navController: NavHostController,
 ){
-    val navController = rememberNavController()
-
     Scaffold(
         containerColor = AppTheme.palette.gray.getColor(9),
         bottomBar = {
@@ -187,10 +202,10 @@ fun MainScreen(
                 ReportScreen(context = context, isGuest = false)
             }
             composable<BottomNavDestination.Find>{
-
+                CurationBoardScreen()
             }
             composable<BottomNavDestination.MyPage> {
-
+                // todo: 마이페이지 추가
             }
         }
     }
