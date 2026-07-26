@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.asStateFlow
 
 sealed interface PauzeOverloadEffect {
     object BackStack: PauzeOverloadEffect
+    object NavigateToFind: PauzeOverloadEffect
 }
 
 class PauzeOverloadViewModel: BaseViewModel<PauzeOverloadEffect>() {
@@ -35,5 +36,8 @@ class PauzeOverloadViewModel: BaseViewModel<PauzeOverloadEffect>() {
     }
     fun backStack(){
         sendEffect(PauzeOverloadEffect.BackStack)
+    }
+    fun navigateToFind(){
+        sendEffect(PauzeOverloadEffect.NavigateToFind)
     }
 }

@@ -77,6 +77,9 @@ class PauzeStartActivity: ComponentActivity() {
                     composable<PauzeNavDestination.Visual> {
                         PauzeVisualScreen(navController)
                     }
+                    composable<PauzeNavDestination.Overload> {
+                        PauzeOverloadScreen(this@PauzeStartActivity, navController)
+                    }
                 }
             }
         }
@@ -102,7 +105,7 @@ fun PauzeStartScreen(
                     navController.navigate(PauzeNavDestination.Visual)
                 }
                 is PauzeStartEffect.NavigateToGuide -> {
-                    // todo: 과한 에너지 소모로 이동
+                    navController.navigate(PauzeNavDestination.Overload)
                 }
                 is PauzeStartEffect.NavigateToHome -> {
                    context.startActivity(Intent(context, MainActivity::class.java))

@@ -1,5 +1,7 @@
 package com.example.pauze.ui.pauze
 
+import android.content.Context
+import android.content.Intent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -31,6 +33,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
+import com.example.pauze.MainActivity
 import com.example.pauze.R
 import com.example.pauze.data.model.InstantAction
 import com.example.pauze.data.model.RestGuide
@@ -45,6 +49,8 @@ import com.example.pauze.ui.theme.bodyTextXlBold
 
 @Composable
 fun PauzeOverloadScreen(
+    context: Context,
+    navController: NavController,
     viewModel: PauzeOverloadViewModel = viewModel()
 ){
     val actions by viewModel.instantActions.collectAsState()
@@ -54,7 +60,12 @@ fun PauzeOverloadScreen(
         viewModel.effect.collect { effect ->
             when(effect){
                 is PauzeOverloadEffect.BackStack -> {
-
+                    navController.popBackStack()
+                }
+                is PauzeOverloadEffect.NavigateToFind -> {
+                    val intent = Intent(context, MainActivity::class.java)
+                    intent.putExtra("Bottom Navigation Destination", "Find")
+                    context.startActivity(intent)
                 }
             }
         }
@@ -88,9 +99,12 @@ fun PauzeOverloadScreen(
             items(guideList.size) { index ->
                 RestGuide(guide = guideList[index])
             }
+            item {
+                Spacer(modifier = Modifier.height(48.dp))
+                NavigationButton(toWhere = Destination.Find, onClick = { viewModel.navigateToFind() })
+                Spacer(modifier = Modifier.height(40.dp))
+            }
         }
-        Spacer(modifier = Modifier.height(48.dp))
-        NavigationButton(toWhere = Destination.Find, onClick = {})
     }
 }
 
