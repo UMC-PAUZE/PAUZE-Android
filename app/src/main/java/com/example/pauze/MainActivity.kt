@@ -36,6 +36,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.pauze.ui.home.HomeScreen
 import com.example.pauze.ui.pauze.PauzeStartActivity
 import com.example.pauze.ui.pauze.PauzeStartScreen
+import com.example.pauze.ui.report.ReportScreen
 import com.example.pauze.ui.theme.AppTheme
 import com.example.pauze.ui.theme.MainPaletteTheme
 import com.example.pauze.ui.theme.captionTextMedium
@@ -56,6 +57,7 @@ fun MainScreen(
     context: Context,
 ){
     val navController = rememberNavController()
+
     Scaffold(
         containerColor = AppTheme.palette.gray.getColor(9),
         bottomBar = {
@@ -181,7 +183,8 @@ fun MainScreen(
                 HomeScreen(context = context)
             }
             composable<BottomNavDestination.Report>{
-
+                // todo: 나중에 isGuest쪽 수정 현재-게스트모드 x
+                ReportScreen(context = context, isGuest = false)
             }
             composable<BottomNavDestination.Find>{
 
