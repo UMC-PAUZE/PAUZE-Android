@@ -82,12 +82,14 @@ fun ReportScreen(
             Tab(
                 text = "이번 주",
                 selected = !isGuest && viewModel.selectedPeriod == ReportPeriod.WEEKLY,
+                enabled = !isGuest,
                 onClick = { viewModel.selectPeriod(ReportPeriod.WEEKLY) },
                 modifier = Modifier.weight(1f)
             )
             Tab(
                 text = "이번 달",
                 selected = !isGuest && viewModel.selectedPeriod == ReportPeriod.MONTHLY,
+                enabled = !isGuest,
                 onClick = { viewModel.selectPeriod(ReportPeriod.MONTHLY) },
                 modifier = Modifier.weight(1f)
             )
@@ -174,7 +176,7 @@ private fun ReportScreenGuestPreview() {
                 .fillMaxSize()
                 .background(AppTheme.palette.gray.getColor(9))
         ) {
-            ReportScreen(isGuest = false, context = LocalContext.current)
+            ReportScreen(isGuest = true, context = LocalContext.current)
         }
     }
 }
