@@ -57,6 +57,7 @@ fun MainScreen(
     context: Context,
 ){
     val navController = rememberNavController()
+
     Scaffold(
         containerColor = AppTheme.palette.gray.getColor(9),
         bottomBar = {

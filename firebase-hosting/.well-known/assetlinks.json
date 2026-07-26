@@ -1,0 +1,14 @@
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.example.pauze",
+      "sha256_cert_fingerprints": [
+        "61:D9:0A:BB:BB:FE:94:C9:63:C5:F9:BC:1D:40:7A:76:D8:B8:DC:B8:BA:56:5D:1D:D1:D1:EE:B6:A9:92:C8:BD"
+      ]
+    }
+  }
+]
