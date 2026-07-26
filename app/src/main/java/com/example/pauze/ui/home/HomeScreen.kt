@@ -53,6 +53,7 @@ import com.example.pauze.ui.theme.headingSmBold
 @Composable
 fun HomeScreen(
     context: Context,
+    onNavigateToTodayCondition: () -> Unit,
     viewModel: HomeViewModel = viewModel()
 ){
     val condition by viewModel.dummy.collectAsState()
@@ -66,7 +67,7 @@ fun HomeScreen(
         viewModel.effect.collect { effect ->
             when(effect){
                 is HomeEffect.MoveToTodayCondition -> {
-
+                    onNavigateToTodayCondition()
                 }
                 is HomeEffect.MoveToBreathingBtn -> {
 

@@ -48,6 +48,7 @@ import com.example.pauze.ui.theme.headingMdBold
 fun PauzeTodayCondition(
     modifier: Modifier = Modifier,
     onExitClick: () -> Unit = {},
+    onNavigateHome: (() -> Unit)? = null,
     viewModel: PauzeTodayConditionViewModel = viewModel()
 ) {
     val context = LocalContext.current
@@ -62,12 +63,16 @@ fun PauzeTodayCondition(
                 TodayConditionEffect.ShowExitDialog -> showExitDialog = true
                 TodayConditionEffect.NavigateBack -> onExitClick()
                 TodayConditionEffect.NavigateToMainActivity -> {
-                    context.startActivity(
-                        Intent(context, MainActivity::class.java).apply {
-                            flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or
-                                Intent.FLAG_ACTIVITY_SINGLE_TOP
-                        }
-                    )
+                    if (onNavigateHome != null) {
+                        onNavigateHome()
+                    } else {
+                        context.startActivity(
+                            Intent(context, MainActivity::class.java).apply {
+                                flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or
+                                    Intent.FLAG_ACTIVITY_SINGLE_TOP
+                            }
+                        )
+                    }
                 }
                 TodayConditionEffect.NavigateToPauzeStartActivity -> {
                     context.startActivity(Intent(context, PauzeStartActivity::class.java))
