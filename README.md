@@ -80,7 +80,7 @@ ___
 4. 실행할 디바이스를 설정한다
 5. Run 버튼이나 Shift + F10을 눌러 애플리케이션을 실행한다
 
-### 참조
+### 🔗 참조
 - compose-date-time-picker<br>
 https://github.com/darkokoa/compose-datetime-wheel-picker
 
