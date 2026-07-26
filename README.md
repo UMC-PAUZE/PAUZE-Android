@@ -27,9 +27,10 @@
 ```text
 project
 ├── data
+│   ├── datasource
+│   ├── dummies
 │   ├── model
-│   ├── repository
-│   └── datasource
+│   └── repository
 └── ui
     ├── component
     ├── curation
