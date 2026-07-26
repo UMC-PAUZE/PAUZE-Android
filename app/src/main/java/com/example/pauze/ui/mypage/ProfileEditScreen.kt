@@ -1,5 +1,8 @@
 package com.example.pauze.ui.mypage
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -22,6 +25,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
@@ -29,6 +34,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import coil.compose.AsyncImage
 import com.example.pauze.R
 import com.example.pauze.ui.component.Button
 import com.example.pauze.ui.component.ModeBasedTextField
@@ -45,7 +51,6 @@ import kotlinx.datetime.format.char
 @Composable
 fun ProfileEditScreen(
     navController: NavController,
-    onCameraClick: () -> Unit = {},
     onSaveClick: () -> Unit = {},
     viewModel: ProfileEditViewModel = viewModel()
 ) {
@@ -65,6 +70,10 @@ fun ProfileEditScreen(
         monthNumber(); char('.'); char(' ')
         day()
     }
+
+    val pickImageLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickVisualMedia()
+    ) { uri -> uri?.let { viewModel.profileImageUri = it } }
 
     Column(
         modifier = Modifier
@@ -90,12 +99,23 @@ fun ProfileEditScreen(
                             ),
                         contentAlignment = Alignment.Center
                     ) {
-                        Icon(
-                            painter = painterResource(R.drawable.ic_person),
-                            contentDescription = "프로필 이미지",
-                            tint = AppTheme.palette.gray.getColor(8),
-                            modifier = Modifier.size(width = 57.dp, height = 73.dp)
-                        )
+                        if (viewModel.profileImageUri != null) {
+                            AsyncImage(
+                                model = viewModel.profileImageUri,
+                                contentDescription = "프로필 이미지",
+                                modifier = Modifier
+                                    .size(88.dp)
+                                    .clip(CircleShape),
+                                contentScale = ContentScale.Crop
+                            )
+                        } else {
+                            Icon(
+                                painter = painterResource(R.drawable.ic_person),
+                                contentDescription = "프로필 이미지",
+                                tint = AppTheme.palette.gray.getColor(8),
+                                modifier = Modifier.size(width = 57.dp, height = 73.dp)
+                            )
+                        }
                     }
                     Box(
                         modifier = Modifier
@@ -105,7 +125,11 @@ fun ProfileEditScreen(
                                 color = AppTheme.palette.gray.getColor(4),
                                 shape = CircleShape
                             )
-                            .clickable(onClick = onCameraClick),
+                            .clickable {
+                                pickImageLauncher.launch(
+                                    PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                                )
+                            },
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
