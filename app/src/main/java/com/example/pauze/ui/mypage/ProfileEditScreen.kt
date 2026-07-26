@@ -30,8 +30,8 @@ import com.example.pauze.ui.component.Button
 import com.example.pauze.ui.component.ModeBasedTextField
 import com.example.pauze.ui.component.TextFieldMode
 import com.example.pauze.ui.component.TopBar
-import com.example.pauze.ui.login.BirthdayBottomSheet
-import com.example.pauze.ui.login.SetBirthday
+import com.example.pauze.ui.component.BirthdayBottomSheet
+import com.example.pauze.ui.component.SetBirthday
 import com.example.pauze.ui.theme.AppTheme
 import com.example.pauze.ui.theme.PAUZEAndroidTheme
 import kotlinx.datetime.LocalDate
