@@ -22,7 +22,6 @@
 - Datetime Wheel Picker 1.3.1
 #### 오픈소스 라이브러리
 - compose-datetime-wheel-picker by darkokoa
-https://github.com/darkokoa/compose-datetime-wheel-picker
 
 ### 📁 폴더 구조
 ```text
@@ -81,8 +80,12 @@ ___
 4. 실행할 디바이스를 설정한다
 5. Run 버튼이나 Shift + F10을 눌러 애플리케이션을 실행한다
 
+### 참조
+- compose-date-time-picker<br>
+https://github.com/darkokoa/compose-datetime-wheel-picker
+
 ---
-### 구현 화면
+### 📱구현 화면(2026.07.26 기준)
 |     화면 이름      |          스크린 ID           |  담당자   |
 |:--------------:|:-------------------------:|:------:|
 |      로그인       |        LoginScreen        | 단/이다은  | 
