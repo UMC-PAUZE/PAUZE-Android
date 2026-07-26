@@ -6,7 +6,6 @@ import androidx.compose.runtime.setValue
 import com.example.pauze.ui.BaseViewModel
 
 sealed interface MyPageEffect {
-    object NavigateToBack: MyPageEffect
     object NavigateToEdit: MyPageEffect
     object NavigateToAccount: MyPageEffect
 }
@@ -23,7 +22,6 @@ class MyPageViewModel: BaseViewModel<MyPageEffect>() {
     var offlineContent by mutableStateOf(false)
         private set
 
-    fun onBackClick() = sendEffect(MyPageEffect.NavigateToBack)
     fun onProfileClick() = sendEffect(MyPageEffect.NavigateToEdit)
     fun onAccountInfoClick() = sendEffect(MyPageEffect.NavigateToAccount)
 

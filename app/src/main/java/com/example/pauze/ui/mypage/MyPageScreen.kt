@@ -52,7 +52,6 @@ fun MyPageScreen(
             when (effect) {
                 is MyPageEffect.NavigateToEdit -> navController.navigate(MyPageNavDestination.ProfileEdit)
                 is MyPageEffect.NavigateToAccount -> navController.navigate(MyPageNavDestination.AccountInfo)
-                is MyPageEffect.NavigateToBack -> {} // MyPageScreen엔 뒤로가기 없음
             }
         }
     }

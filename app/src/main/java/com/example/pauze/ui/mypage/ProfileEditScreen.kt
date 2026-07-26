@@ -47,21 +47,16 @@ fun ProfileEditScreen(
     navController: NavController,
     onCameraClick: () -> Unit = {},
     onSaveClick: () -> Unit = {},
-    viewModel: MyPageViewModel = viewModel()
+    viewModel: ProfileEditViewModel = viewModel()
 ) {
     LaunchedEffect(viewModel.effect) {
         viewModel.effect.collect { effect ->
             when (effect) {
-                is MyPageEffect.NavigateToBack -> navController.popBackStack()
-                is MyPageEffect.NavigateToEdit -> {}
-                is MyPageEffect.NavigateToAccount -> {}
+                is ProfileEditEffect.NavigateToBack -> navController.popBackStack()
             }
         }
     }
 
-    var nickname by remember { mutableStateOf("") }
-    var bio by remember { mutableStateOf("") }
-    var birthday by remember { mutableStateOf<LocalDate?>(null) }
     var tempDay by remember { mutableStateOf<LocalDate?>(null) }
     var showBottomSheet by remember { mutableStateOf(false) }
 
@@ -133,21 +128,21 @@ fun ProfileEditScreen(
             ) {
                 ModeBasedTextField(
                     mode = TextFieldMode.Nickname,
-                    value = nickname,
-                    onValueChanged = { nickname = it },
+                    value = viewModel.nickname,
+                    onValueChanged = { viewModel.nickname = it },
                     imeAction = ImeAction.Next
                 )
 
                 ModeBasedTextField(
                     mode = TextFieldMode.Bio,
-                    value = bio,
-                    onValueChanged = { bio = it },
+                    value = viewModel.bio,
+                    onValueChanged = { viewModel.bio = it },
                     imeAction = ImeAction.Done,
-                    commentText = "${bio.length}/30"
+                    commentText = "${viewModel.bio.length}/30"
                 )
 
                 SetBirthday(
-                    birthday = birthday?.format(dateFormat) ?: "생년월일을 입력해보세요.",
+                    birthday = viewModel.birthday?.format(dateFormat) ?: "생년월일을 입력해보세요.",
                     onClick = { showBottomSheet = true }
                 )
             }
@@ -157,14 +152,14 @@ fun ProfileEditScreen(
             BirthdayBottomSheet(
                 onDismissRequest = { showBottomSheet = false },
                 onDateChanged = { tempDay = it },
-                onClick = { birthday = tempDay; showBottomSheet = false }
+                onClick = { viewModel.birthday = tempDay; showBottomSheet = false }
             )
         }
 
         Button(
             label = "저장하기",
             onClick = onSaveClick,
-            enabled = false,
+            enabled = viewModel.nickname.length >= 2,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 24.dp)
