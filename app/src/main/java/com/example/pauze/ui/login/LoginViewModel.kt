@@ -11,7 +11,9 @@ sealed interface LoginEffect{
     object NavigateToHome : LoginEffect
     object NavigateToSignUp : LoginEffect
 }
-class LoginViewModel: BaseViewModel<LoginEffect>() {
+class LoginViewModel(): BaseViewModel<LoginEffect, null>(
+    uiState = Ba
+) {
     fun loginWithKakao(){
         launch {
             // todo: 카카오 로그인 구현
