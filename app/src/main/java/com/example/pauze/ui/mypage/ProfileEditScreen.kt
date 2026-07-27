@@ -51,7 +51,6 @@ import kotlinx.datetime.format.char
 @Composable
 fun ProfileEditScreen(
     navController: NavController,
-    onSaveClick: () -> Unit = {},
     viewModel: ProfileEditViewModel = viewModel()
 ) {
     LaunchedEffect(viewModel.effect) {
@@ -182,7 +181,7 @@ fun ProfileEditScreen(
 
         Button(
             label = "저장하기",
-            onClick = onSaveClick,
+            onClick = viewModel::onSaveClick,
             enabled = viewModel.nickname.length >= 2,
             modifier = Modifier
                 .fillMaxWidth()

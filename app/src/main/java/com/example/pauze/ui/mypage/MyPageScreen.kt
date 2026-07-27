@@ -30,6 +30,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.pauze.R
+import com.example.pauze.data.repository.UserProfileRepository
 import com.example.pauze.ui.component.TopBar
 import com.example.pauze.ui.mypage.component.MySettings
 import com.example.pauze.ui.mypage.component.MySettingsVariant
@@ -71,7 +72,7 @@ fun MyPageScreen(
             verticalArrangement = Arrangement.spacedBy(48.dp)
         ) {
             ProfileCard(
-                nickname = "조용한달빛님",
+                nickname = UserProfileRepository.nickname,
                 loginProvider = "카카오 계정 연동",
                 onClick = viewModel::onProfileClick
             )

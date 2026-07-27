@@ -1,21 +1,32 @@
 package com.example.pauze.ui.mypage
 
-import android.net.Uri
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
+import com.example.pauze.data.repository.UserProfileRepository
 import com.example.pauze.ui.BaseViewModel
-import kotlinx.datetime.LocalDate
 
 sealed interface ProfileEditEffect {
     object NavigateToBack : ProfileEditEffect
 }
 
 class ProfileEditViewModel : BaseViewModel<ProfileEditEffect>() {
-    var nickname by mutableStateOf("")
-    var bio by mutableStateOf("")
-    var birthday by mutableStateOf<LocalDate?>(null)
-    var profileImageUri by mutableStateOf<Uri?>(null)
+    var nickname
+        get() = UserProfileRepository.nickname
+        set(value) { UserProfileRepository.nickname = value }
+
+    var bio
+        get() = UserProfileRepository.bio
+        set(value) { UserProfileRepository.bio = value }
+
+    var birthday
+        get() = UserProfileRepository.birthday
+        set(value) { UserProfileRepository.birthday = value }
+
+    var profileImageUri
+        get() = UserProfileRepository.profileImageUri
+        set(value) { UserProfileRepository.profileImageUri = value }
 
     fun onBackClick() = sendEffect(ProfileEditEffect.NavigateToBack)
+
+    fun onSaveClick() {
+        sendEffect(ProfileEditEffect.NavigateToBack)
+    }
 }
