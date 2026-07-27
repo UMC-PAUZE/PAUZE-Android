@@ -89,13 +89,22 @@ private fun PauzeVisualMethodCard(
             .clickable(onClick = onClick)
             .padding(16.dp)
     ) {
-        Icon(
-            painter = painterResource(id = R.drawable.ic_round_headset),
-            contentDescription = null,
-            tint = AppTheme.palette.primary.getColor(0),
-            modifier = Modifier.size(48.dp)
-        )
-
+        if (title == "호흡 가이드") {
+            Icon(
+                painter = painterResource(id = R.drawable.ic_meditation_visual),
+                contentDescription = null,
+                tint = AppTheme.palette.primary.getColor(4),
+                modifier = Modifier.size(48.dp)
+            )
+        }
+        else {
+            Icon(
+                painter = painterResource(id = R.drawable.ic_calm_visual),
+                contentDescription = null,
+                tint = AppTheme.palette.tertiary.getColor(3),
+                modifier = Modifier.size(48.dp)
+            )
+        }
         Spacer(modifier = Modifier.height(24.dp))
 
         Text(
