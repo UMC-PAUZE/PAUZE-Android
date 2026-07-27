@@ -2,6 +2,7 @@ package com.example.pauze.ui.pauze
 
 import android.content.Context
 import android.content.Intent
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -18,6 +19,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -32,6 +34,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.pauze.MainActivity
@@ -53,8 +56,7 @@ fun PauzeOverloadScreen(
     navController: NavController,
     viewModel: PauzeOverloadViewModel = viewModel()
 ){
-    val actions by viewModel.instantActions.collectAsState()
-    val guideList by viewModel.restGuideList.collectAsState()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     LaunchedEffect(viewModel.effect) {
         viewModel.effect.collect { effect ->
@@ -79,30 +81,37 @@ fun PauzeOverloadScreen(
     ){
         TopBar(
             "과한 에너지 소모",
-            modifier = Modifier.padding(top = 40.dp, bottom = 16.dp),
             onBackClick = { viewModel.backStack() }
         )
         Spacer(modifier = Modifier.height(24.dp))
-        Text("지금 바로 할 수 있어요", style = bodyTextXlBold, color = AppTheme.palette.gray.getColor(2))
-        Spacer(modifier = Modifier.height(16.dp))
-        LazyRow {
-            items(actions.size){ index ->
-                InstantActions(action = actions[index])
-            }
+        if(uiState.isLoading){
+            CircularProgressIndicator()
         }
-        Spacer(modifier = Modifier.height(48.dp))
-        Text("쉼 가이드", style = bodyTextXlBold, color = AppTheme.palette.gray.getColor(2))
-        Spacer(modifier = Modifier.height(16.dp))
-        LazyColumn(
-            modifier = Modifier.fillMaxWidth().weight(1f)
-        ) {
-            items(guideList.size) { index ->
-                RestGuide(guide = guideList[index])
+        else if(uiState.error != null) {
+            Text("오류가 발생했습니다\n다시 시도해주세요", style = bodyTextXlBold, color = AppTheme.palette.gray.getColor(2))
+        }
+        else {
+            Text("지금 바로 할 수 있어요", style = bodyTextXlBold, color = AppTheme.palette.gray.getColor(2))
+            Spacer(modifier = Modifier.height(16.dp))
+            LazyRow {
+                items(uiState.data.instantActions.size){ index ->
+                    InstantActions(action = uiState.data.instantActions[index])
+                }
             }
-            item {
-                Spacer(modifier = Modifier.height(48.dp))
-                NavigationButton(toWhere = Destination.Find, onClick = { viewModel.navigateToFind() })
-                Spacer(modifier = Modifier.height(40.dp))
+            Spacer(modifier = Modifier.height(48.dp))
+            Text("쉼 가이드", style = bodyTextXlBold, color = AppTheme.palette.gray.getColor(2))
+            Spacer(modifier = Modifier.height(16.dp))
+            LazyColumn(
+                modifier = Modifier.fillMaxWidth().weight(1f)
+            ) {
+                items(uiState.data.restGuideList.size) { index ->
+                    RestGuide(guide = uiState.data.restGuideList[index])
+                }
+                item {
+                    Spacer(modifier = Modifier.height(48.dp))
+                    NavigationButton(toWhere = Destination.Find, onClick = { viewModel.navigateToFind() })
+                    Spacer(modifier = Modifier.height(40.dp))
+                }
             }
         }
     }
