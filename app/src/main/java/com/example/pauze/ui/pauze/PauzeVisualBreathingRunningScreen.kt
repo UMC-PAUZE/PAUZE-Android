@@ -1,0 +1,215 @@
+package com.example.pauze.ui.pauze
+
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.lerp
+import androidx.compose.ui.unit.sp
+import com.example.pauze.data.model.BreathPhase
+import com.example.pauze.ui.theme.AppTheme
+import com.example.pauze.ui.theme.bodyTextLgRegular
+import com.example.pauze.ui.theme.headingLgBold
+import kotlinx.coroutines.delay
+
+private const val INHALE_SECONDS = 4
+private const val HOLD_SECONDS = 7
+private const val EXHALE_SECONDS = 8
+private const val BREATH_CYCLE_SECONDS = INHALE_SECONDS + HOLD_SECONDS + EXHALE_SECONDS
+
+@Composable
+fun PauzeVisualBreathingRunningScreen(
+    totalSeconds: Int,
+    onStopClick: () -> Unit,
+    onFinish: () -> Unit
+) {
+    var remainingSeconds by remember(totalSeconds) {
+        mutableStateOf(totalSeconds)
+    }
+    var showStopDialog by remember {
+        mutableStateOf(false)
+    }
+
+    LaunchedEffect(totalSeconds, showStopDialog) {
+        while (remainingSeconds > 0 && !showStopDialog) {
+            delay(1000L)
+            remainingSeconds = (remainingSeconds - 1).coerceAtLeast(0)
+        }
+    }
+
+    LaunchedEffect(remainingSeconds) {
+        if (remainingSeconds == 0) {
+            onFinish()
+        }
+    }
+
+    val elapsedSeconds = totalSeconds - remainingSeconds
+    val breathAnimationState = calculateBreathAnimationState(elapsedSeconds)
+    val minute = remainingSeconds / 60
+    val second = remainingSeconds % 60
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black)
+            .clickable(enabled = !showStopDialog) {
+                showStopDialog = true
+            },
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            PauzeVisualBreathingCircle(progress = breathAnimationState.progress)
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            Text(
+                text = breathAnimationState.guideText,
+                style = headingLgBold,
+                color = AppTheme.palette.gray.getColor(7),
+                textAlign = TextAlign.Center
+            )
+
+            Spacer(modifier = Modifier.height(56.dp))
+
+            Text(
+                text = "%02d : %02d".format(minute, second),
+                style = headingLgBold.copy(
+                    fontSize = 48.sp,
+                    lineHeight = 48.sp
+                ),
+                color = AppTheme.palette.gray.getColor(7)
+            )
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            Text(
+                text = "화면을 탭하면 종료됩니다.",
+                style = bodyTextLgRegular,
+                color = AppTheme.palette.gray.getColor(7)
+            )
+        }
+
+        if (showStopDialog) {
+            PauzeVisualStopDialog(
+                title = "호흡 가이드를 중단하시겠어요?",
+                onStopClick = onStopClick,
+                onContinueClick = { showStopDialog = false }
+            )
+        }
+    }
+}
+
+@Composable
+private fun PauzeVisualBreathingCircle(
+    progress: Float,
+    modifier: Modifier = Modifier
+) {
+    val outerSize by animateDpAsState(
+        targetValue = lerp(220.dp, 312.dp, progress),
+        animationSpec = tween(durationMillis = 1000, easing = LinearEasing),
+        label = "visualBreathingOuterSize"
+    )
+    val innerSize by animateDpAsState(
+        targetValue = lerp(180.dp, 218.dp, progress),
+        animationSpec = tween(durationMillis = 1000, easing = LinearEasing),
+        label = "visualBreathingInnerSize"
+    )
+
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(312.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Box(
+            modifier = Modifier
+                .size(outerSize)
+                .background(
+                    color = AppTheme.palette.gray.getColor(8),
+                    shape = CircleShape
+                )
+        )
+        Box(
+            modifier = Modifier
+                .size(innerSize)
+                .background(
+                    color = AppTheme.palette.gray.getColor(7),
+                    shape = CircleShape
+                )
+        )
+        Box(
+            modifier = Modifier
+                .size(120.dp)
+                .background(
+                    color = AppTheme.palette.gray.getColor(6),
+                    shape = CircleShape
+                )
+        )
+    }
+}
+
+private data class BreathAnimationState(
+    val phase: BreathPhase,
+    val progress: Float
+) {
+    val guideText: String
+        get() = when (phase) {
+            BreathPhase.INHALE -> "들이쉬세요"
+            BreathPhase.HOLD -> "참으세요"
+            BreathPhase.EXHALE -> "내쉬세요"
+        }
+}
+
+private fun calculateBreathAnimationState(elapsedSeconds: Int): BreathAnimationState {
+    val cycleSecond = elapsedSeconds.mod(BREATH_CYCLE_SECONDS)
+
+    return when {
+        cycleSecond < INHALE_SECONDS -> {
+            val phaseSecond = cycleSecond + 1
+            BreathAnimationState(
+                phase = BreathPhase.INHALE,
+                progress = phaseSecond.toFloat() / INHALE_SECONDS
+            )
+        }
+
+        cycleSecond < INHALE_SECONDS + HOLD_SECONDS -> {
+            BreathAnimationState(
+                phase = BreathPhase.HOLD,
+                progress = 1f
+            )
+        }
+
+        else -> {
+            val phaseSecond = cycleSecond - INHALE_SECONDS - HOLD_SECONDS + 1
+            BreathAnimationState(
+                phase = BreathPhase.EXHALE,
+                progress = 1f - phaseSecond.toFloat() / EXHALE_SECONDS
+            )
+        }
+    }
+}

@@ -33,7 +33,7 @@ import com.example.pauze.ui.theme.headingLgBold
 import kotlinx.coroutines.delay
 
 @Composable
-fun PauzeVisualRunningScreen(
+fun PauzeVisualMeditationRunningScreen(
     totalSeconds: Int,
     onStopClick: () -> Unit,
     onFinish: () -> Unit,
@@ -91,6 +91,7 @@ fun PauzeVisualRunningScreen(
 
         if (showStopDialog) {
             PauzeVisualStopDialog(
+                title = "명상을 중단하시겠어요?",
                 onStopClick = onStopClick,
                 onContinueClick = { showStopDialog = false }
             )
@@ -99,7 +100,8 @@ fun PauzeVisualRunningScreen(
 }
 
 @Composable
-private fun PauzeVisualStopDialog(
+fun PauzeVisualStopDialog(
+    title: String,
     onStopClick: () -> Unit,
     onContinueClick: () -> Unit
 ) {
@@ -119,7 +121,7 @@ private fun PauzeVisualStopDialog(
             Spacer(modifier = Modifier.height(24.dp))
 
             Text(
-                text = "명상을 중단하시겠어요?",
+                text = title,
                 style = bodyTextXlBold,
                 color = AppTheme.palette.gray.getColor(2),
                 textAlign = TextAlign.Center

@@ -91,10 +91,22 @@ fun PauzeVisualScreen(
             )
         }
 
-        PauzeVisualStep.Running -> PauzeVisualRunningScreen(
-            totalSeconds = totalSeconds,
-            onStopClick = { step = PauzeVisualStep.Start },
-            onFinish = { step = PauzeVisualStep.Start }
-        )
+        PauzeVisualStep.Running -> when (selectedMethod) {
+            PauzeVisualMethod.BreathingGuide -> PauzeVisualBreathingRunningScreen(
+                totalSeconds = totalSeconds,
+                onStopClick = { step = PauzeVisualStep.Start },
+                onFinish = { step = PauzeVisualStep.Start }
+            )
+
+            PauzeVisualMethod.Meditation -> PauzeVisualMeditationRunningScreen(
+                totalSeconds = totalSeconds,
+                onStopClick = { step = PauzeVisualStep.Start },
+                onFinish = { step = PauzeVisualStep.Start }
+            )
+
+            null -> LaunchedEffect(Unit) {
+                step = PauzeVisualStep.SelectMethod
+            }
+        }
     }
 }
