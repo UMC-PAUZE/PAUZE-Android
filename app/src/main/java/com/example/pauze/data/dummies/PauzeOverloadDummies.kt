@@ -4,7 +4,7 @@ import androidx.collection.objectListOf
 import com.example.pauze.data.model.InstantAction
 import com.example.pauze.data.model.RestGuide
 
-val actions = objectListOf<InstantAction>(
+val actions = listOf<InstantAction>(
     InstantAction(
         duration = 10,
         title = "눈 감고 10초 호흡"
@@ -23,7 +23,7 @@ val actions = objectListOf<InstantAction>(
     ),
 )
 
-val guideList = objectListOf<RestGuide>(
+val guideList = listOf<RestGuide>(
     RestGuide(
         image = 0,
         duration = 10,

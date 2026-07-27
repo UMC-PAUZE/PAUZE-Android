@@ -32,7 +32,7 @@ abstract class BaseViewModel<EFFECT, DATA: Any?>(
     }
 
     // 내부 데이터만 업데이트 하는 함수
-    protected fun updateData(updater: (DATA?) -> (DATA)){
+    protected fun updateData(updater: (DATA) -> (DATA)){
         _uiState.update {
             it.copy(data = updater(it.data))
         }

@@ -8,5 +8,5 @@ abstract class UiState (
 data class BaseUiState<T>(
     override val isLoading: Boolean = false,
     override val error: Throwable? = null,
-    val data: T? = null
+    val data: T,
 ): UiState(isLoading = isLoading, error = error)
