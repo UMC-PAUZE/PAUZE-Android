@@ -27,7 +27,7 @@ class PauzeBreathingViewModel: BaseViewModel<BreathingEffect>() {
 
     var selectedTabIndex by mutableStateOf(0)
         private set
-    var breathState by mutableStateOf(BreathState(BreathPhase.INHALE, 1))
+    var breathState by mutableStateOf(BreathState(BreathPhase.READY, 3))
         private set
     var currentCycle by mutableStateOf(0)
         private set
@@ -36,13 +36,13 @@ class PauzeBreathingViewModel: BaseViewModel<BreathingEffect>() {
 
     private var timerJob: Job? = null
 
-    init{ // 재생바 추가 시 변경
-        startBreathing(resume = true)
+    init{
+        startBreathing(resume = false)
     }
 
     fun selectTab(index: Int){
         selectedTabIndex = index
-        startBreathing(resume = true)
+        startBreathing(resume = false)
     }
 
     fun togglePlayPause(){
@@ -50,7 +50,7 @@ class PauzeBreathingViewModel: BaseViewModel<BreathingEffect>() {
     }
 
     fun reset(){
-        startBreathing(resume = true)
+        startBreathing(resume = false)
     }
 
     private fun startBreathing(resume: Boolean) {
@@ -66,6 +66,12 @@ class PauzeBreathingViewModel: BaseViewModel<BreathingEffect>() {
         }
 
         timerJob = viewModelScope.launch {
+            breathState = BreathState(BreathPhase.READY, 3)
+            for (sec in 3 downTo 1) {
+                waitWhilePaused()
+                breathState = BreathState(BreathPhase.READY, sec)
+                delay(1000)
+            }
             while (currentCycle < totalCycle) {
                 for ((phase, duration) in phases) {
                     for (sec in 1..duration) {
@@ -76,7 +82,8 @@ class PauzeBreathingViewModel: BaseViewModel<BreathingEffect>() {
                 }
                 currentCycle++
             }
-            startBreathing(resume = true)
+            delay(1000)
+            sendEffect(BreathingEffect.NavigateToBack)
         }
     }
 
