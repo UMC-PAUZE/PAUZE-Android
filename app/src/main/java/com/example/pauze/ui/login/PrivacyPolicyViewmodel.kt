@@ -2,13 +2,16 @@ package com.example.pauze.ui.login
 
 import android.util.Pair
 import androidx.collection.objectListOf
+import com.example.pauze.data.model.BaseUiState
 import com.example.pauze.ui.BaseViewModel
 
 sealed interface PrivacyPolicyEffect {
     data class NavigateToSignUp(val isAgreed: Boolean?): PrivacyPolicyEffect
 }
 
-class PrivacyPolicyViewmodel: BaseViewModel<PrivacyPolicyEffect>(){
+class PrivacyPolicyViewmodel: BaseViewModel<PrivacyPolicyEffect, Unit>(
+    uiState = BaseUiState(data = Unit)
+){
     val policies = objectListOf(
         Pair(
             "제1조 (목적)",

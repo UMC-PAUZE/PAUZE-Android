@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -30,6 +31,7 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.pauze.ui.theme.AppTheme
 import com.example.pauze.R
@@ -58,7 +60,7 @@ fun HomeScreen(
     context: Context,
     viewModel: HomeViewModel = viewModel()
 ){
-    val condition by viewModel.dummy.collectAsState()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     val width = context.resources.configuration.screenWidthDp
     val bgPadding = 24
@@ -86,44 +88,52 @@ fun HomeScreen(
             .background(color = AppTheme.palette.gray.getColor(9))
             .padding(horizontal = bgPadding.dp),
     ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(color = AppTheme.palette.gray.getColor(9))
-                .padding(top = 40.dp, bottom = 16.dp),
-        ){
-            Row {
-                Image(painter = painterResource(R.drawable.pauze_home), contentDescription = "pauze 로고")
-                Spacer(modifier = Modifier.weight(1f))
-                Image(painter = painterResource(R.drawable.ic_alarm), contentDescription = "알람 아이콘")
-            }
+        if(uiState.isLoading){
+            CircularProgressIndicator()
         }
-        Spacer(modifier = Modifier.height(17.dp))
-        Text("000님", style = bodyTextLgRegular, color = AppTheme.palette.gray.getColor(2))
-        Text(
-            if(viewModel.isTodayConditionExists) "오늘은 조용한 곳에서 안정을 \n취하는 게 어떨까요?"
+        else if(uiState.error != null){
+            Text("오류가 발생했습니다\n다시 시도해주세요", style = bodyTextXlBold, color = AppTheme.palette.gray.getColor(2))
+        }
+        else {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(color = AppTheme.palette.gray.getColor(9))
+                    .padding(top = 40.dp, bottom = 16.dp),
+            ){
+                Row {
+                    Image(painter = painterResource(R.drawable.pauze_home), contentDescription = "pauze 로고")
+                    Spacer(modifier = Modifier.weight(1f))
+                    Image(painter = painterResource(R.drawable.ic_alarm), contentDescription = "알람 아이콘")
+                }
+            }
+            Spacer(modifier = Modifier.height(17.dp))
+            Text("000님", style = bodyTextLgRegular, color = AppTheme.palette.gray.getColor(2))
+            Text(
+                if(uiState.data.isTodayConditionExists) "오늘은 조용한 곳에서 안정을 \n취하는 게 어떨까요?"
                 else "숙면하셨나요?\n오늘의 컨디션을 작성해보세요",
-            style = headingMdMedium,
-            color = AppTheme.palette.gray.getColor(2))
+                style = headingMdMedium,
+                color = AppTheme.palette.gray.getColor(2))
 
-        if(!viewModel.isTodayConditionExists){
-            Column {
-                Spacer(modifier = Modifier.height(16.dp))
-                Button(
-                    "오늘의 컨디션 입력하기",
-                    onClick = { viewModel.moveToTodayCondition() },
-                    modifier = Modifier.fillMaxWidth(),
-                    enabled = true
-                )
+            if(!uiState.data.isTodayConditionExists){
+                Column {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Button(
+                        "오늘의 컨디션 입력하기",
+                        onClick = { viewModel.moveToTodayCondition() },
+                        modifier = Modifier.fillMaxWidth(),
+                        enabled = true
+                    )
+                }
             }
+            Spacer(modifier = Modifier.height(24.dp))
+            ConditionBox(condition = uiState.data.condition, boxPadding = conditionBoxPadding, barWidth = conditionBarWidth)
+            Spacer(modifier = Modifier.height(24.dp))
+            NavigationButton(
+                toWhere = Destination.PauzeBreathing,
+                onClick = { viewModel.moveToBreathing() }
+            )
         }
-        Spacer(modifier = Modifier.height(24.dp))
-        ConditionBox(condition = condition, boxPadding = conditionBoxPadding, barWidth = conditionBarWidth)
-        Spacer(modifier = Modifier.height(24.dp))
-        NavigationButton(
-            toWhere = Destination.PauzeBreathing,
-            onClick = { viewModel.moveToBreathing() }
-        )
     }
 }
 
