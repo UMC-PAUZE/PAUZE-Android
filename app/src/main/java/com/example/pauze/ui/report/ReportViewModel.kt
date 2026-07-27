@@ -16,7 +16,7 @@ sealed interface ReportEffect  {
     object NavigateToLogin: ReportEffect
 }
 class ReportViewModel : BaseViewModel<ReportEffect>() {
-    var selectedPeriod by mutableStateOf(ReportPeriod.DAILY)
+    var selectedPeriod by mutableStateOf(ReportPeriod.WEEKLY)
         private set
 
     fun selectPeriod(period: ReportPeriod) {
@@ -26,21 +26,21 @@ class ReportViewModel : BaseViewModel<ReportEffect>() {
     val todayCondition: Condition? = ReportDummyData.todayCondition // todo: 오늘의 컨디션 api 연동 시 교체
 
     val averageScore: AverageScoreUiState
-        get() = if (selectedPeriod == ReportPeriod.DAILY) {
+        get() = if (selectedPeriod == ReportPeriod.WEEKLY) {
             ReportDummyData.dailyAverageScore
         } else {
             ReportDummyData.weeklyAverageScore
         }
 
     val insight: InsightUiState
-        get() = if (selectedPeriod == ReportPeriod.DAILY){
+        get() = if (selectedPeriod == ReportPeriod.WEEKLY){
             ReportDummyData.dailyInsight
         } else{
             ReportDummyData.weeklyInsight
         }
 
     val triggers: List<TriggerUiState>
-        get() = if (selectedPeriod == ReportPeriod.DAILY) {
+        get() = if (selectedPeriod == ReportPeriod.WEEKLY) {
             ReportDummyData.dailyTriggers
         } else {
             ReportDummyData.weeklyTriggers
