@@ -214,8 +214,20 @@ fun MainScreen(
             composable<MyPageNavDestination.AccountInfo> {
                 AccountInfoScreen(
                     onBackClick = { navController.popBackStack() },
-                    onLogoutClick = { context.startActivity(Intent(context, LoginActivity::class.java)) },
-                    onWithdrawClick = { context.startActivity(Intent(context, LoginActivity::class.java)) }
+                    onLogoutClick = {
+                        context.startActivity(
+                            Intent(context, LoginActivity::class.java).apply {
+                                flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+                            }
+                        )
+                    },
+                    onWithdrawClick = {
+                        context.startActivity(
+                            Intent(context, LoginActivity::class.java).apply {
+                                flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+                            }
+                        )
+                    }
                 )
             }
         }

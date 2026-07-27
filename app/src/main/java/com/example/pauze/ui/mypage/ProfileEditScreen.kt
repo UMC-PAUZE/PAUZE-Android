@@ -62,7 +62,7 @@ fun ProfileEditScreen(
         }
     }
 
-    var tempDay by remember { mutableStateOf<LocalDate?>(null) }
+    var tempDay by remember { mutableStateOf(viewModel.birthday) }
     var showBottomSheet by remember { mutableStateOf(false) }
 
     val dateFormat = LocalDate.Format {
@@ -166,7 +166,7 @@ fun ProfileEditScreen(
                 )
 
                 SetBirthday(
-                    birthday = viewModel.birthday?.format(dateFormat) ?: "생년월일을 입력해보세요.",
+                    birthday = viewModel.birthday?.format(dateFormat) ?: "생년월일을 입력해주세요",
                     onClick = { showBottomSheet = true }
                 )
             }
