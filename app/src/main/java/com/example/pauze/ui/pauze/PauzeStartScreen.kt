@@ -57,6 +57,13 @@ class PauzeStartActivity: ComponentActivity() {
         setContent{
             MainPaletteTheme {
                 val navController = rememberNavController()
+                // 홈에서 호흡 화면으로 바로 이동
+                val destination = intent.getStringExtra("Pauze Destination")
+                LaunchedEffect(destination) {
+                    if(destination == "PauzeBreathing"){
+                        navController.navigate(PauzeNavDestination.Breathing)
+                    }
+                }
                 NavHost(navController = navController, startDestination = PauzeNavDestination.Start){
                     composable<PauzeNavDestination.Start> {
                         PauzeStartScreen(this@PauzeStartActivity, navController)
@@ -68,7 +75,10 @@ class PauzeStartActivity: ComponentActivity() {
                         PauzeSoundScreen(onBackClick = {navController.popBackStack()})
                     }
                     composable<PauzeNavDestination.Visual> {
-                        PauzeVisualScreen()
+                        PauzeVisualScreen(navController)
+                    }
+                    composable<PauzeNavDestination.Overload> {
+                        PauzeOverloadScreen(this@PauzeStartActivity, navController)
                     }
                 }
             }
@@ -95,7 +105,7 @@ fun PauzeStartScreen(
                     navController.navigate(PauzeNavDestination.Visual)
                 }
                 is PauzeStartEffect.NavigateToGuide -> {
-                    // todo: 과한 에너지 소모로 이동
+                    navController.navigate(PauzeNavDestination.Overload)
                 }
                 is PauzeStartEffect.NavigateToHome -> {
                    context.startActivity(Intent(context, MainActivity::class.java))
