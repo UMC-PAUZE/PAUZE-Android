@@ -23,28 +23,18 @@ class PauzeOverloadViewModel: BaseViewModel<PauzeOverloadEffect, PauzeOverloadSt
 ) {
 
     init{
-        getInstantActions()
-        getRestGuideList()
+        getData()
     }
 
-    fun getInstantActions(){
+    fun getData(){
         launch {
             // todo: 레포지토리로 불러오기
-            val example = actions
+            val actionExample = actions
+            val guideExample = guideList
             updateData {
                 it.copy(
-                    instantActions = example
-                )
-            }
-        }
-    }
-    fun getRestGuideList(){
-        launch {
-            // todo: 레포지토리로 불러오기
-            val example = guideList
-            updateData {
-                it.copy(
-                    restGuideList = example
+                    instantActions = actionExample,
+                    restGuideList = guideExample
                 )
             }
         }

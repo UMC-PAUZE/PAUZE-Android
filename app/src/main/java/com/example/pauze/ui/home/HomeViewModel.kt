@@ -26,7 +26,7 @@ class HomeViewModel: BaseViewModel<HomeEffect, HomeState>(
         launch {
             val example = conditions.first()
             updateData {
-                it.copy(condition = example)
+                it.copy(condition = example, isTodayConditionExists = true)
             }
         }
     }
