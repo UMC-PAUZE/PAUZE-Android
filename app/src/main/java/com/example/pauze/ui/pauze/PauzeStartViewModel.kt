@@ -10,7 +10,7 @@ sealed interface PauzeStartEffect {
     object NavigateToHome : PauzeStartEffect
 }
 
-class PauzeStartViewModel : BaseViewModel<PauzeStartEffect>() {
+class PauzeStartViewModel() : BaseViewModel<PauzeStartEffect>(){
     fun onStartBreathingClick() = sendEffect(PauzeStartEffect.NavigateToBreathing)
     fun onAuditoryClick() = sendEffect(PauzeStartEffect.NavigateToAuditory)
     fun onVisualClick() = sendEffect(PauzeStartEffect.NavigateToVisual)
