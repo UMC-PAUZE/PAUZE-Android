@@ -231,7 +231,7 @@ private fun PauzeTodayConditionResult(
             Text(
                 text = "오늘의 예민도",
                 style = bodyTextLgBold,
-                color = AppTheme.palette.gray.getColor(3)
+                color = AppTheme.palette.gray.getColor(4)
             )
             Spacer(modifier = Modifier.height(12.dp))
 
