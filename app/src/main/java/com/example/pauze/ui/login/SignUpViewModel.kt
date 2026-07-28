@@ -8,12 +8,15 @@ import androidx.navigation.toRoute
 import com.example.pauze.ui.BaseViewModel
 import kotlinx.datetime.LocalDate
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import com.example.pauze.data.model.BaseUiState
 
 sealed interface SignUpEffect {
     object BackStack: SignUpEffect
     object NavigateToPolicy: SignUpEffect
     object NavigateToCompleted: SignUpEffect
+    object ShowBirthdayPicker: SignUpEffect
 }
 
 class SignUpViewModel(
@@ -27,9 +30,11 @@ class SignUpViewModel(
 
     var phase by mutableIntStateOf(0)
     var name by mutableStateOf("")
+    var nickname by mutableStateOf("")
     var birthday by mutableStateOf<LocalDate?>(null)
     var email by mutableStateOf("")
     var password by mutableStateOf("")
+    var showBirthdayPicker by mutableStateOf(false)
 
 
     fun updateIsAgreed(isAgreed: Boolean){
@@ -46,5 +51,9 @@ class SignUpViewModel(
 
     fun checkPolicy(){
         sendEffect(SignUpEffect.NavigateToPolicy)
+    }
+
+    fun showBirthdayPicker(){
+        sendEffect(SignUpEffect.ShowBirthdayPicker)
     }
 }

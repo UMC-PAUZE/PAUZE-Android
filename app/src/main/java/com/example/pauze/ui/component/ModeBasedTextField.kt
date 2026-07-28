@@ -64,6 +64,7 @@ fun ModeBasedTextField(
     }) }
     val nameCheck = java.util.regex.Pattern.compile("[!@#$%^&*]").matcher(value).find()
     val pwdCheck = java.util.regex.Pattern.matches("^(?=.*[0-9])(?=.*[a-zA-Z])(?=.*[!@#$%^&*]).+$", value)
+    val nickNameCheck = value.length > 10
 
     Column(modifier = Modifier.fillMaxWidth()) {
     Column(
@@ -79,6 +80,7 @@ fun ModeBasedTextField(
                             && !isFocused
                             && (value.length > 1 && value.length < 8
                             || !pwdCheck))
+                            || (mode == TextFieldMode.Nickname && nickNameCheck)
                                  -> AppTheme.palette.secondary.getColor(4)
                     (mode == TextFieldMode.Nickname || mode == TextFieldMode.Bio) && isFocused
                                  -> AppTheme.palette.primary.getColor(3)
