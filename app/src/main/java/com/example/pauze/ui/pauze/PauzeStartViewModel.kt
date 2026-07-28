@@ -1,5 +1,6 @@
 package com.example.pauze.ui.pauze
 
+import com.example.pauze.data.model.BaseUiState
 import com.example.pauze.ui.BaseViewModel
 
 sealed interface PauzeStartEffect {
@@ -10,7 +11,9 @@ sealed interface PauzeStartEffect {
     object NavigateToHome : PauzeStartEffect
 }
 
-class PauzeStartViewModel() : BaseViewModel<PauzeStartEffect>(){
+class PauzeStartViewModel() : BaseViewModel<PauzeStartEffect, Unit>(
+    uiState = BaseUiState(data = Unit)
+){
     fun onStartBreathingClick() = sendEffect(PauzeStartEffect.NavigateToBreathing)
     fun onAuditoryClick() = sendEffect(PauzeStartEffect.NavigateToAuditory)
     fun onVisualClick() = sendEffect(PauzeStartEffect.NavigateToVisual)
