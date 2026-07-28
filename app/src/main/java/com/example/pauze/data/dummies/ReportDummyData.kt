@@ -26,10 +26,10 @@ object ReportDummyData { //ui 확인하기 위한 데이터
         title = "이번 주 평균 민감 지수",
         score = 55,
         bars = listOf(
-            ChartBar("일", 44), ChartBar("월", 75),
-            ChartBar("화", 93), ChartBar("수", 68),
-            ChartBar("목", 75), ChartBar("금", 51),
-            ChartBar("토", 64)
+            ChartBar("월", 44), ChartBar("화", 75),
+            ChartBar("수", 93), ChartBar("목", 68),
+            ChartBar("금", 75), ChartBar("토", 51),
+            ChartBar("일", 64)
         ),
         bestLabel = "최고 민감 요일",
         bestValue = "금요일",
@@ -53,16 +53,16 @@ object ReportDummyData { //ui 확인하기 위한 데이터
         TriggerUiState("소음 노출", 0.40f, TriggerColorToken.NOISE),
         TriggerUiState("수면 부족", 0.20f, TriggerColorToken.SLEEP),
         TriggerUiState("사회 피로", 0.20f, TriggerColorToken.SOCIAL),
-        TriggerUiState("업무 스트레스", 0.15f, TriggerColorToken.WORK),
-        TriggerUiState("과한 정보자극", 0.05f, TriggerColorToken.OVERSTIMULATION)
+        TriggerUiState("에너지 소진", 0.15f, TriggerColorToken.ENERGY),
+        TriggerUiState("과한 시각 정보", 0.05f, TriggerColorToken.VISUAL_OVERLOAD)
     )
 
     val weeklyTriggers = listOf(
         TriggerUiState("소음 노출", 0.25f, TriggerColorToken.NOISE),
         TriggerUiState("수면 부족", 0.30f, TriggerColorToken.SLEEP),
         TriggerUiState("사회 피로", 0.05f, TriggerColorToken.SOCIAL),
-        TriggerUiState("업무 스트레스", 0.35f, TriggerColorToken.WORK),
-        TriggerUiState("과한 정보자극", 0.05f, TriggerColorToken.OVERSTIMULATION)
+        TriggerUiState("업무 스트레스", 0.35f, TriggerColorToken.ENERGY),
+        TriggerUiState("과한 시각 정보", 0.05f, TriggerColorToken.VISUAL_OVERLOAD)
     )
 
     val dailyInsight = InsightUiState(
