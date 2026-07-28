@@ -114,7 +114,7 @@ fun SignUpScreen(
         // todo: 스크린 생성
         isCompleted = when(viewModel.phase){
             0 -> PersonalInfoContent(viewModel)
-            else -> SetEmailAndPwdContent(viewModel)
+            else -> SetPwdContent(viewModel)
         }
         Spacer(modifier = Modifier.weight(1f))
         Button(
