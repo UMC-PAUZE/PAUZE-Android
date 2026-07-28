@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.example.pauze.data.dummies.ReportDummyData
 import com.example.pauze.data.model.AverageScoreUiState
+import com.example.pauze.data.model.BaseUiState
 import com.example.pauze.data.model.Condition
 import com.example.pauze.data.model.InsightUiState
 import com.example.pauze.data.model.ReportPeriod
@@ -15,7 +16,9 @@ sealed interface ReportEffect  {
     object NavigateToConditionInput: ReportEffect
     object NavigateToLogin: ReportEffect
 }
-class ReportViewModel : BaseViewModel<ReportEffect>() {
+class ReportViewModel : BaseViewModel<ReportEffect, Unit>(
+    uiState = BaseUiState(data = Unit)
+) {
     var selectedPeriod by mutableStateOf(ReportPeriod.WEEKLY)
         private set
 
