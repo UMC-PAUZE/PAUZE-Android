@@ -3,6 +3,7 @@ package com.example.pauze.ui.mypage
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import com.example.pauze.data.model.BaseUiState
 import com.example.pauze.ui.BaseViewModel
 
 sealed interface MyPageEffect {
@@ -10,7 +11,9 @@ sealed interface MyPageEffect {
     object NavigateToAccount: MyPageEffect
 }
 
-class MyPageViewModel: BaseViewModel<MyPageEffect>() {
+class MyPageViewModel: BaseViewModel<MyPageEffect, Unit>(
+    uiState = BaseUiState(data = Unit)
+) {
     var dailyReminder by mutableStateOf(true)
         private set
     var riskAlert by mutableStateOf(true)

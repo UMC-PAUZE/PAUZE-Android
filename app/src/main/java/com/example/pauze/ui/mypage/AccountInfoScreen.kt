@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -17,6 +18,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.pauze.ui.component.Dialog
 import com.example.pauze.ui.component.TopBar
 import com.example.pauze.ui.mypage.component.MySettings
@@ -34,15 +36,27 @@ fun AccountInfoScreen(
     onBackClick: () -> Unit = {},
     onLogoutClick: () -> Unit = {},
     onWithdrawClick: () -> Unit = {},
+    viewModel: AccountInfoViewModel = viewModel()
 ){
     var showWithdrawDialog by remember { mutableStateOf(false) }
+
+    LaunchedEffect(viewModel.effect) {
+        viewModel.effect.collect { effect ->
+            when (effect) {
+                is AccountInfoEffect.NavigateToBack -> onBackClick()
+                is AccountInfoEffect.ShowWithdrawDialog -> showWithdrawDialog = true
+                is AccountInfoEffect.NavigateToLogout -> onLogoutClick()
+                is AccountInfoEffect.NavigateToWithdraw -> onWithdrawClick()
+            }
+        }
+    }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(color = AppTheme.palette.gray.getColor(9))
     ){
-        TopBar("계정 정보", onBackClick = onBackClick )
+        TopBar("계정 정보", onBackClick = viewModel::onBackClick )
 
         Column(
             modifier = Modifier
@@ -74,11 +88,11 @@ fun AccountInfoScreen(
             }
 
             Column {
-                MySettings(title = "로그아웃", onClick = onLogoutClick)
+                MySettings(title = "로그아웃", onClick = viewModel::onLogoutClick)
                 MySettings(
                     title = "회원 탈퇴",
                     titleColor = AppTheme.palette.secondary.getColor(4),
-                    onClick = { showWithdrawDialog = true }
+                    onClick = viewModel::onWithdrawClick
                 )
             }
 
@@ -91,7 +105,7 @@ fun AccountInfoScreen(
                     onDismissRequest = { showWithdrawDialog = false },
                     onContinue = {
                         showWithdrawDialog = false
-                        onWithdrawClick()
+                        viewModel.onWithdrawConfirm()
                     }
                 )
             }

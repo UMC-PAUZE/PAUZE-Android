@@ -1,5 +1,6 @@
 package com.example.pauze.ui.mypage
 
+import com.example.pauze.data.model.BaseUiState
 import com.example.pauze.data.repository.UserProfileRepository
 import com.example.pauze.ui.BaseViewModel
 
@@ -7,7 +8,9 @@ sealed interface ProfileEditEffect {
     object NavigateToBack : ProfileEditEffect
 }
 
-class ProfileEditViewModel : BaseViewModel<ProfileEditEffect>() {
+class ProfileEditViewModel : BaseViewModel<ProfileEditEffect, Unit>(
+    uiState = BaseUiState(data = Unit)
+) {
     var nickname
         get() = UserProfileRepository.nickname
         set(value) { UserProfileRepository.nickname = value }
