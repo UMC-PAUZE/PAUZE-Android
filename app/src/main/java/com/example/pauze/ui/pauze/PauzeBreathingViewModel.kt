@@ -4,6 +4,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.viewModelScope
+import com.example.pauze.data.model.BaseUiState
 import com.example.pauze.data.model.BreathPattern
 import com.example.pauze.data.model.BreathPhase
 import com.example.pauze.data.model.BreathState
@@ -16,7 +17,9 @@ sealed interface BreathingEffect {
     object NavigateToBack: BreathingEffect
 }
 
-class PauzeBreathingViewModel: BaseViewModel<BreathingEffect>() {
+class PauzeBreathingViewModel: BaseViewModel<BreathingEffect, Unit>(
+    uiState = BaseUiState(data = Unit)
+) {
     val patterns = listOf(
         BreathPattern(4, 7, 8), // 478 호흡
         BreathPattern(4, 4, 4), // 박스 호흡
