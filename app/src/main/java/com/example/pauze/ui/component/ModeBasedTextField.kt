@@ -107,7 +107,13 @@ fun ModeBasedTextField(
         Spacer(modifier = Modifier.height(4.dp))
         BasicTextField(
             value = value,
-            onValueChange = { onValueChanged(it) },
+            onValueChange = { newValue ->
+                if (mode == TextFieldMode.Bio && newValue.length > 30) {
+                    onValueChanged(newValue.take(30))
+                } else {
+                    onValueChanged(newValue)
+                }
+            },
             modifier = Modifier.fillMaxWidth(),
             visualTransformation = if (isVisible) VisualTransformation.None else PasswordVisualTransformation(),
             keyboardOptions = when (mode) {
