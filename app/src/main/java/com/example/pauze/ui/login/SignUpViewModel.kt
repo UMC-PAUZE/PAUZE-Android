@@ -34,6 +34,7 @@ class SignUpViewModel(
     var birthday by mutableStateOf<LocalDate?>(null)
     var email by mutableStateOf("")
     var password by mutableStateOf("")
+    var pwdCheck by mutableStateOf("")
     var showBirthdayPicker by mutableStateOf(false)
 
 
