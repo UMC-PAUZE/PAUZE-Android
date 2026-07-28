@@ -68,6 +68,7 @@ dependencies {
     implementation("io.coil-kt:coil-compose:2.7.0")
     implementation(libs.hilt.android)
     kapt(libs.hilt.compiler)
+    kapt("org.jetbrains.kotlin:kotlin-metadata-jvm:2.4.10")
     implementation(libs.retrofit)
     implementation(libs.retrofit.converter.gson)
     implementation(libs.okhttp)
