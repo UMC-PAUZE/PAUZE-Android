@@ -57,10 +57,10 @@ fun SignUpCompletedScreen(
         Spacer(modifier = Modifier.weight(1f))
         Image(
             modifier = Modifier.size(127.dp, 127.dp),
-            painter = painterResource(R.drawable.ic_headset),
-            contentDescription = "headset"
+            painter = painterResource(R.drawable.ic_confetti),
+            contentDescription = "컨페티 이미지"
         )
-        Spacer(modifier = Modifier.height(32.dp))
+        Spacer(modifier = Modifier.height(48.dp))
         Text(
             "가입이 완료되었습니다!",
             style = headingMdBold,
