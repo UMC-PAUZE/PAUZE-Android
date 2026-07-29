@@ -1,8 +1,8 @@
 package com.example.pauze.data.model
 
-enum class ReportPeriod { DAILY, WEEKLY }
+enum class ReportPeriod { WEEKLY, MONTHLY }
 
-enum class TriggerColorToken { NOISE, SLEEP, SOCIAL, WORK, OVERSTIMULATION } // 소음, 피로, 사회, 업무, 과한 정보 자극
+enum class TriggerColorToken { NOISE, SLEEP, SOCIAL, ENERGY, VISUAL_OVERLOAD } // 소음, 수면, 사회, 에너지 소진, 과한 시각 정보
 data class ChartBar(val label: String, val score: Int)
 
 data class InsightSegment(val text: String, val bold: Boolean)

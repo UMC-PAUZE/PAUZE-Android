@@ -1,4 +1,4 @@
-package com.example.pauze.ui.login.component
+package com.example.pauze.ui.component
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
@@ -36,10 +36,14 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import com.example.pauze.R
 import com.example.pauze.ui.theme.AppTheme
+import com.example.pauze.ui.theme.PAUZEAndroidTheme
 import com.example.pauze.ui.theme.bodyTextLgMedium
 import com.example.pauze.ui.theme.bodyTextMdRegular
+import com.example.pauze.ui.theme.bodyTextSmRegular
+import androidx.compose.foundation.background
+import androidx.compose.ui.tooling.preview.Preview
 
-enum class TextFieldMode { Email, SetEmail, Pwd, SetPwd, UserName, }
+enum class TextFieldMode { Email, SetEmail, Pwd, SetPwd, UserName, Nickname, Bio }
 enum class Actions { Reset, Pwd, Check }
 
 @Composable
@@ -48,7 +52,8 @@ fun ModeBasedTextField(
     value: String,
     onValueChanged: (String) -> Unit,
     onCheckClick: () -> Unit = {},
-    imeAction: ImeAction
+    imeAction: ImeAction,
+    commentText: String? = null
 ): Boolean {
     val focusManager = LocalFocusManager.current
     var isFocused by remember { mutableStateOf(false) }
@@ -60,6 +65,7 @@ fun ModeBasedTextField(
     val nameCheck = java.util.regex.Pattern.compile("[!@#$%^&*]").matcher(value).find()
     val pwdCheck = java.util.regex.Pattern.matches("^(?=.*[0-9])(?=.*[a-zA-Z])(?=.*[!@#$%^&*]).+$", value)
 
+    Column(modifier = Modifier.fillMaxWidth()) {
     Column(
         modifier = Modifier
             .fillMaxWidth().border(
@@ -74,6 +80,8 @@ fun ModeBasedTextField(
                             && (value.length > 1 && value.length < 8
                             || !pwdCheck))
                                  -> AppTheme.palette.secondary.getColor(4)
+                    (mode == TextFieldMode.Nickname || mode == TextFieldMode.Bio) && isFocused
+                                 -> AppTheme.palette.primary.getColor(3)
                     isFocused -> AppTheme.palette.gray.getColor(3)
                     else -> AppTheme.palette.gray.getColor(6)
                 },
@@ -89,6 +97,8 @@ fun ModeBasedTextField(
                 TextFieldMode.UserName -> "이름"
                 TextFieldMode.Email -> "이메일"
                 TextFieldMode.SetEmail -> "이메일"
+                TextFieldMode.Nickname -> "닉네임"
+                TextFieldMode.Bio -> "한 줄 소개(선택)"
                 else -> "비밀번호"
             },
             color = AppTheme.palette.gray.getColor(5),
@@ -97,11 +107,17 @@ fun ModeBasedTextField(
         Spacer(modifier = Modifier.height(4.dp))
         BasicTextField(
             value = value,
-            onValueChange = { onValueChanged(it) },
+            onValueChange = { newValue ->
+                if (mode == TextFieldMode.Bio && newValue.length > 30) {
+                    onValueChanged(newValue.take(30))
+                } else {
+                    onValueChanged(newValue)
+                }
+            },
             modifier = Modifier.fillMaxWidth(),
             visualTransformation = if (isVisible) VisualTransformation.None else PasswordVisualTransformation(),
             keyboardOptions = when (mode) {
-                TextFieldMode.UserName -> KeyboardOptions(
+                TextFieldMode.UserName, TextFieldMode.Nickname, TextFieldMode.Bio -> KeyboardOptions(
                     keyboardType = KeyboardType.Text,
                     imeAction = imeAction
                 )
@@ -125,6 +141,8 @@ fun ModeBasedTextField(
                             TextFieldMode.SetEmail -> "example@gmail.com"
                             TextFieldMode.SetPwd -> "비밀번호를 입력해주세요"
                             TextFieldMode.UserName -> "실명을 입력해주세요"
+                            TextFieldMode.Nickname -> "닉네임을 설정해보세요."
+                            TextFieldMode.Bio -> "나를 한 문장으로 표현해보세요."
                             else -> "텍스트"
                         },
                         color = AppTheme.palette.gray.getColor(5),
@@ -162,6 +180,15 @@ fun ModeBasedTextField(
             },
             textStyle = bodyTextLgMedium.copy(color = AppTheme.palette.gray.getColor(2))
         )
+    }
+    if (commentText != null) {
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(
+            commentText,
+            color = AppTheme.palette.gray.getColor(5),
+            style = bodyTextSmRegular
+        )
+    }
     }
     return isFocused
 }
