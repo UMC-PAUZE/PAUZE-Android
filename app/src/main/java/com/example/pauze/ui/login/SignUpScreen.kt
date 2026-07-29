@@ -114,21 +114,35 @@ fun SignUpScreen(
         // todo: 스크린 생성
         isCompleted = when(viewModel.phase){
             0 -> PersonalInfoContent(viewModel)
+            1 -> SetAndCheckEmail(viewModel)
             else -> SetPwdContent(viewModel)
         }
-        Spacer(modifier = Modifier.weight(1f))
-        Button(
-            if(viewModel.phase == 3) "가입 완료하기" else "다음",
-            onClick = {
-                if(isCompleted){
-                    viewModel.phase = viewModel.phase + 1
-                }
-                if(viewModel.phase == 4) {
-                    viewModel.signUp()
-                }
-            },
-            modifier = Modifier.fillMaxWidth().padding(bottom = 48.dp),
-            enabled = isCompleted,
-        )
+        if(viewModel.phase == 1){
+            if(isCompleted){
+                Spacer(modifier = Modifier.height(12.dp))
+                Button(
+                    "인증코드 받기",
+                    onClick = { viewModel.phase++ },
+                    modifier = Modifier.fillMaxWidth(),
+                    color = AppTheme.palette.gray.getColor(7),
+                    contentColor = AppTheme.palette.gray.getColor(2)
+                )
+            }
+        } else {
+            Spacer(modifier = Modifier.weight(1f))
+            Button(
+                if(viewModel.phase == 3) "가입 완료하기" else "다음",
+                onClick = {
+                    if(isCompleted){
+                        viewModel.phase = viewModel.phase + 1
+                    }
+                    if(viewModel.phase == 4) {
+                        viewModel.signUp()
+                    }
+                },
+                modifier = Modifier.fillMaxWidth().padding(bottom = 48.dp),
+                enabled = isCompleted,
+            )
+        }
     }
 }

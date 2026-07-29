@@ -51,10 +51,11 @@ fun ModeBasedTextField(
     mode: TextFieldMode,
     value: String,
     onValueChanged: (String) -> Unit,
-    onCheckClick: () -> Unit = {},
     imeAction: ImeAction,
     commentText: String? = null,
     checkPasswordSame: () -> Boolean = { true },
+    onCheckClick: () -> Unit = {},
+    checkEmailAlreadyExist: () -> Boolean = { false }
 ): Boolean {
     val focusManager = LocalFocusManager.current
     var isFocused by remember { mutableStateOf(false) }
@@ -83,6 +84,7 @@ fun ModeBasedTextField(
                             || !pwdCheck))
                             || (mode == TextFieldMode.Nickname && nickNameCheck)
                             || (mode == TextFieldMode.SetPwd && !checkPasswordSame())
+                            || (mode == TextFieldMode.SetEmail && checkEmailAlreadyExist())
                                  -> AppTheme.palette.secondary.getColor(4)
                     (mode == TextFieldMode.Nickname || mode == TextFieldMode.Bio) && isFocused
                                  -> AppTheme.palette.primary.getColor(3)
@@ -176,7 +178,10 @@ fun ModeBasedTextField(
                             ) {
                                 ActionButton(actions = Actions.Reset) { onValueChanged("") }
                                 Spacer(modifier = Modifier.width(8.dp))
-                                ActionButton(actions = Actions.Check) { onCheckClick() }
+                                ActionButton(actions = Actions.Check) {
+                                    onCheckClick()
+                                    isFocused = false
+                                }
                             }
                             TextFieldMode.Pwd -> ActionButton(actions = Actions.Pwd, isVisible = isVisible) { isVisible = !isVisible }
                             TextFieldMode.SetPwd -> Row(
