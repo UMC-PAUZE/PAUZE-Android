@@ -37,6 +37,12 @@ class SignUpViewModel(
     var pwdCheck by mutableStateOf("")
     var showBirthdayPicker by mutableStateOf(false)
 
+    // todo: 데이터 연결 시 uiState로 처리
+    var isEmailExisted by mutableStateOf(false)
+    fun checkEmailAlreadyExistOrNot(): Boolean = isEmailExisted
+    fun toggleEmailExist(){
+        isEmailExisted = !isEmailExisted
+    }
 
     fun updateIsAgreed(isAgreed: Boolean){
         this.isAgreed = isAgreed
