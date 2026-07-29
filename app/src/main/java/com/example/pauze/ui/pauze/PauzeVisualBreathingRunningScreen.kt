@@ -8,12 +8,15 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -24,13 +27,19 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.lerp
 import androidx.compose.ui.unit.sp
+import com.example.pauze.R
 import com.example.pauze.data.model.BreathPhase
 import com.example.pauze.ui.theme.AppTheme
 import com.example.pauze.ui.theme.bodyTextLgRegular
+import com.example.pauze.ui.theme.bodyTextMdMedium
+import com.example.pauze.ui.theme.bodyTextXlBold
+import com.example.pauze.ui.theme.fontFamily
 import com.example.pauze.ui.theme.headingLgBold
 import kotlinx.coroutines.delay
 
@@ -51,9 +60,12 @@ fun PauzeVisualBreathingRunningScreen(
     var showStopDialog by remember {
         mutableStateOf(false)
     }
+    var isPlaying by remember {
+        mutableStateOf(true)
+    }
 
-    LaunchedEffect(totalSeconds, showStopDialog) {
-        while (remainingSeconds > 0 && !showStopDialog) {
+    LaunchedEffect(totalSeconds, showStopDialog, isPlaying) {
+        while (remainingSeconds > 0 && !showStopDialog && isPlaying) {
             delay(1000L)
             remainingSeconds = (remainingSeconds - 1).coerceAtLeast(0)
         }
@@ -83,18 +95,67 @@ fun PauzeVisualBreathingRunningScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            PauzeVisualBreathingCircle(progress = breathAnimationState.progress)
+            PauzeVisualBreathingCircle(
+                progress = breathAnimationState.progress,
+                secondsText = breathAnimationState.remainingPhaseSeconds.toString()
+            )
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Box(
+                modifier = Modifier
+                    .size(60.dp)
+                    .background(
+                        color = AppTheme.palette.gray.getColor(8),
+                        shape = CircleShape
+                    )
+                    .clickable {
+                        isPlaying = !isPlaying
+                    },
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    painter = painterResource(
+                        if (isPlaying) R.drawable.ic_pause else R.drawable.ic_play
+                    ),
+                    contentDescription = if (isPlaying) "일시정지" else "재생",
+                    tint = AppTheme.palette.gray.getColor(4),
+                    modifier = Modifier.size(44.dp)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
 
             Text(
                 text = breathAnimationState.guideText,
                 style = headingLgBold,
-                color = AppTheme.palette.gray.getColor(7),
+                color = AppTheme.palette.gray.getColor(2),
                 textAlign = TextAlign.Center
             )
 
-            Spacer(modifier = Modifier.height(56.dp))
+            Spacer(modifier = Modifier.height(24.dp))
+
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(24.dp)
+            ) {
+                PauzeVisualBreathStepText(
+                    label = "들숨",
+                    seconds = INHALE_SECONDS,
+                    isActive = breathAnimationState.phase == BreathPhase.INHALE
+                )
+                PauzeVisualBreathStepText(
+                    label = "참기",
+                    seconds = HOLD_SECONDS,
+                    isActive = breathAnimationState.phase == BreathPhase.HOLD
+                )
+                PauzeVisualBreathStepText(
+                    label = "날숨",
+                    seconds = EXHALE_SECONDS,
+                    isActive = breathAnimationState.phase == BreathPhase.EXHALE
+                )
+            }
+
+            Spacer(modifier = Modifier.height(32.dp))
 
             Text(
                 text = "%02d : %02d".format(minute, second),
@@ -127,6 +188,7 @@ fun PauzeVisualBreathingRunningScreen(
 @Composable
 private fun PauzeVisualBreathingCircle(
     progress: Float,
+    secondsText: String,
     modifier: Modifier = Modifier
 ) {
     val outerSize by animateDpAsState(
@@ -170,15 +232,52 @@ private fun PauzeVisualBreathingCircle(
                     shape = CircleShape
                 )
         )
+        Text(
+            text = secondsText,
+            color = AppTheme.palette.gray.getColor(2),
+            fontSize = 64.sp,
+            lineHeight = 64.sp,
+            fontWeight = FontWeight.Medium,
+            fontFamily = fontFamily
+        )
+    }
+}
+
+@Composable
+private fun PauzeVisualBreathStepText(
+    label: String,
+    seconds: Int,
+    isActive: Boolean
+) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+        modifier = Modifier.padding(
+            horizontal = 16.dp,
+            vertical = 12.dp
+        )
+    ) {
+        Text(
+            text = label,
+            style = bodyTextXlBold,
+            color = AppTheme.palette.gray.getColor(if (isActive) 2 else 6)
+        )
+        Text(
+            text = "${seconds}초",
+            style = bodyTextMdMedium,
+            color = AppTheme.palette.gray.getColor(if (isActive) 4 else 7)
+        )
     }
 }
 
 private data class BreathAnimationState(
     val phase: BreathPhase,
-    val progress: Float
+    val progress: Float,
+    val remainingPhaseSeconds: Int
 ) {
     val guideText: String
         get() = when (phase) {
+            BreathPhase.READY -> "준비하세요"
             BreathPhase.INHALE -> "들이쉬세요"
             BreathPhase.HOLD -> "참으세요"
             BreathPhase.EXHALE -> "내쉬세요"
@@ -193,14 +292,16 @@ private fun calculateBreathAnimationState(elapsedSeconds: Int): BreathAnimationS
             val phaseSecond = cycleSecond + 1
             BreathAnimationState(
                 phase = BreathPhase.INHALE,
-                progress = phaseSecond.toFloat() / INHALE_SECONDS
+                progress = phaseSecond.toFloat() / INHALE_SECONDS,
+                remainingPhaseSeconds = INHALE_SECONDS - cycleSecond
             )
         }
 
         cycleSecond < INHALE_SECONDS + HOLD_SECONDS -> {
             BreathAnimationState(
                 phase = BreathPhase.HOLD,
-                progress = 1f
+                progress = 1f,
+                remainingPhaseSeconds = INHALE_SECONDS + HOLD_SECONDS - cycleSecond
             )
         }
 
@@ -208,7 +309,8 @@ private fun calculateBreathAnimationState(elapsedSeconds: Int): BreathAnimationS
             val phaseSecond = cycleSecond - INHALE_SECONDS - HOLD_SECONDS + 1
             BreathAnimationState(
                 phase = BreathPhase.EXHALE,
-                progress = 1f - phaseSecond.toFloat() / EXHALE_SECONDS
+                progress = 1f - phaseSecond.toFloat() / EXHALE_SECONDS,
+                remainingPhaseSeconds = BREATH_CYCLE_SECONDS - cycleSecond
             )
         }
     }
