@@ -30,19 +30,19 @@ fun SetAndCheckEmail(
             mode = TextFieldMode.SetEmail,
             value = viewModel.email,
             onValueChanged = { viewModel.email = it },
-            onCheckClick = { viewModel.toggleEmailExist() },
             imeAction = ImeAction.Done,
-            checkEmailAlreadyExist = { viewModel.checkEmailAlreadyExistOrNot() }
+            onCheckClick = { viewModel.toggleEmailExist() },
+            checkClickValue = { viewModel.checkEmailAlreadyExistOrNot() }
         )
         if(viewModel.email != "" && !isFocused){
             Text(
-                if(viewModel.isEmailExisted) "이미 사용된 이메일입니다"
-                else "사용할 수 있는 이메일입니다",
+                if(viewModel.isEmailNoExisted) "사용할 수 있는 이메일입니다"
+                else "이미 사용된 이메일입니다" ,
                 style = bodyTextSmRegular,
-                color = if(viewModel.isEmailExisted) AppTheme.palette.secondary.getColor(4)
-                    else AppTheme.palette.primary.getColor(4)
+                color = if(viewModel.isEmailNoExisted) AppTheme.palette.primary.getColor(4)
+                    else AppTheme.palette.secondary.getColor(4)
             )
         }
     }
-    return viewModel.email != "" && !isFocused && !viewModel.checkEmailAlreadyExistOrNot()
+    return viewModel.email != "" && !isFocused && viewModel.checkEmailAlreadyExistOrNot()
 }

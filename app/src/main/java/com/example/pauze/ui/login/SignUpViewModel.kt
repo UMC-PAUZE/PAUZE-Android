@@ -7,12 +7,17 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.navigation.toRoute
 import com.example.pauze.ui.BaseViewModel
 import kotlinx.datetime.LocalDate
+import android.os.CountDownTimer
+import android.os.Handler
+import android.os.Looper
+import android.util.Log
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.lifecycle.viewModelScope
 import com.example.pauze.data.model.BaseUiState
+import kotlinx.coroutines.launch
 
 sealed interface SignUpEffect {
+    object RestartVerifTimer: SignUpEffect
     object BackStack: SignUpEffect
     object NavigateToPolicy: SignUpEffect
     object NavigateToCompleted: SignUpEffect
@@ -36,18 +41,51 @@ class SignUpViewModel(
     var password by mutableStateOf("")
     var pwdCheck by mutableStateOf("")
     var showBirthdayPicker by mutableStateOf(false)
+    var verifCode by mutableStateOf("")
+    var time by mutableStateOf("00:00")
+    private var countDownTimer: CountDownTimer? = null
 
     // todo: 데이터 연결 시 uiState로 처리
-    var isEmailExisted by mutableStateOf(false)
-    fun checkEmailAlreadyExistOrNot(): Boolean = isEmailExisted
+    var isEmailNoExisted by mutableStateOf(true)
+    fun checkEmailAlreadyExistOrNot(): Boolean = isEmailNoExisted
     fun toggleEmailExist(){
-        isEmailExisted = !isEmailExisted
+        isEmailNoExisted = !isEmailNoExisted
     }
+    fun checkVerifCodeRight(): Boolean = verifCode == "64359"
 
     fun updateIsAgreed(isAgreed: Boolean){
         this.isAgreed = isAgreed
     }
 
+    fun updatePhase(){
+        phase = phase + 1
+        Log.d("TimerTest", "1. updatePhase 호출됨! 현재 phase = $phase")
+        if(phase == 2){
+            Handler(Looper.getMainLooper()).post {
+                Log.d("TimerTest", "2. phase가 2가 됨! startTimer 호출 시작")
+                startTimer()
+            }
+        }
+    }
+    fun startTimer(){
+        countDownTimer?.cancel()
+        countDownTimer = object : CountDownTimer(300000L, 1000L){
+            override fun onFinish() {
+                time = "00:00"
+            }
+
+            override fun onTick(millisUntilFinished: Long) {
+                val totalSeconds = millisUntilFinished / 1000
+                val minuteLeft = totalSeconds / 60
+                val secondLeft = totalSeconds % 60
+                val formattedSeconds = if(secondLeft < 10) "0${secondLeft}" else secondLeft
+                time = "0${minuteLeft} : $formattedSeconds"
+            }
+        }.start()
+    }
+    fun sendEffectForTimer(){
+        sendEffect(SignUpEffect.RestartVerifTimer)
+    }
     fun backStack(){
         sendEffect(SignUpEffect.BackStack)
     }

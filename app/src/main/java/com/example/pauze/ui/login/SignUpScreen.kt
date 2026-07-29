@@ -54,6 +54,9 @@ fun SignUpScreen(
 
         viewModel.effect.collect { effect ->
             when(effect){
+                SignUpEffect.RestartVerifTimer -> {
+                    viewModel.startTimer()
+                }
                 SignUpEffect.BackStack -> {
                     navController.popBackStack()
                 }
@@ -111,10 +114,10 @@ fun SignUpScreen(
             color = AppTheme.palette.gray.getColor(2)
         )
         Spacer(modifier = Modifier.height(48.dp))
-        // todo: 스크린 생성
         isCompleted = when(viewModel.phase){
             0 -> PersonalInfoContent(viewModel)
             1 -> SetAndCheckEmail(viewModel)
+            2 -> EnterVerificationCode(viewModel)
             else -> SetPwdContent(viewModel)
         }
         if(viewModel.phase == 1){
@@ -122,7 +125,7 @@ fun SignUpScreen(
                 Spacer(modifier = Modifier.height(12.dp))
                 Button(
                     "인증코드 받기",
-                    onClick = { viewModel.phase++ },
+                    onClick = { viewModel.updatePhase() },
                     modifier = Modifier.fillMaxWidth(),
                     color = AppTheme.palette.gray.getColor(7),
                     contentColor = AppTheme.palette.gray.getColor(2)
@@ -134,7 +137,7 @@ fun SignUpScreen(
                 if(viewModel.phase == 3) "가입 완료하기" else "다음",
                 onClick = {
                     if(isCompleted){
-                        viewModel.phase = viewModel.phase + 1
+                        viewModel.updatePhase()
                     }
                     if(viewModel.phase == 4) {
                         viewModel.signUp()
