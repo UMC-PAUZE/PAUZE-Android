@@ -18,7 +18,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -47,7 +47,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
@@ -78,7 +77,7 @@ fun CurationBoardScreen(
     viewModel: CurationBoardViewModel = viewModel(),
 ) {
     val curationState by viewModel.curationState.collectAsState()
-    val activity = LocalContext.current as? ComponentActivity
+    val activity = LocalActivity.current as? ComponentActivity
     var deepLinkUri by remember(activity) {
         mutableStateOf(activity?.intent?.data)
     }
