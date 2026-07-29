@@ -1,6 +1,5 @@
 package com.example.pauze.ui.login
 
-import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -9,6 +8,7 @@ import androidx.navigation.toRoute
 import com.example.pauze.ui.BaseViewModel
 import kotlinx.datetime.LocalDate
 import androidx.compose.runtime.mutableIntStateOf
+import com.example.pauze.data.model.BaseUiState
 
 sealed interface SignUpEffect {
     object BackStack: SignUpEffect
@@ -18,7 +18,9 @@ sealed interface SignUpEffect {
 
 class SignUpViewModel(
     savedStateHandle: SavedStateHandle
-): BaseViewModel<SignUpEffect>(){
+): BaseViewModel<SignUpEffect, Unit>(
+    uiState = BaseUiState(data = Unit)
+){
     val initialAgreed = savedStateHandle.toRoute<LoginNavDestination.SignUp>().isAgreed
     var isAgreed by mutableStateOf(initialAgreed)
         private set
