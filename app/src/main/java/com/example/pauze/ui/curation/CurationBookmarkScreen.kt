@@ -1,6 +1,7 @@
 package com.example.pauze.ui.curation
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,7 +15,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
@@ -132,11 +132,10 @@ private fun CurationBookmarkEmptyContent(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
-        Icon(
-            painter = painterResource(R.drawable.ic_round_headset),
+        Image(
+            painter = painterResource(R.drawable.ic_empty_curation),
             contentDescription = null,
-            modifier = Modifier.size(96.dp),
-            tint = AppTheme.palette.gray.getColor(2),
+            modifier = Modifier.size(160.dp),
         )
 
         Spacer(modifier = Modifier.height(24.dp))

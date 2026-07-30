@@ -27,6 +27,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -57,6 +58,13 @@ class PauzeStartActivity: ComponentActivity() {
         setContent{
             MainPaletteTheme {
                 val navController = rememberNavController()
+                // 홈에서 호흡 화면으로 바로 이동
+                val destination = intent.getStringExtra("Pauze Destination")
+                LaunchedEffect(destination) {
+                    if(destination == "PauzeBreathing"){
+                        navController.navigate(PauzeNavDestination.Breathing)
+                    }
+                }
                 NavHost(navController = navController, startDestination = PauzeNavDestination.Start){
                     composable<PauzeNavDestination.Start> {
                         PauzeStartScreen(this@PauzeStartActivity, navController)
@@ -68,7 +76,10 @@ class PauzeStartActivity: ComponentActivity() {
                         PauzeSoundScreen(onBackClick = {navController.popBackStack()})
                     }
                     composable<PauzeNavDestination.Visual> {
-                        PauzeVisualScreen()
+                        PauzeVisualScreen(navController)
+                    }
+                    composable<PauzeNavDestination.Overload> {
+                        PauzeOverloadScreen(this@PauzeStartActivity, navController)
                     }
                 }
             }
@@ -95,7 +106,7 @@ fun PauzeStartScreen(
                     navController.navigate(PauzeNavDestination.Visual)
                 }
                 is PauzeStartEffect.NavigateToGuide -> {
-                    // todo: 과한 에너지 소모로 이동
+                    navController.navigate(PauzeNavDestination.Overload)
                 }
                 is PauzeStartEffect.NavigateToHome -> {
                    context.startActivity(Intent(context, MainActivity::class.java))
@@ -149,20 +160,23 @@ fun PauzeStartScreen(
                 modifier = Modifier.padding(bottom = 24.dp)
             ) {
                 SelectionCard(
-                    iconRes = R.drawable.ic_headset,
+                    iconRes = R.drawable.ic_sound,
                     title = "청각",
+                    titleColor = AppTheme.palette.tertiary.getColor(3),
                     description = "자연소리와 ASMR로 \n청각 자극을 낮춰요",
                     onClick = viewModel::onAuditoryClick
                 )
                 SelectionCard(
-                    iconRes = R.drawable.ic_headset,
+                    iconRes = R.drawable.ic_see,
                     title = "시각",
+                    titleColor = AppTheme.palette.blue.getColor(2),
                     description = "화면을 어둡게 하고 명상 또는 호흡에 집중해요",
                     onClick = viewModel::onVisualClick
                 )
                 SelectionCard(
-                    iconRes = R.drawable.ic_headset,
+                    iconRes = R.drawable.ic_energy,
                     title = "과한 에너지 소모",
+                    titleColor = AppTheme.palette.secondary.getColor(3),
                     description = "쉼 가이드를 따르거나 HSP \n큐레이션 게시판으로 이동해요.",
                     onClick = viewModel::onGuideClick
                 )
@@ -176,6 +190,7 @@ fun PauzeStartScreen(
 fun SelectionCard(
     iconRes: Int,
     title: String,
+    titleColor: Color = AppTheme.palette.gray.getColor(2),
     description: String,
     onClick: () -> Unit = {},
 ){
@@ -198,11 +213,10 @@ fun SelectionCard(
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
                 verticalAlignment = Alignment.CenterVertically
             ){
-                Icon(
+                Image(
                     painter = painterResource(iconRes),
-                    contentDescription = "헤드셋 로고",
+                    contentDescription = "$title 아이콘",
                     modifier = Modifier.size(48.dp),
-                    tint = AppTheme.palette.gray.getColor(2)
                 )
 
                 Column(
@@ -211,7 +225,7 @@ fun SelectionCard(
                     Text(
                         text = title,
                         style = bodyTextXlBold,
-                        color = AppTheme.palette.gray.getColor(2)
+                        color = titleColor
                     )
                     Text(
                         text = description,
