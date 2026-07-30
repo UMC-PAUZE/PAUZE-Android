@@ -32,17 +32,24 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.example.pauze.R
 import com.example.pauze.ui.theme.AppTheme
 import com.example.pauze.ui.theme.bodyTextSmBold
 import com.example.pauze.ui.theme.bodyTextSmRegular
 
+private data class TimerOption(
+    val label: String,
+    val width: Dp,
+    val maximumTime: String?
+)
+
 private val timerOptions = listOf(
-    "없음" to 50.dp,
-    "10분" to 53.dp,
-    "30분" to 53.dp,
-    "1시간" to 58.dp
+    TimerOption(label = "없음", width = 50.dp, maximumTime = null),
+    TimerOption(label = "10분", width = 53.dp, maximumTime = "10:00"),
+    TimerOption(label = "30분", width = 53.dp, maximumTime = "30:00"),
+    TimerOption(label = "1시간", width = 58.dp, maximumTime = "1:00:00")
 )
 
 /** 소리 상세 화면 하단의 타이머와 재생 컨트롤입니다. */
@@ -51,7 +58,6 @@ fun SoundPlay(
     modifier: Modifier = Modifier,
     progress: Float = 0.35f,
     currentTime: String = "03:32",
-    totalTime: String = "10:00",
     onPreviousClick: () -> Unit = {},
     onPlayClick: () -> Unit = {},
     onNextClick: () -> Unit = {}
@@ -88,12 +94,12 @@ fun SoundPlay(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                timerOptions.forEachIndexed { index, (label, width) ->
+                timerOptions.forEachIndexed { index, option ->
                     val isSelected = selectedTimerIndex == index
 
                     Box(
                         modifier = Modifier
-                            .size(width = width, height = 34.dp)
+                            .size(width = option.width, height = 34.dp)
                             .clip(CircleShape)
                             .border(
                                 BorderStroke(
@@ -110,7 +116,7 @@ fun SoundPlay(
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = label,
+                            text = option.label,
                             style = if (isSelected) bodyTextSmBold else bodyTextSmRegular,
                             color = if (isSelected) {
                                 AppTheme.palette.gray.getColor(1)
@@ -151,11 +157,13 @@ fun SoundPlay(
                     style = bodyTextSmRegular,
                     color = AppTheme.palette.gray.getColor(4)
                 )
-                Text(
-                    text = totalTime,
-                    style = bodyTextSmRegular,
-                    color = AppTheme.palette.gray.getColor(4)
-                )
+                timerOptions[selectedTimerIndex].maximumTime?.let { maximumTime ->
+                    Text(
+                        text = maximumTime,
+                        style = bodyTextSmRegular,
+                        color = AppTheme.palette.gray.getColor(4)
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.height(22.dp))
