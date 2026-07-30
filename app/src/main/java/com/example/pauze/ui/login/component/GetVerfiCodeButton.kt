@@ -6,10 +6,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
-import com.example.pauze.ui.BaseViewModel
 import com.example.pauze.ui.component.Button
-import com.example.pauze.ui.login.KakaoSignUpViewModel
-import com.example.pauze.ui.login.SignUpViewModel
+import com.example.pauze.ui.login.kakao.KakaoSignUpViewModel
+import com.example.pauze.ui.login.signup.SignUpViewModel
 import com.example.pauze.ui.theme.AppTheme
 
 @Composable

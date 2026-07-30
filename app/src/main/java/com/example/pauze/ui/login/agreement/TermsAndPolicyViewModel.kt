@@ -1,4 +1,4 @@
-package com.example.pauze.ui.login
+package com.example.pauze.ui.login.agreement
 
 import android.util.Pair
 import androidx.collection.objectListOf

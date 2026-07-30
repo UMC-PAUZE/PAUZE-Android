@@ -1,4 +1,4 @@
-package com.example.pauze.ui.login
+package com.example.pauze.ui.login.agreement
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Spacer
@@ -8,11 +8,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavController
 import com.example.pauze.ui.login.component.TermAndPolicyText
 import com.example.pauze.ui.theme.AppTheme
 import com.example.pauze.ui.theme.bodyTextMdRegular
@@ -20,11 +18,11 @@ import com.example.pauze.ui.theme.bodyTextXlBold
 
 
 @Composable
-fun TermsOfUseScreen(
+fun PrivacyPolicyScreen(
     modifier : Modifier = Modifier,
     viewModel: TermsAndPolicyViewModel = viewModel()
 ){
-    val terms = viewModel.termsOfUse
+    val policies = viewModel.privacyPolicies
 
     LazyColumn(
         modifier = modifier
@@ -34,28 +32,26 @@ fun TermsOfUseScreen(
     ){
         item {
             Text(
-                "PAUZE 서비스 이용약관",
+                "PAUZE 개인정보 처리방침",
                 style = bodyTextXlBold,
                 color = AppTheme.palette.gray.getColor(2)
             )
             Spacer(modifier = Modifier.height(24.dp))
             Text(
-                "이 약관은 PAUZE 서비스 이용에 관한 기본 규칙을 정합니다.\n" +
-                        "\n" +
-                        "회원가입 또는 서비스 시작 시 본 약관에 동의한 것으로 간주됩니다.",
+                "PAUZE는 이용자의 개인정보를 소중히 여깁니다.\n수집한 정보는 서비스 제공 및 예민함 분석 목적으로만 사용되며, 제3자에게 제공되지 않습니다",
                 style = bodyTextMdRegular,
                 color = AppTheme.palette.gray.getColor(4)
             )
         }
-        items(terms.size){ index ->
-            if(terms[index].second == ""){
+        items(policies.size){ index ->
+            if(policies[index].second == ""){
                 Spacer(modifier = Modifier.height(48.dp))
-                Text(terms[index].first, style = bodyTextXlBold, color = AppTheme.palette.gray.getColor(2))
+                Text(policies[index].first, style = bodyTextXlBold, color = AppTheme.palette.gray.getColor(2))
             } else {
                 Spacer(modifier = Modifier.height(24.dp))
                 TermAndPolicyText(
-                    terms[index].first,
-                    terms[index].second
+                    policies[index].first,
+                    policies[index].second
                 )
             }
         }

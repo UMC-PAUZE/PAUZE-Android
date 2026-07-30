@@ -1,4 +1,4 @@
-package com.example.pauze.ui.login
+package com.example.pauze.ui.login.kakao
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -24,6 +24,8 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.pauze.ui.component.Button
 import com.example.pauze.ui.component.TopBar
+import com.example.pauze.ui.login.component.EnterVerificationCode
+import com.example.pauze.ui.login.LoginNavDestination
 import com.example.pauze.ui.login.component.AgreementCheckbox
 import com.example.pauze.ui.theme.AppTheme
 import com.example.pauze.ui.theme.headingMdMedium
