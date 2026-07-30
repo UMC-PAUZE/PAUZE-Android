@@ -34,6 +34,9 @@ fun TermsAndPolicyScreen(
     LaunchedEffect(viewModel.effect) {
         viewModel.effect.collect { effect ->
             when(effect){
+                is TermsAndPolicyEffect.BackStack -> {
+                    navController.popBackStack()
+                }
                 is TermsAndPolicyEffect.NavigateToSignUp -> {
                     navController.previousBackStackEntry
                         ?.savedStateHandle
@@ -48,7 +51,7 @@ fun TermsAndPolicyScreen(
         modifier = Modifier.fillMaxSize()
             .background(color = AppTheme.palette.gray.getColor(9))
     ){
-        TopBar("이용약관 및 개인정보 처리방침")
+        TopBar("이용약관 및 개인정보 처리방침", onBackClick = { viewModel.backStack() })
         Row(
             modifier = Modifier
                 .fillMaxWidth()

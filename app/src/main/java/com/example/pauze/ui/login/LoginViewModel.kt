@@ -6,6 +6,7 @@ import com.example.pauze.ui.BaseViewModel
 sealed interface LoginEffect{
     object ShowDialog: LoginEffect
     object NavigateToHome : LoginEffect
+    object NavigateToAdditionalScreen: LoginEffect
     object NavigateToSignUp : LoginEffect
 }
 class LoginViewModel(): BaseViewModel<LoginEffect, Boolean>(
@@ -14,12 +15,12 @@ class LoginViewModel(): BaseViewModel<LoginEffect, Boolean>(
         fun loginWithKakao(){
         launch {
             // todo: 카카오 로그인 구현
-            val result = false
+            val result = true
             updateState {
                 it.copy(data = result)
             }
             if(uiState.value.data){
-                sendEffect(LoginEffect.NavigateToHome)
+                sendEffect(LoginEffect.NavigateToAdditionalScreen)
             } else {
                 sendEffect(LoginEffect.ShowDialog)
             }

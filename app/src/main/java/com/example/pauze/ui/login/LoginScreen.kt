@@ -76,6 +76,9 @@ class LoginActivity : ComponentActivity() {
                     composable<LoginNavDestination.Completed> {
                         SignUpCompletedScreen(context = this@LoginActivity)
                     }
+                    composable<LoginNavDestination.Kakao> {
+                        KakaoSignUpScreen(navController)
+                    }
                 }
             }
         }
@@ -107,6 +110,9 @@ fun LoginScreen(
                 }
                 is LoginEffect.NavigateToSignUp -> {
                     navController.navigate(LoginNavDestination.SignUp(isAgreed = false))
+                }
+                is LoginEffect.NavigateToAdditionalScreen -> {
+                    navController.navigate(LoginNavDestination.Kakao(isAgreed = false))
                 }
                 is LoginEffect.ShowDialog -> {
                     showDialog = true
