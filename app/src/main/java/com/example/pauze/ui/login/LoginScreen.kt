@@ -71,7 +71,7 @@ class LoginActivity : ComponentActivity() {
                         SignUpScreen(navController)
                     }
                     composable<LoginNavDestination.Policy> {
-                        PrivacyPolicyScreen(navController)
+                        TermsAndPolicyScreen(navController)
                     }
                     composable<LoginNavDestination.Completed> {
                         SignUpCompletedScreen(context = this@LoginActivity)
