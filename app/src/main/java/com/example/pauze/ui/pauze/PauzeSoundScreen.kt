@@ -48,7 +48,7 @@ import com.example.pauze.ui.theme.bodyTextMdMedium
 fun PauzeSoundScreen(
     modifier: Modifier = Modifier,
     onBackClick: () -> Unit = {},
-    viewModel: PauzeSoundViewModel = viewModel()
+    viewModel: PauzeSoundViewModel = viewModel<PauzeSoundViewModel>()
 ) {
     val state by viewModel.state.collectAsState()
     var currentDestination by remember { mutableStateOf(SoundDestination.LIST) }

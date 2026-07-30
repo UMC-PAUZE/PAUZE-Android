@@ -3,6 +3,9 @@ package com.example.pauze.ui.pauze
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -54,15 +57,60 @@ fun PauzeSoundDetailScreen(
             modifier = Modifier.align(Alignment.TopCenter)
         )
 
-        // 4. 하단 카드 영역 (곡 정보 및 컨트롤러)
+        Row(
+            modifier = Modifier
+                .align(Alignment.TopCenter)
+                .fillMaxWidth()
+                .padding(start = 36.dp, top = 112.dp, end = 28.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = sound.title,
+                    style = headingSmBold,
+                    color = AppTheme.palette.gray.getColor(1)
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = sound.category,
+                    style = bodyTextSmRegular,
+                    color = AppTheme.palette.gray.getColor(4)
+                )
+            }
+
+            IconButton(
+                onClick = { onToggleLike(sound.id) },
+                modifier = Modifier.size(44.dp)
+            ) {
+                Icon(
+                    painter = painterResource(
+                        if (sound.isLiked) R.drawable.ic_heart_on else R.drawable.ic_heart_off
+                    ),
+                    contentDescription = "좋아요",
+                    tint = Color.Unspecified,
+                    modifier = Modifier.size(28.dp)
+                )
+            }
+
+            Spacer(modifier = Modifier.width(8.dp))
+
+            IconButton(
+                onClick = { onToggleBookmark(sound.id) },
+                modifier = Modifier.size(44.dp)
+            ) {
+                Icon(
+                    painter = painterResource(R.drawable.ic_download),
+                    contentDescription = "저장",
+                    tint = Color.Unspecified,
+                    modifier = Modifier.size(28.dp)
+                )
+            }
+        }
+
+        // 4. 하단 타이머 및 재생 컨트롤러
         SoundPlay(
-            sound = sound,
-            onToggleLike = onToggleLike,
-            onToggleBookmark = onToggleBookmark,
             modifier = Modifier
                 .align(Alignment.BottomCenter)
-                .navigationBarsPadding()
-                .padding(horizontal = 20.dp, vertical = 24.dp)
                 .fillMaxWidth()
         )
     }

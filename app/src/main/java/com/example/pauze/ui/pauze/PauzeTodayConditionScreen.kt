@@ -64,7 +64,7 @@ class PauzeTodayConditionActivity : ComponentActivity() {
 fun PauzeTodayCondition(
     modifier: Modifier = Modifier,
     onExitClick: () -> Unit = {},
-    viewModel: PauzeTodayConditionViewModel = viewModel()
+    viewModel: PauzeTodayConditionViewModel = viewModel<PauzeTodayConditionViewModel>()
 ) {
     val context = LocalContext.current
     val conditionState by viewModel.state.collectAsState()
@@ -306,7 +306,7 @@ private fun PauzeTodayConditionResult(
                 onClick = onHomeClick
             )
             ResultActionButton(
-                text = "지금 안정하기",
+                text = "g 안정하기",
                 isPrimary = true,
                 modifier = Modifier.weight(1f),
                 onClick = onPauzeStartClick
