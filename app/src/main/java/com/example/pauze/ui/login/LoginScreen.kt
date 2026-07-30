@@ -48,6 +48,10 @@ import com.example.pauze.ui.component.Button
 import com.example.pauze.ui.component.Dialog
 import com.example.pauze.ui.component.ModeBasedTextField
 import com.example.pauze.ui.component.TextFieldMode
+import com.example.pauze.ui.login.agreement.TermsAndPolicyScreen
+import com.example.pauze.ui.login.completed.SignUpCompletedScreen
+import com.example.pauze.ui.login.kakao.KakaoSignUpScreen
+import com.example.pauze.ui.login.signup.SignUpScreen
 import com.example.pauze.ui.theme.AppTheme
 import com.example.pauze.ui.theme.MainPaletteTheme
 import com.example.pauze.ui.theme.bodyTextMdBold

@@ -1,4 +1,4 @@
-package com.example.pauze.ui.login
+package com.example.pauze.ui.login.kakao
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -6,15 +6,12 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.navigation.toRoute
 import com.example.pauze.ui.BaseViewModel
-import kotlinx.datetime.LocalDate
 import android.os.CountDownTimer
 import android.os.Handler
 import android.os.Looper
-import android.util.Log
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.lifecycle.viewModelScope
 import com.example.pauze.data.model.BaseUiState
-import kotlinx.coroutines.launch
+import com.example.pauze.ui.login.LoginNavDestination
 
 sealed interface KakaoSignUpEffect {
     object RestartVerifTimer: KakaoSignUpEffect

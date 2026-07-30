@@ -1,4 +1,4 @@
-package com.example.pauze.ui.login
+package com.example.pauze.ui.login.kakao
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer

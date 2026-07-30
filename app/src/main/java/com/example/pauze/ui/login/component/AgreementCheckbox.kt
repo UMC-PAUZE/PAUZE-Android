@@ -16,8 +16,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import com.example.pauze.R
-import com.example.pauze.ui.login.KakaoSignUpViewModel
-import com.example.pauze.ui.login.SignUpViewModel
+import com.example.pauze.ui.login.kakao.KakaoSignUpViewModel
+import com.example.pauze.ui.login.signup.SignUpViewModel
 import com.example.pauze.ui.theme.AppTheme
 import com.example.pauze.ui.theme.bodyTextMdMedium
 import com.example.pauze.ui.theme.bodyTextSmRegular
