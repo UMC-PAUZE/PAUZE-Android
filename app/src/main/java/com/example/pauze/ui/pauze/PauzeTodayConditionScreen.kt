@@ -16,8 +16,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -29,12 +31,15 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.pauze.MainActivity
+import com.example.pauze.R
 import com.example.pauze.ui.component.CondtionAnswer
 import com.example.pauze.ui.component.Dialog
 import com.example.pauze.ui.component.PhaseBar
@@ -44,6 +49,7 @@ import com.example.pauze.ui.theme.AppTheme
 import com.example.pauze.ui.theme.MainPaletteTheme
 import com.example.pauze.ui.theme.bodyTextLgBold
 import com.example.pauze.ui.theme.bodyTextLgRegular
+import com.example.pauze.ui.theme.bodyTextMdBold
 import com.example.pauze.ui.theme.bodyTextXlBold
 import com.example.pauze.ui.theme.bodyTextMdRegular
 import com.example.pauze.ui.theme.headingMdBold
@@ -96,6 +102,7 @@ fun PauzeTodayCondition(
         PauzeTodayConditionResult(
             score = conditionState.sensitivityScore,
             onHomeClick = viewModel::navigateToMainActivity,
+            onDetailClick = viewModel::navigateToMainActivity,
             onPauzeStartClick = viewModel::navigateToPauzeStartActivity
         )
         return
@@ -200,6 +207,7 @@ fun PauzeTodayCondition(
 private fun PauzeTodayConditionResult(
     score: Int,
     onHomeClick: () -> Unit,
+    onDetailClick: () -> Unit,
     onPauzeStartClick: () -> Unit
 ) {
     val normalizedScore = score.coerceIn(0, 100)
@@ -289,6 +297,29 @@ private fun PauzeTodayConditionResult(
 
             Spacer(modifier = Modifier.height(16.dp))
             SensitivityScoreBar(score = normalizedScore)
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Row(
+                modifier = Modifier
+                    .align(Alignment.End)
+                    .clickable(onClick = onDetailClick)
+                    .padding(vertical = 4.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "자세히 알아보기",
+                    style = bodyTextMdBold,
+                    color = AppTheme.palette.gray.getColor(2)
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+                Icon(
+                    painter = painterResource(R.drawable.ic_forward),
+                    contentDescription = "자세히 알아보기",
+                    tint = Color.Unspecified,
+                    modifier = Modifier.size(16.dp)
+                )
+            }
         }
 
         Spacer(modifier = Modifier.weight(1f))
