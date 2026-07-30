@@ -63,6 +63,7 @@ dependencies {
     debugImplementation(libs.androidx.ui.test.manifest)
     implementation("io.github.darkokoa:datetime-wheel-picker:1.3.1")
     implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.8.0")
+    implementation("io.coil-kt:coil-compose:2.7.0")
 }
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {

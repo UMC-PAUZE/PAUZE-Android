@@ -7,12 +7,10 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -20,22 +18,30 @@ import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import androidx.core.content.ContextCompat.startActivity
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination.Companion.hasRoute
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.example.pauze.ui.curation.CurationBoardScreen
 import com.example.pauze.ui.home.HomeScreen
+import com.example.pauze.ui.login.LoginActivity
+import com.example.pauze.ui.mypage.AccountInfoScreen
+import com.example.pauze.ui.mypage.MyPageNavDestination
+import com.example.pauze.ui.mypage.MyPageScreen
+import com.example.pauze.ui.mypage.ProfileEditScreen
+import com.example.pauze.ui.pauze.PauzeNavDestination
 import com.example.pauze.ui.pauze.PauzeStartActivity
-import com.example.pauze.ui.pauze.PauzeStartScreen
+import com.example.pauze.ui.report.ReportScreen
 import com.example.pauze.ui.theme.AppTheme
 import com.example.pauze.ui.theme.MainPaletteTheme
 import com.example.pauze.ui.theme.captionTextMedium
@@ -46,7 +52,19 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             MainPaletteTheme {
-                MainScreen(context = this)
+                val navController = rememberNavController()
+                // PauzeOverloadScreen에서 발견 탭으로 이동
+                val destination = intent.getStringExtra("Bottom Navigation Destination")
+                LaunchedEffect(destination) {
+                    if(destination == "Find"){
+                        navController.navigate(BottomNavDestination.Find){
+                            popUpTo(BottomNavDestination.Find)
+                            launchSingleTop = true
+                            restoreState = true
+                        }
+                    }
+                }
+                MainScreen(this, navController)
             }
         }
     }
@@ -54,9 +72,8 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun MainScreen(
     context: Context,
+    navController: NavHostController,
 ){
-    val navController = rememberNavController()
-
     Scaffold(
         containerColor = AppTheme.palette.gray.getColor(9),
         bottomBar = {
@@ -182,13 +199,36 @@ fun MainScreen(
                 HomeScreen(context = context)
             }
             composable<BottomNavDestination.Report>{
-
+                // todo: 나중에 isGuest쪽 수정 현재-게스트모드 x
+                ReportScreen(context = context, isGuest = false)
             }
             composable<BottomNavDestination.Find>{
-
+                CurationBoardScreen()
             }
             composable<BottomNavDestination.MyPage> {
-
+                MyPageScreen(navController = navController)
+            }
+            composable<MyPageNavDestination.ProfileEdit> {
+                ProfileEditScreen(navController = navController)
+            }
+            composable<MyPageNavDestination.AccountInfo> {
+                AccountInfoScreen(
+                    onBackClick = { navController.popBackStack() },
+                    onLogoutClick = {
+                        context.startActivity(
+                            Intent(context, LoginActivity::class.java).apply {
+                                flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+                            }
+                        )
+                    },
+                    onWithdrawClick = {
+                        context.startActivity(
+                            Intent(context, LoginActivity::class.java).apply {
+                                flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+                            }
+                        )
+                    }
+                )
             }
         }
     }

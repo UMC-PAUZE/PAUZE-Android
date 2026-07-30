@@ -1,6 +1,7 @@
 package com.example.pauze.ui.curation
 
 import com.example.pauze.data.dummies.dummyCurationPosts
+import com.example.pauze.data.model.BaseUiState
 import com.example.pauze.data.model.CurationPost
 import com.example.pauze.ui.BaseViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -45,7 +46,9 @@ data class CurationBoardState(
         }
 }
 
-class CurationBoardViewModel : BaseViewModel<Nothing>() {
+class CurationBoardViewModel : BaseViewModel<Nothing, Unit>(
+    uiState = BaseUiState(data = Unit),
+) {
     private val _curationState = MutableStateFlow(CurationBoardState())
     val curationState = _curationState.asStateFlow()
     private var handledDeepLink: String? = null

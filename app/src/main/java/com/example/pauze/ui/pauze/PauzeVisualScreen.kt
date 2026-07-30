@@ -3,11 +3,13 @@ package com.example.pauze.ui.pauze
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.navigation.NavController
 
 // 시각 안정 화면 단계
 enum class PauzeVisualStep {
@@ -25,7 +27,9 @@ enum class PauzeVisualMethod {
 }
 
 @Composable
-fun PauzeVisualScreen() {
+fun PauzeVisualScreen(
+    navController: NavController
+) {
     var step by remember { mutableStateOf(PauzeVisualStep.SelectMethod) }
     var selectedMethod by remember { mutableStateOf<PauzeVisualMethod?>(null) }
     var selectedHour by remember { mutableStateOf(0) }
@@ -36,7 +40,9 @@ fun PauzeVisualScreen() {
     val totalSeconds = selectedHour * 60 * 60 + selectedMinute * 60 + selectedSecond
 
     when (step) {
-        PauzeVisualStep.Start -> PauzeStartScreen()
+        PauzeVisualStep.Start -> LaunchedEffect(Unit) {
+            navController.popBackStack()
+        }
 
         PauzeVisualStep.SelectMethod -> PauzeVisualMethodSelectScreen(
             selectedMethod = selectedMethod,
