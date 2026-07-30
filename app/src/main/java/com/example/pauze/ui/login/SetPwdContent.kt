@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -23,6 +24,7 @@ import androidx.compose.ui.unit.dp
 import com.example.pauze.R
 import com.example.pauze.ui.component.ModeBasedTextField
 import com.example.pauze.ui.component.TextFieldMode
+import com.example.pauze.ui.login.component.AgreementCheckbox
 import com.example.pauze.ui.theme.AppTheme
 import com.example.pauze.ui.theme.bodyTextMdMedium
 import com.example.pauze.ui.theme.bodyTextSmRegular
@@ -73,44 +75,7 @@ fun SetPwdContent(
             )
         }
         Spacer(modifier = Modifier.height(48.dp))
-        Row(
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Image(
-                modifier = Modifier.clickable{
-                    viewModel.updateIsAgreed(!isAgreed)
-                    focusManager.clearFocus()
-                },
-                painter = painterResource(if(isAgreed) R.drawable.ic_checkbox_checked
-                else R.drawable.ic_checkbox_unchecked
-                ),
-                contentDescription = "checkbox for privacy policy"
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            Column(
-                modifier = Modifier.weight(1f)
-            ) {
-                Text(
-                    "개인정보 처리방침에 동의합니다 (필수)",
-                    style = bodyTextMdMedium,
-                    color = AppTheme.palette.gray.getColor(2)
-                )
-                Text(
-                    "수집한 정보는 서비스 제공 및 예민함 분석에만 사용됩니다.",
-                    style = bodyTextSmRegular,
-                    color = AppTheme.palette.gray.getColor(4)
-                )
-            }
-            Spacer(modifier = Modifier.width(12.dp))
-            Image(
-                modifier = Modifier.clickable{
-                    viewModel.checkPolicy()
-                },
-                painter = painterResource(R.drawable.ic_arrow_forward),
-                contentDescription = "Navigate to privacy policy screen",
-                colorFilter = ColorFilter.tint(AppTheme.palette.gray.getColor(5))
-            )
-        }
+        AgreementCheckbox(viewModel, isAgreed, focusManager, false)
     }
 
     return viewModel.password.length > 7 && pwdCheck && isAgreed

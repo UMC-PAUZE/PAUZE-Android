@@ -9,6 +9,7 @@ import com.example.pauze.data.model.BaseUiState
 import com.example.pauze.ui.BaseViewModel
 
 sealed interface TermsAndPolicyEffect {
+    object BackStack: TermsAndPolicyEffect
     data class NavigateToSignUp(val isAgreed: Boolean?): TermsAndPolicyEffect
 }
 
@@ -321,6 +322,9 @@ class TermsAndPolicyViewModel: BaseViewModel<TermsAndPolicyEffect, Unit>(
 
     fun changeTabIndex(index: Int){
         tab = index
+    }
+    fun backStack(){
+        sendEffect(TermsAndPolicyEffect.BackStack)
     }
     fun backToSignUp(isAgreed: Boolean?){
         sendEffect(TermsAndPolicyEffect.NavigateToSignUp(isAgreed))

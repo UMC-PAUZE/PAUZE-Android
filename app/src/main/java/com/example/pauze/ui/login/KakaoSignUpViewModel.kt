@@ -16,17 +16,16 @@ import androidx.lifecycle.viewModelScope
 import com.example.pauze.data.model.BaseUiState
 import kotlinx.coroutines.launch
 
-sealed interface SignUpEffect {
-    object RestartVerifTimer: SignUpEffect
-    object BackStack: SignUpEffect
-    object NavigateToPolicy: SignUpEffect
-    object NavigateToCompleted: SignUpEffect
-    object ShowBirthdayPicker: SignUpEffect
+sealed interface KakaoSignUpEffect {
+    object RestartVerifTimer: KakaoSignUpEffect
+    object BackStack: KakaoSignUpEffect
+    object NavigateToPolicy: KakaoSignUpEffect
+    object NavigateToCompleted: KakaoSignUpEffect
 }
 
-class SignUpViewModel(
+class KakaoSignUpViewModel(
     savedStateHandle: SavedStateHandle
-): BaseViewModel<SignUpEffect, Unit>(
+): BaseViewModel<KakaoSignUpEffect, Unit>(
     uiState = BaseUiState(data = Unit)
 ){
     val initialAgreed = savedStateHandle.toRoute<LoginNavDestination.SignUp>().isAgreed
@@ -36,11 +35,7 @@ class SignUpViewModel(
     var phase by mutableIntStateOf(0)
     var name by mutableStateOf("")
     var nickname by mutableStateOf("")
-    var birthday by mutableStateOf<LocalDate?>(null)
     var email by mutableStateOf("")
-    var password by mutableStateOf("")
-    var pwdCheck by mutableStateOf("")
-    var showBirthdayPicker by mutableStateOf(false)
     var verifCode by mutableStateOf("")
     var time by mutableStateOf("00:00")
     private var countDownTimer: CountDownTimer? = null
@@ -59,12 +54,13 @@ class SignUpViewModel(
 
     fun updatePhase(){
         phase = phase + 1
-        if(phase == 2){
+        if(phase == 1){
             Handler(Looper.getMainLooper()).post {
                 startTimer()
             }
         }
     }
+
     fun startTimer(){
         countDownTimer?.cancel()
         countDownTimer = object : CountDownTimer(300000L, 1000L){
@@ -81,21 +77,19 @@ class SignUpViewModel(
             }
         }.start()
     }
+
     fun sendEffectForTimer(){
-        sendEffect(SignUpEffect.RestartVerifTimer)
+        sendEffect(KakaoSignUpEffect.RestartVerifTimer)
     }
     fun backStack(){
-        sendEffect(SignUpEffect.BackStack)
+        sendEffect(KakaoSignUpEffect.BackStack)
     }
 
     fun signUp(){
-        sendEffect(SignUpEffect.NavigateToCompleted)
+        sendEffect(KakaoSignUpEffect.NavigateToCompleted)
     }
 
     fun checkPolicy(){
-        sendEffect(SignUpEffect.NavigateToPolicy)
-    }
-    fun showBirthdayPicker(){
-        sendEffect(SignUpEffect.ShowBirthdayPicker)
+        sendEffect(KakaoSignUpEffect.NavigateToPolicy)
     }
 }

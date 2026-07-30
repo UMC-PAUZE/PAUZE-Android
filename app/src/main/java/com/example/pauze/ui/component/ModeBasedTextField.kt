@@ -76,8 +76,7 @@ fun ModeBasedTextField(
                 width = 1.dp,
                 color = when {
                     value == "" -> AppTheme.palette.gray.getColor(6)
-                    (mode == TextFieldMode.Nickname || mode == TextFieldMode.Bio || mode == TextFieldMode.Verif) && isFocused
-                        -> AppTheme.palette.primary.getColor(3)
+                    mode == TextFieldMode.Verif && isFocused -> AppTheme.palette.primary.getColor(3)
                     (mode == TextFieldMode.UserName && (value.length == 1
                             || nameCheck
                             || value.trim() != value))
@@ -89,6 +88,8 @@ fun ModeBasedTextField(
                             || (mode == TextFieldMode.SetPwd && !checkPasswordSame())
                             || ((mode == TextFieldMode.SetEmail || mode == TextFieldMode.Verif) && !checkClickValue())
                                  -> AppTheme.palette.secondary.getColor(4)
+                    (mode == TextFieldMode.Nickname || mode == TextFieldMode.Bio) && isFocused
+                        -> AppTheme.palette.primary.getColor(3)
                     isFocused -> AppTheme.palette.gray.getColor(3)
                     else -> AppTheme.palette.gray.getColor(6)
                 },

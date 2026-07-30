@@ -19,6 +19,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.ViewModel
 import com.example.pauze.ui.component.ModeBasedTextField
 import com.example.pauze.ui.component.TextFieldMode
 import com.example.pauze.ui.theme.AppTheme
@@ -28,25 +29,41 @@ import com.example.pauze.ui.theme.bodyTextSmRegular
 
 @Composable
 fun EnterVerificationCode(
-    viewModel: SignUpViewModel
+    viewModel: ViewModel,
+    kakaoSignUp: Boolean
 ): Boolean{
     var isFocused by remember { mutableStateOf(false) }
 
-    Column{
+    Column {
         isFocused = ModeBasedTextField(
             mode = TextFieldMode.Verif,
-            value = viewModel.verifCode,
-            onValueChanged = { viewModel.verifCode = it },
+            value = if(kakaoSignUp) (viewModel as KakaoSignUpViewModel).verifCode else (viewModel as SignUpViewModel).verifCode,
+            onValueChanged = {
+                if(kakaoSignUp){
+                    (viewModel as KakaoSignUpViewModel).verifCode = it
+                } else {
+                    (viewModel as SignUpViewModel).verifCode = it
+                } },
             imeAction = ImeAction.Done,
-            onCheckClick = { viewModel.checkVerifCodeRight() },
-            checkClickValue = { viewModel.checkVerifCodeRight() }
+            onCheckClick = {
+                if(kakaoSignUp)
+                    (viewModel as KakaoSignUpViewModel).checkVerifCodeRight()
+                else
+                    (viewModel as SignUpViewModel).checkVerifCodeRight() },
+            checkClickValue = {
+                if(kakaoSignUp)
+                    (viewModel as KakaoSignUpViewModel).checkVerifCodeRight()
+                else
+                    (viewModel as SignUpViewModel).checkVerifCodeRight() }
         )
-        if(!isFocused && viewModel.verifCode != ""){
+        if(!isFocused && ((kakaoSignUp && (viewModel as KakaoSignUpViewModel).verifCode != "") || (!kakaoSignUp && (viewModel as SignUpViewModel).verifCode != ""))){
             Text(
-                if(viewModel.checkVerifCodeRight()) "인증에 성공했습니다"
+                if((kakaoSignUp && (viewModel as KakaoSignUpViewModel).checkVerifCodeRight())
+                        || (!kakaoSignUp && (viewModel as SignUpViewModel).checkVerifCodeRight())) "인증에 성공했습니다"
                     else "인증에 실패했습니다",
                 style = bodyTextSmRegular,
-                color = if(viewModel.checkVerifCodeRight()) AppTheme.palette.primary.getColor(4)
+                color = if((kakaoSignUp && (viewModel as KakaoSignUpViewModel).checkVerifCodeRight())
+                            || (!kakaoSignUp && (viewModel as SignUpViewModel).checkVerifCodeRight())) AppTheme.palette.primary.getColor(4)
                     else AppTheme.palette.secondary.getColor(4)
             )
         }
@@ -56,7 +73,7 @@ fun EnterVerificationCode(
             horizontalArrangement = Arrangement.End
         ){
             Text(
-                viewModel.time,
+                if(kakaoSignUp) (viewModel as KakaoSignUpViewModel).time else (viewModel as SignUpViewModel).time,
                 style = bodyTextMdRegular,
                 color = AppTheme.palette.primary.getColor(5)
             )
@@ -64,12 +81,17 @@ fun EnterVerificationCode(
             Text(
                 "코드 재전송",
                 modifier = Modifier
-                    .clickable(onClick = { viewModel.sendEffectForTimer() })
+                    .clickable(onClick = {
+                        if(kakaoSignUp)
+                            (viewModel as KakaoSignUpViewModel).sendEffectForTimer()
+                        else
+                            (viewModel as SignUpViewModel).sendEffectForTimer()
+                    })
                     .padding(vertical = 8.dp),
                 style = bodyTextMdBold,
                 color = AppTheme.palette.primary.getColor(2)
             )
         }
     }
-    return !isFocused && viewModel.checkVerifCodeRight()
+    return !isFocused && ((kakaoSignUp && (viewModel as KakaoSignUpViewModel).checkVerifCodeRight()) || (!kakaoSignUp && (viewModel as SignUpViewModel).checkVerifCodeRight()))
 }

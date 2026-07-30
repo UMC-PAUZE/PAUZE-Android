@@ -31,6 +31,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.pauze.ui.component.Button
 import com.example.pauze.ui.component.PhaseBar
 import com.example.pauze.ui.component.TopBar
+import com.example.pauze.ui.login.component.GetVerifCodeButton
 import com.example.pauze.ui.theme.AppTheme
 import com.example.pauze.ui.theme.PAUZEAndroidTheme
 import com.example.pauze.ui.theme.headingMdMedium
@@ -83,16 +84,14 @@ fun SignUpScreen(
             ){
                 focusManager.clearFocus()
             }
-            .padding(horizontal = 24.dp)
     ) {
         TopBar(
             "회원가입",
-            modifier = Modifier.padding(),
             onBackClick = { viewModel.backStack() }
         )
         Spacer(modifier = Modifier.height(4.dp))
         Row(
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp)
         ) {
             PhaseBar(modifier = Modifier.weight(1f), isWaiting = false)
             Spacer(modifier = Modifier.width(4.dp))
@@ -103,49 +102,45 @@ fun SignUpScreen(
             PhaseBar(modifier = Modifier.weight(1f), isWaiting = viewModel.phase < 3)
         }
         Spacer(modifier = Modifier.height(24.dp))
-        Text(
-            when(viewModel.phase){
-                0 -> "이름과 생년월일을\n알려주세요"
-                1 -> "이메일을 입력하고\n중복확인을 완료해주세요"
-                2 -> "인증코드를 입력하고\n본인인증을 완료해주세요"
-                else -> "비밀번호를 설정하고\n이용약관에 동의해주세요"
-            },
-            style = headingMdMedium,
-            color = AppTheme.palette.gray.getColor(2)
-        )
-        Spacer(modifier = Modifier.height(48.dp))
-        isCompleted = when(viewModel.phase){
-            0 -> PersonalInfoContent(viewModel)
-            1 -> SetAndCheckEmail(viewModel)
-            2 -> EnterVerificationCode(viewModel)
-            else -> SetPwdContent(viewModel)
-        }
-        if(viewModel.phase == 1){
-            if(isCompleted){
-                Spacer(modifier = Modifier.height(12.dp))
+        Column(modifier = Modifier.padding(24.dp)){
+            Text(
+                when(viewModel.phase){
+                    0 -> "이름과 생년월일을\n알려주세요"
+                    1 -> "이메일을 입력하고\n중복확인을 완료해주세요"
+                    2 -> "인증코드를 입력하고\n본인인증을 완료해주세요"
+                    else -> "비밀번호를 설정하고\n이용약관에 동의해주세요"
+                },
+                style = headingMdMedium,
+                color = AppTheme.palette.gray.getColor(2)
+            )
+            Spacer(modifier = Modifier.height(48.dp))
+            isCompleted = when(viewModel.phase){
+                0 -> PersonalInfoContent(viewModel)
+                1 -> SetAndCheckEmail(viewModel)
+                2 -> EnterVerificationCode(viewModel, false)
+                else -> SetPwdContent(viewModel)
+            }
+            if(viewModel.phase == 1){
+                if(isCompleted){
+                    Spacer(modifier = Modifier.height(12.dp))
+                    GetVerifCodeButton(viewModel, false)
+                }
+            } else {
+                Spacer(modifier = Modifier.padding(horizontal = 24.dp).weight(1f))
                 Button(
-                    "인증코드 받기",
-                    onClick = { viewModel.updatePhase() },
-                    modifier = Modifier.fillMaxWidth(),
-                    color = AppTheme.palette.gray.getColor(7),
-                    contentColor = AppTheme.palette.gray.getColor(2)
+                    if(viewModel.phase == 3) "가입 완료하기" else "다음",
+                    onClick = {
+                        if(isCompleted){
+                            viewModel.updatePhase()
+                        }
+                        if(viewModel.phase == 4) {
+                            viewModel.signUp()
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth().padding(bottom = 48.dp),
+                    enabled = isCompleted,
                 )
             }
-        } else {
-            Spacer(modifier = Modifier.weight(1f))
-            Button(
-                if(viewModel.phase == 3) "가입 완료하기" else "다음",
-                onClick = {
-                    if(isCompleted){
-                        viewModel.updatePhase()
-                    }
-                    if(viewModel.phase == 4) {
-                        viewModel.signUp()
-                    }
-                },
-                modifier = Modifier.fillMaxWidth().padding(bottom = 48.dp),
-                enabled = isCompleted,
-            )
         }
     }
 }
