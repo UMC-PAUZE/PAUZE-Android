@@ -220,7 +220,25 @@ private fun PauzeTodayConditionResult(
             .background(AppTheme.palette.base.getColor(0)),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Spacer(modifier = Modifier.height(184.dp))
+        Spacer(modifier = Modifier.height(168.dp))
+
+        Text(
+            text = "측정 완료!",
+            style = headingMdBold,
+            color = AppTheme.palette.gray.getColor(1)
+        )
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        Text(
+            text = "오늘의 컨디션 분석을 완료했어요.\n자세한 결과는 홈 화면에서 확인할 수 있어요.",
+            style = bodyTextMdRegular,
+            color = AppTheme.palette.gray.getColor(4),
+            textAlign = TextAlign.Center,
+            lineHeight = 24.sp
+        )
+
+        Spacer(modifier = Modifier.height(48.dp))
 
         Column(
             modifier = Modifier
@@ -232,14 +250,6 @@ private fun PauzeTodayConditionResult(
                 .padding(28.dp),
             horizontalAlignment = Alignment.Start
         ) {
-            Text(
-                text = "측정 완료!",
-                style = headingMdBold,
-                color = AppTheme.palette.gray.getColor(1),
-                modifier = Modifier.align(Alignment.CenterHorizontally)
-            )
-            Spacer(modifier = Modifier.height(12.dp))
-
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
@@ -280,15 +290,6 @@ private fun PauzeTodayConditionResult(
             Spacer(modifier = Modifier.height(16.dp))
             SensitivityScoreBar(score = normalizedScore)
         }
-
-        Spacer(modifier = Modifier.height(24.dp))
-        Text(
-            text = "오늘의 컨디션 분석을 완료했어요.\n자세한 결과는 홈 화면에서 확인할 수 있어요.",
-            style = bodyTextMdRegular,
-            color = AppTheme.palette.gray.getColor(5),
-            textAlign = TextAlign.Center,
-            lineHeight = 24.sp
-        )
 
         Spacer(modifier = Modifier.weight(1f))
 
