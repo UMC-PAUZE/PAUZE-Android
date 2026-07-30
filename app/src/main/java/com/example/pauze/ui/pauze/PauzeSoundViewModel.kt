@@ -1,5 +1,6 @@
 package com.example.pauze.ui.pauze
 
+import com.example.pauze.data.model.BaseUiState
 import com.example.pauze.data.model.PauzeSoundState
 import com.example.pauze.data.model.SoundItem
 import com.example.pauze.data.model.SoundStashTab
@@ -24,7 +25,9 @@ sealed interface PauzeSoundEffect {
     data class NavigateTo(val destination: SoundDestination) : PauzeSoundEffect
 }
 
-class PauzeSoundViewModel : BaseViewModel<PauzeSoundEffect>() {
+class PauzeSoundViewModel : BaseViewModel<PauzeSoundEffect, Unit>(
+    uiState = BaseUiState(data = Unit)
+) {
     private val _state = MutableStateFlow(PauzeSoundState())
     val state = _state.asStateFlow()
 

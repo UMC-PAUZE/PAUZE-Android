@@ -43,9 +43,9 @@ import com.example.pauze.ui.component.TopBar
 import com.example.pauze.ui.theme.AppTheme
 import com.example.pauze.ui.theme.MainPaletteTheme
 import com.example.pauze.ui.theme.bodyTextLgBold
+import com.example.pauze.ui.theme.bodyTextLgRegular
 import com.example.pauze.ui.theme.bodyTextXlBold
 import com.example.pauze.ui.theme.bodyTextMdRegular
-import com.example.pauze.ui.theme.bodyTextSmRegular
 import com.example.pauze.ui.theme.headingMdBold
 
 class PauzeTodayConditionActivity : ComponentActivity() {
@@ -64,7 +64,7 @@ class PauzeTodayConditionActivity : ComponentActivity() {
 fun PauzeTodayCondition(
     modifier: Modifier = Modifier,
     onExitClick: () -> Unit = {},
-    viewModel: PauzeTodayConditionViewModel = viewModel()
+    viewModel: PauzeTodayConditionViewModel = viewModel<PauzeTodayConditionViewModel>()
 ) {
     val context = LocalContext.current
     val conditionState by viewModel.state.collectAsState()
@@ -203,6 +203,16 @@ private fun PauzeTodayConditionResult(
     onPauzeStartClick: () -> Unit
 ) {
     val normalizedScore = score.coerceIn(0, 100)
+    val sensitivityLevel = when (normalizedScore) {
+        in 0..39 -> "낮음"
+        in 40..69 -> "보통"
+        else -> "높음"
+    }
+    val sensitivityLevelColor = when (normalizedScore) {
+        in 0..39 -> AppTheme.palette.primary.getColor(3)
+        in 40..69 -> AppTheme.palette.tertiary.getColor(3)
+        else -> AppTheme.palette.secondary.getColor(3)
+    }
 
     Column(
         modifier = Modifier
@@ -220,22 +230,39 @@ private fun PauzeTodayConditionResult(
                     shape = RoundedCornerShape(24.dp)
                 )
                 .padding(28.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+            horizontalAlignment = Alignment.Start
         ) {
             Text(
                 text = "측정 완료!",
                 style = headingMdBold,
-                color = AppTheme.palette.gray.getColor(1)
-            )
-            Spacer(modifier = Modifier.height(12.dp))
-            Text(
-                text = "오늘의 예민도",
-                style = bodyTextLgBold,
-                color = AppTheme.palette.gray.getColor(4)
+                color = AppTheme.palette.gray.getColor(1),
+                modifier = Modifier.align(Alignment.CenterHorizontally)
             )
             Spacer(modifier = Modifier.height(12.dp))
 
-            Row(verticalAlignment = Alignment.Bottom) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "현재 민감 지수",
+                    style = bodyTextLgRegular,
+                    color = AppTheme.palette.gray.getColor(2)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = sensitivityLevel,
+                    style = bodyTextLgBold,
+                    color = sensitivityLevelColor
+                )
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.Bottom
+            ) {
                 Text(
                     text = normalizedScore.toString(),
                     style = headingMdBold.copy(fontSize = 64.sp, lineHeight = 64.sp),
@@ -252,34 +279,6 @@ private fun PauzeTodayConditionResult(
 
             Spacer(modifier = Modifier.height(16.dp))
             SensitivityScoreBar(score = normalizedScore)
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Box(
-                    modifier = Modifier
-                        .background(
-                            color = AppTheme.palette.tertiary.getColor(8),
-                            shape = RoundedCornerShape(16.dp)
-                        )
-                        .padding(horizontal = 16.dp, vertical = 6.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "보통",
-                        style = bodyTextSmRegular,
-                        color = AppTheme.palette.tertiary.getColor(1)
-                    )
-                }
-                Spacer(modifier = Modifier.weight(1f))
-                Text(
-                    text = "비교적 안정적인 상태예요",
-                    style = bodyTextSmRegular,
-                    color = AppTheme.palette.gray.getColor(4)
-                )
-            }
         }
 
         Spacer(modifier = Modifier.height(24.dp))
