@@ -99,8 +99,10 @@ fun PauzeSoundDetailScreen(
                 modifier = Modifier.size(44.dp)
             ) {
                 Icon(
-                    painter = painterResource(R.drawable.ic_download),
-                    contentDescription = "저장",
+                    painter = painterResource(
+                        if (sound.isBookmarked) R.drawable.ic_downloaded else R.drawable.ic_download
+                    ),
+                    contentDescription = if (sound.isBookmarked) "다운로드 완료" else "다운로드",
                     tint = Color.Unspecified,
                     modifier = Modifier.size(28.dp)
                 )
