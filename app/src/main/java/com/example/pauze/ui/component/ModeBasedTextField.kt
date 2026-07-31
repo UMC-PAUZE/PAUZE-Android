@@ -41,19 +41,22 @@ import com.example.pauze.ui.theme.bodyTextLgMedium
 import com.example.pauze.ui.theme.bodyTextMdRegular
 import com.example.pauze.ui.theme.bodyTextSmRegular
 import androidx.compose.foundation.background
+import androidx.compose.material3.TextField
 import androidx.compose.ui.tooling.preview.Preview
 
-enum class TextFieldMode { Email, SetEmail, Pwd, SetPwd, UserName, Nickname, Bio }
-enum class Actions { Reset, Pwd, Check }
+enum class TextFieldMode { Email, SetEmail, Pwd, SetPwd, PwdCheck, UserName, Nickname, Bio, Verif }
+enum class Actions { Reset, Pwd, EmailCheck, VerifCheck }
 
 @Composable
 fun ModeBasedTextField(
     mode: TextFieldMode,
     value: String,
     onValueChanged: (String) -> Unit,
-    onCheckClick: () -> Unit = {},
     imeAction: ImeAction,
-    commentText: String? = null
+    commentText: String? = null,
+    checkPasswordSame: () -> Boolean = { true },
+    onCheckClick: () -> Unit = {},
+    checkClickValue: () -> Boolean = { false }
 ): Boolean {
     val focusManager = LocalFocusManager.current
     var isFocused by remember { mutableStateOf(false) }
@@ -64,6 +67,7 @@ fun ModeBasedTextField(
     }) }
     val nameCheck = java.util.regex.Pattern.compile("[!@#$%^&*]").matcher(value).find()
     val pwdCheck = java.util.regex.Pattern.matches("^(?=.*[0-9])(?=.*[a-zA-Z])(?=.*[!@#$%^&*]).+$", value)
+    val nickNameCheck = value.length > 10
 
     Column(modifier = Modifier.fillMaxWidth()) {
     Column(
@@ -72,6 +76,7 @@ fun ModeBasedTextField(
                 width = 1.dp,
                 color = when {
                     value == "" -> AppTheme.palette.gray.getColor(6)
+                    mode == TextFieldMode.Verif && isFocused -> AppTheme.palette.primary.getColor(3)
                     (mode == TextFieldMode.UserName && (value.length == 1
                             || nameCheck
                             || value.trim() != value))
@@ -79,9 +84,12 @@ fun ModeBasedTextField(
                             && !isFocused
                             && (value.length > 1 && value.length < 8
                             || !pwdCheck))
+                            || (mode == TextFieldMode.Nickname && nickNameCheck)
+                            || (mode == TextFieldMode.SetPwd && !checkPasswordSame())
+                            || ((mode == TextFieldMode.SetEmail || mode == TextFieldMode.Verif) && !checkClickValue())
                                  -> AppTheme.palette.secondary.getColor(4)
                     (mode == TextFieldMode.Nickname || mode == TextFieldMode.Bio) && isFocused
-                                 -> AppTheme.palette.primary.getColor(3)
+                        -> AppTheme.palette.primary.getColor(3)
                     isFocused -> AppTheme.palette.gray.getColor(3)
                     else -> AppTheme.palette.gray.getColor(6)
                 },
@@ -99,6 +107,7 @@ fun ModeBasedTextField(
                 TextFieldMode.SetEmail -> "이메일"
                 TextFieldMode.Nickname -> "닉네임"
                 TextFieldMode.Bio -> "한 줄 소개(선택)"
+                TextFieldMode.Verif -> "인증코드"
                 else -> "비밀번호"
             },
             color = AppTheme.palette.gray.getColor(5),
@@ -136,18 +145,29 @@ fun ModeBasedTextField(
             ),
             decorationBox = { innerTextField ->
                 if(value == ""){
-                    Text(
-                        when(mode){
-                            TextFieldMode.SetEmail -> "example@gmail.com"
-                            TextFieldMode.SetPwd -> "비밀번호를 입력해주세요"
-                            TextFieldMode.UserName -> "실명을 입력해주세요"
-                            TextFieldMode.Nickname -> "닉네임을 설정해보세요."
-                            TextFieldMode.Bio -> "나를 한 문장으로 표현해보세요."
-                            else -> "텍스트"
-                        },
-                        color = AppTheme.palette.gray.getColor(5),
-                        style = bodyTextLgMedium,
-                    )
+                    Row(
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
+                    ){
+                        Row(modifier = Modifier.weight(1f)){
+                            Text(
+                                when(mode){
+                                    TextFieldMode.SetEmail -> "example@gmail.com"
+                                    TextFieldMode.SetPwd -> "비밀번호를 입력해주세요"
+                                    TextFieldMode.UserName -> "실명을 입력해주세요"
+                                    TextFieldMode.Nickname -> "닉네임을 설정해보세요."
+                                    TextFieldMode.Bio -> "나를 한 문장으로 표현해보세요."
+                                    TextFieldMode.Verif -> "인증코드 6자리를 입력해주세요"
+                                    else -> "텍스트"
+                                },
+                                color = AppTheme.palette.gray.getColor(5),
+                                style = bodyTextLgMedium,
+                            )
+                        }
+                        if(mode == TextFieldMode.SetPwd){
+                            ActionButton(actions = Actions.Pwd, isVisible = isVisible) { isVisible = !isVisible }
+                        }
+                    }
                 } else {
                     Row(
                         horizontalArrangement = Arrangement.Center,
@@ -162,7 +182,10 @@ fun ModeBasedTextField(
                             ) {
                                 ActionButton(actions = Actions.Reset) { onValueChanged("") }
                                 Spacer(modifier = Modifier.width(8.dp))
-                                ActionButton(actions = Actions.Check) { onCheckClick() }
+                                ActionButton(actions = Actions.EmailCheck) {
+                                    onCheckClick()
+                                    isFocused = false
+                                }
                             }
                             TextFieldMode.Pwd -> ActionButton(actions = Actions.Pwd, isVisible = isVisible) { isVisible = !isVisible }
                             TextFieldMode.SetPwd -> Row(
@@ -171,6 +194,16 @@ fun ModeBasedTextField(
                                 ActionButton(actions = Actions.Reset) { onValueChanged("") }
                                 Spacer(modifier = Modifier.width(8.dp))
                                 ActionButton(actions = Actions.Pwd, isVisible = isVisible) { isVisible = !isVisible }
+                            }
+                            TextFieldMode.Verif -> Row(
+                                verticalAlignment = Alignment.CenterVertically
+                            ){
+                                ActionButton(actions = Actions.Reset) { onValueChanged("") }
+                                Spacer(modifier = Modifier.width(8.dp))
+                                ActionButton(actions = Actions.VerifCheck) {
+                                    onCheckClick()
+                                    isFocused = false
+                                }
                             }
                             else -> ActionButton(actions = Actions.Reset) { onValueChanged("") }
                         }
@@ -207,8 +240,14 @@ fun ActionButton(actions: Actions, isVisible: Boolean = false, onClick: () -> Un
                 else painterResource(R.drawable.pwd_eye_off),
             contentDescription = "hide and show password"
         )
-        Actions.Check -> Text(
+        Actions.EmailCheck -> Text(
             "중복확인",
+            modifier = Modifier.clickable(onClick = onClick),
+            color = AppTheme.palette.gray.getColor(2),
+            style = bodyTextMdRegular
+        )
+        Actions.VerifCheck -> Text(
+            "인증확인",
             modifier = Modifier.clickable(onClick = onClick),
             color = AppTheme.palette.gray.getColor(2),
             style = bodyTextMdRegular

@@ -1,4 +1,4 @@
-package com.example.pauze.ui.login
+package com.example.pauze.ui.login.completed
 
 import android.content.Context
 import android.content.Intent
@@ -22,7 +22,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat.startActivity
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavController
 import com.example.pauze.MainActivity
 import com.example.pauze.R
 import com.example.pauze.ui.component.Button
@@ -57,10 +56,10 @@ fun SignUpCompletedScreen(
         Spacer(modifier = Modifier.weight(1f))
         Image(
             modifier = Modifier.size(127.dp, 127.dp),
-            painter = painterResource(R.drawable.ic_headset),
-            contentDescription = "headset"
+            painter = painterResource(R.drawable.ic_confetti),
+            contentDescription = "컨페티 이미지"
         )
-        Spacer(modifier = Modifier.height(32.dp))
+        Spacer(modifier = Modifier.height(48.dp))
         Text(
             "가입이 완료되었습니다!",
             style = headingMdBold,
