@@ -1,8 +1,5 @@
 package com.example.pauze.ui.pauze
 
-import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -11,7 +8,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -28,19 +24,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.lerp
 import androidx.compose.ui.unit.sp
 import com.example.pauze.R
 import com.example.pauze.data.model.BreathPhase
 import com.example.pauze.ui.component.Dialog
+import com.example.pauze.ui.pauze.component.PauzeBreathingCircle
 import com.example.pauze.ui.theme.AppTheme
 import com.example.pauze.ui.theme.bodyTextLgRegular
 import com.example.pauze.ui.theme.bodyTextMdMedium
 import com.example.pauze.ui.theme.bodyTextXlBold
-import com.example.pauze.ui.theme.fontFamily
 import com.example.pauze.ui.theme.headingLgBold
 import kotlinx.coroutines.delay
 
@@ -96,9 +90,10 @@ fun PauzeVisualBreathingRunningScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            PauzeVisualBreathingCircle(
+            PauzeBreathingCircle(
                 progress = breathAnimationState.progress,
-                secondsText = breathAnimationState.remainingPhaseSeconds.toString()
+                secondsText = breathAnimationState.remainingPhaseSeconds.toString(),
+                showCircle = true
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -186,64 +181,6 @@ fun PauzeVisualBreathingRunningScreen(
                 onContinue = onContinueClick
             )
         }
-    }
-}
-
-@Composable
-private fun PauzeVisualBreathingCircle(
-    progress: Float,
-    secondsText: String,
-    modifier: Modifier = Modifier
-) {
-    val outerSize by animateDpAsState(
-        targetValue = lerp(220.dp, 312.dp, progress),
-        animationSpec = tween(durationMillis = 1000, easing = LinearEasing),
-        label = "visualBreathingOuterSize"
-    )
-    val innerSize by animateDpAsState(
-        targetValue = lerp(180.dp, 218.dp, progress),
-        animationSpec = tween(durationMillis = 1000, easing = LinearEasing),
-        label = "visualBreathingInnerSize"
-    )
-
-    Box(
-        modifier = modifier
-            .fillMaxWidth()
-            .height(312.dp),
-        contentAlignment = Alignment.Center
-    ) {
-        Box(
-            modifier = Modifier
-                .size(outerSize)
-                .background(
-                    color = AppTheme.palette.gray.getColor(8),
-                    shape = CircleShape
-                )
-        )
-        Box(
-            modifier = Modifier
-                .size(innerSize)
-                .background(
-                    color = AppTheme.palette.gray.getColor(7),
-                    shape = CircleShape
-                )
-        )
-        Box(
-            modifier = Modifier
-                .size(120.dp)
-                .background(
-                    color = AppTheme.palette.gray.getColor(6),
-                    shape = CircleShape
-                )
-        )
-        Text(
-            text = secondsText,
-            color = AppTheme.palette.gray.getColor(2),
-            fontSize = 64.sp,
-            lineHeight = 64.sp,
-            fontWeight = FontWeight.Medium,
-            fontFamily = fontFamily
-        )
     }
 }
 
