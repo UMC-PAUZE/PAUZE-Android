@@ -20,6 +20,7 @@ import androidx.compose.ui.unit.lerp
 import androidx.compose.ui.unit.sp
 import com.example.pauze.ui.theme.AppTheme
 import com.example.pauze.ui.theme.fontFamily
+import com.example.pauze.ui.theme.headingXlMedium
 
 @Composable
 fun PauzeBreathingCircle(
@@ -72,9 +73,7 @@ fun PauzeBreathingCircle(
         Text(
             text = secondsText,
             color = AppTheme.palette.gray.getColor(2),
-            fontSize = 64.sp,
-            fontWeight = FontWeight.Medium,
-            fontFamily = fontFamily
+            style = headingXlMedium
         )
     }
 }
