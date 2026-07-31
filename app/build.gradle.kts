@@ -2,6 +2,8 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.hilt.android)
+    id("kotlin-kapt")
     id("org.jetbrains.kotlin.plugin.serialization") version "2.4.10"
 }
 
@@ -64,6 +66,13 @@ dependencies {
     implementation("io.github.darkokoa:datetime-wheel-picker:1.3.1")
     implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.8.0")
     implementation("io.coil-kt:coil-compose:2.7.0")
+    implementation(libs.hilt.android)
+    kapt(libs.hilt.compiler)
+    kapt("org.jetbrains.kotlin:kotlin-metadata-jvm:2.4.10")
+    implementation(libs.retrofit)
+    implementation(libs.retrofit.converter.gson)
+    implementation(libs.okhttp)
+    implementation(libs.okhttp.logging.interceptor)
 }
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
