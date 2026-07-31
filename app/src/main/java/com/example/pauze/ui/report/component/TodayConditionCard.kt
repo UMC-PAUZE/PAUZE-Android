@@ -25,6 +25,7 @@ import com.example.pauze.ui.theme.bodyTextLgRegular
 import com.example.pauze.ui.theme.bodyTextXlMedium
 import com.example.pauze.ui.theme.fontFamily
 import com.example.pauze.ui.theme.headingMdRegular
+import com.example.pauze.ui.theme.headingXlBold
 
 @Composable
 fun TodayConditionCard(
@@ -57,9 +58,7 @@ fun TodayConditionCard(
             Row(verticalAlignment = Alignment.Bottom) {
                 Text(
                     text = condition?.score?.toString() ?: "?",
-                    fontSize = 64.sp,
-                    fontWeight = FontWeight.Bold,
-                    fontFamily = fontFamily,
+                    style = headingXlBold,
                     color = AppTheme.palette.gray.getColor(2)
                 )
 
