@@ -16,8 +16,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -29,12 +31,15 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.pauze.MainActivity
+import com.example.pauze.R
 import com.example.pauze.ui.component.CondtionAnswer
 import com.example.pauze.ui.component.Dialog
 import com.example.pauze.ui.component.PhaseBar
@@ -43,9 +48,10 @@ import com.example.pauze.ui.component.TopBar
 import com.example.pauze.ui.theme.AppTheme
 import com.example.pauze.ui.theme.MainPaletteTheme
 import com.example.pauze.ui.theme.bodyTextLgBold
+import com.example.pauze.ui.theme.bodyTextLgRegular
+import com.example.pauze.ui.theme.bodyTextMdBold
 import com.example.pauze.ui.theme.bodyTextXlBold
 import com.example.pauze.ui.theme.bodyTextMdRegular
-import com.example.pauze.ui.theme.bodyTextSmRegular
 import com.example.pauze.ui.theme.headingMdBold
 
 class PauzeTodayConditionActivity : ComponentActivity() {
@@ -96,6 +102,7 @@ fun PauzeTodayCondition(
         PauzeTodayConditionResult(
             score = conditionState.sensitivityScore,
             onHomeClick = viewModel::navigateToMainActivity,
+            onDetailClick = viewModel::navigateToMainActivity,
             onPauzeStartClick = viewModel::navigateToPauzeStartActivity
         )
         return
@@ -200,9 +207,20 @@ fun PauzeTodayCondition(
 private fun PauzeTodayConditionResult(
     score: Int,
     onHomeClick: () -> Unit,
+    onDetailClick: () -> Unit,
     onPauzeStartClick: () -> Unit
 ) {
     val normalizedScore = score.coerceIn(0, 100)
+    val sensitivityLevel = when (normalizedScore) {
+        in 0..39 -> "낮음"
+        in 40..69 -> "보통"
+        else -> "높음"
+    }
+    val sensitivityLevelColor = when (normalizedScore) {
+        in 0..39 -> AppTheme.palette.primary.getColor(3)
+        in 40..69 -> AppTheme.palette.tertiary.getColor(3)
+        else -> AppTheme.palette.secondary.getColor(3)
+    }
 
     Column(
         modifier = Modifier
@@ -210,7 +228,25 @@ private fun PauzeTodayConditionResult(
             .background(AppTheme.palette.base.getColor(0)),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Spacer(modifier = Modifier.height(184.dp))
+        Spacer(modifier = Modifier.height(168.dp))
+
+        Text(
+            text = "측정 완료!",
+            style = headingMdBold,
+            color = AppTheme.palette.gray.getColor(1)
+        )
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        Text(
+            text = "오늘의 컨디션 분석을 완료했어요.\n자세한 결과는 홈 화면에서 확인할 수 있어요.",
+            style = bodyTextMdRegular,
+            color = AppTheme.palette.gray.getColor(4),
+            textAlign = TextAlign.Center,
+            lineHeight = 24.sp
+        )
+
+        Spacer(modifier = Modifier.height(48.dp))
 
         Column(
             modifier = Modifier
@@ -220,22 +256,31 @@ private fun PauzeTodayConditionResult(
                     shape = RoundedCornerShape(24.dp)
                 )
                 .padding(28.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+            horizontalAlignment = Alignment.Start
         ) {
-            Text(
-                text = "측정 완료!",
-                style = headingMdBold,
-                color = AppTheme.palette.gray.getColor(1)
-            )
-            Spacer(modifier = Modifier.height(12.dp))
-            Text(
-                text = "오늘의 예민도",
-                style = bodyTextLgBold,
-                color = AppTheme.palette.gray.getColor(4)
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "현재 민감 지수",
+                    style = bodyTextLgRegular,
+                    color = AppTheme.palette.gray.getColor(2)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = sensitivityLevel,
+                    style = bodyTextLgBold,
+                    color = sensitivityLevelColor
+                )
+            }
+
             Spacer(modifier = Modifier.height(12.dp))
 
-            Row(verticalAlignment = Alignment.Bottom) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.Bottom
+            ) {
                 Text(
                     text = normalizedScore.toString(),
                     style = headingMdBold.copy(fontSize = 64.sp, lineHeight = 64.sp),
@@ -252,44 +297,30 @@ private fun PauzeTodayConditionResult(
 
             Spacer(modifier = Modifier.height(16.dp))
             SensitivityScoreBar(score = normalizedScore)
+
             Spacer(modifier = Modifier.height(16.dp))
 
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .align(Alignment.End)
+                    .clickable(onClick = onDetailClick)
+                    .padding(vertical = 4.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Box(
-                    modifier = Modifier
-                        .background(
-                            color = AppTheme.palette.tertiary.getColor(8),
-                            shape = RoundedCornerShape(16.dp)
-                        )
-                        .padding(horizontal = 16.dp, vertical = 6.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "보통",
-                        style = bodyTextSmRegular,
-                        color = AppTheme.palette.tertiary.getColor(1)
-                    )
-                }
-                Spacer(modifier = Modifier.weight(1f))
                 Text(
-                    text = "비교적 안정적인 상태예요",
-                    style = bodyTextSmRegular,
-                    color = AppTheme.palette.gray.getColor(4)
+                    text = "자세히 알아보기",
+                    style = bodyTextMdBold,
+                    color = AppTheme.palette.gray.getColor(2)
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+                Icon(
+                    painter = painterResource(R.drawable.ic_forward),
+                    contentDescription = "자세히 알아보기",
+                    tint = Color.Unspecified,
+                    modifier = Modifier.size(16.dp)
                 )
             }
         }
-
-        Spacer(modifier = Modifier.height(24.dp))
-        Text(
-            text = "오늘의 컨디션 분석을 완료했어요.\n자세한 결과는 홈 화면에서 확인할 수 있어요.",
-            style = bodyTextMdRegular,
-            color = AppTheme.palette.gray.getColor(5),
-            textAlign = TextAlign.Center,
-            lineHeight = 24.sp
-        )
 
         Spacer(modifier = Modifier.weight(1f))
 
