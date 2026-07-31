@@ -306,7 +306,7 @@ private fun PauzeTodayConditionResult(
                 onClick = onHomeClick
             )
             ResultActionButton(
-                text = "g 안정하기",
+                text = "지금 안정하기",
                 isPrimary = true,
                 modifier = Modifier.weight(1f),
                 onClick = onPauzeStartClick
