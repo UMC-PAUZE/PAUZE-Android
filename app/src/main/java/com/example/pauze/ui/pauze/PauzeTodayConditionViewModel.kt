@@ -1,5 +1,6 @@
 package com.example.pauze.ui.pauze
 
+import com.example.pauze.data.model.BaseUiState
 import com.example.pauze.data.model.ConditionQuestion
 import com.example.pauze.ui.BaseViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -26,7 +27,9 @@ sealed interface TodayConditionEffect {
     data object NavigateToPauzeStartActivity : TodayConditionEffect
 }
 
-class PauzeTodayConditionViewModel : BaseViewModel<TodayConditionEffect>() {
+class PauzeTodayConditionViewModel : BaseViewModel<TodayConditionEffect, Unit>(
+    uiState = BaseUiState(data = Unit)
+) {
     private val _conditionQuestions = MutableStateFlow(
         listOf(
             ConditionQuestion(
