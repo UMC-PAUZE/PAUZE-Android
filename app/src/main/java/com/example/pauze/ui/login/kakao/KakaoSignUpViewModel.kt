@@ -25,7 +25,7 @@ class KakaoSignUpViewModel(
 ): BaseViewModel<KakaoSignUpEffect, Unit>(
     uiState = BaseUiState(data = Unit)
 ){
-    val initialAgreed = savedStateHandle.toRoute<LoginNavDestination.SignUp>().isAgreed
+    val initialAgreed = savedStateHandle.toRoute<LoginNavDestination.Kakao>().isAgreed
     var isAgreed by mutableStateOf(initialAgreed)
         private set
 
@@ -43,7 +43,7 @@ class KakaoSignUpViewModel(
     fun toggleEmailExist(){
         isEmailNoExisted = !isEmailNoExisted
     }
-    fun checkVerifCodeRight(): Boolean = verifCode == "64359"
+    fun checkVerifCodeRight(): Boolean = verifCode == "643590"
 
     fun updateIsAgreed(isAgreed: Boolean){
         this.isAgreed = isAgreed
@@ -52,9 +52,7 @@ class KakaoSignUpViewModel(
     fun updatePhase(){
         phase = phase + 1
         if(phase == 1){
-            Handler(Looper.getMainLooper()).post {
-                startTimer()
-            }
+            startTimer()
         }
     }
 

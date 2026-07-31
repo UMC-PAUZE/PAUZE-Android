@@ -100,7 +100,7 @@ fun KakaoSignUpScreen(
                     if(isCompleted) "시작하기" else "다음",
                     modifier = Modifier.fillMaxWidth(),
                     onClick = { viewModel.signUp() },
-                    enabled = isCompleted,
+                    enabled = isCompleted && viewModel.isAgreed,
                 )
                 Spacer(modifier = Modifier.height(40.dp))
             }

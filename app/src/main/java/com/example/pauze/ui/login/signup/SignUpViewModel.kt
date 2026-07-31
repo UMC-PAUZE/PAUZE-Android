@@ -49,7 +49,7 @@ class SignUpViewModel(
     fun toggleEmailExist(){
         isEmailNoExisted = !isEmailNoExisted
     }
-    fun checkVerifCodeRight(): Boolean = verifCode == "64359"
+    fun checkVerifCodeRight(): Boolean = verifCode == "643590"
 
     fun updateIsAgreed(isAgreed: Boolean){
         this.isAgreed = isAgreed
@@ -58,9 +58,7 @@ class SignUpViewModel(
     fun updatePhase(){
         phase = phase + 1
         if(phase == 2){
-            Handler(Looper.getMainLooper()).post {
-                startTimer()
-            }
+            startTimer()
         }
     }
     fun startTimer(){
