@@ -35,6 +35,7 @@ import androidx.compose.ui.unit.lerp
 import androidx.compose.ui.unit.sp
 import com.example.pauze.R
 import com.example.pauze.data.model.BreathPhase
+import com.example.pauze.ui.component.Dialog
 import com.example.pauze.ui.theme.AppTheme
 import com.example.pauze.ui.theme.bodyTextLgRegular
 import com.example.pauze.ui.theme.bodyTextMdMedium
@@ -51,14 +52,14 @@ private const val BREATH_CYCLE_SECONDS = INHALE_SECONDS + HOLD_SECONDS + EXHALE_
 @Composable
 fun PauzeVisualBreathingRunningScreen(
     totalSeconds: Int,
+    showStopDialog: Boolean,
+    onShowStopDialog: () -> Unit,
     onStopClick: () -> Unit,
+    onContinueClick: () -> Unit,
     onFinish: () -> Unit
 ) {
     var remainingSeconds by remember(totalSeconds) {
         mutableStateOf(totalSeconds)
-    }
-    var showStopDialog by remember {
-        mutableStateOf(false)
     }
     var isPlaying by remember {
         mutableStateOf(true)
@@ -87,7 +88,7 @@ fun PauzeVisualBreathingRunningScreen(
             .fillMaxSize()
             .background(Color.Black)
             .clickable(enabled = !showStopDialog) {
-                showStopDialog = true
+                onShowStopDialog()
             },
         contentAlignment = Alignment.Center
     ) {
@@ -176,10 +177,13 @@ fun PauzeVisualBreathingRunningScreen(
         }
 
         if (showStopDialog) {
-            PauzeVisualStopDialog(
+            Dialog(
                 title = "호흡 가이드를 중단하시겠어요?",
-                onStopClick = onStopClick,
-                onContinueClick = { showStopDialog = false }
+                content = "남은 시간은 저장되지 않습니다.",
+                btnCancel = "중단하기",
+                btnContinue = "계속하기",
+                onDismissRequest = onStopClick,
+                onContinue = onContinueClick
             )
         }
     }

@@ -7,8 +7,10 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 
 // 시각 안정 화면 단계
@@ -28,7 +30,8 @@ enum class PauzeVisualMethod {
 
 @Composable
 fun PauzeVisualScreen(
-    navController: NavController
+    navController: NavController,
+    viewModel: PauzeVisualViewModel = viewModel()
 ) {
     var step by remember { mutableStateOf(PauzeVisualStep.SelectMethod) }
     var selectedMethod by remember { mutableStateOf<PauzeVisualMethod?>(null) }
@@ -36,8 +39,18 @@ fun PauzeVisualScreen(
     var selectedMinute by remember { mutableStateOf(5) }
     var selectedSecond by remember { mutableStateOf(0) }
     var countdownNumber by remember { mutableStateOf(3) }
+    var showStopDialog by rememberSaveable { mutableStateOf(false) }
 
     val totalSeconds = selectedHour * 60 * 60 + selectedMinute * 60 + selectedSecond
+
+    LaunchedEffect(viewModel.effect) {
+        viewModel.effect.collect { effect ->
+            when (effect) {
+                PauzeVisualEffect.ShowStopDialog -> showStopDialog = true
+                PauzeVisualEffect.HideStopDialog -> showStopDialog = false
+            }
+        }
+    }
 
     when (step) {
         PauzeVisualStep.Start -> LaunchedEffect(Unit) {
@@ -94,14 +107,32 @@ fun PauzeVisualScreen(
         PauzeVisualStep.Running -> when (selectedMethod) {
             PauzeVisualMethod.BreathingGuide -> PauzeVisualBreathingRunningScreen(
                 totalSeconds = totalSeconds,
-                onStopClick = { step = PauzeVisualStep.Start },
-                onFinish = { step = PauzeVisualStep.Start }
+                showStopDialog = showStopDialog,
+                onShowStopDialog = viewModel::showStopDialog,
+                onStopClick = {
+                    viewModel.hideStopDialog()
+                    step = PauzeVisualStep.Start
+                },
+                onContinueClick = viewModel::hideStopDialog,
+                onFinish = {
+                    viewModel.hideStopDialog()
+                    step = PauzeVisualStep.Start
+                }
             )
 
             PauzeVisualMethod.Meditation -> PauzeVisualMeditationRunningScreen(
                 totalSeconds = totalSeconds,
-                onStopClick = { step = PauzeVisualStep.Start },
-                onFinish = { step = PauzeVisualStep.Start }
+                showStopDialog = showStopDialog,
+                onShowStopDialog = viewModel::showStopDialog,
+                onStopClick = {
+                    viewModel.hideStopDialog()
+                    step = PauzeVisualStep.Start
+                },
+                onContinueClick = viewModel::hideStopDialog,
+                onFinish = {
+                    viewModel.hideStopDialog()
+                    step = PauzeVisualStep.Start
+                }
             )
 
             null -> LaunchedEffect(Unit) {
