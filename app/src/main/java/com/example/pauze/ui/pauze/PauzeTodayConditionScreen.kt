@@ -70,7 +70,7 @@ class PauzeTodayConditionActivity : ComponentActivity() {
 fun PauzeTodayCondition(
     modifier: Modifier = Modifier,
     onExitClick: () -> Unit = {},
-    viewModel: PauzeTodayConditionViewModel = viewModel()
+    viewModel: PauzeTodayConditionViewModel = viewModel<PauzeTodayConditionViewModel>()
 ) {
     val context = LocalContext.current
     val conditionState by viewModel.state.collectAsState()

@@ -91,7 +91,7 @@ class PauzeStartActivity: ComponentActivity() {
 fun PauzeStartScreen(
     context: Context = LocalContext.current,
     navController: NavController = rememberNavController(),
-    viewModel: PauzeStartViewModel = viewModel()
+    viewModel: PauzeStartViewModel = viewModel<PauzeStartViewModel>()
 ) {
     LaunchedEffect(viewModel.effect) {
         viewModel.effect.collect { effect ->
