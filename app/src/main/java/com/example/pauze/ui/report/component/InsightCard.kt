@@ -22,7 +22,6 @@ fun InsightCard(state: InsightUiState) {
             )
         }
 
-        // ui 확인용
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)){
             state.paragraphs.forEach { text ->
                 Text(

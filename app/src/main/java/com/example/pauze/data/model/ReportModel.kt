@@ -44,9 +44,15 @@ data class WeeklyScore(
     val averageScore: Double,
 )
 
+// State
+data class ReportState(
+    val weekly: WeeklyReportDto? = null,
+    val monthly: MonthlyReportDto? = null
+)
+
 data class AverageScoreUiState(
     val title: String,
-    val score: Int,
+    val score: Double,
     val bars: List<ChartBar>,
     val bestLabel: String,
     val bestValue: String,
