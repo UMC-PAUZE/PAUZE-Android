@@ -28,8 +28,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.pauze.R
 import com.example.pauze.data.model.ReportPeriod
 import com.example.pauze.ui.component.Button
@@ -50,7 +50,7 @@ import com.example.pauze.ui.theme.headingSmBold
 fun ReportScreen(
     context: Context,
     isGuest: Boolean = true,
-    viewModel: ReportViewModel = viewModel()
+    viewModel: ReportViewModel = hiltViewModel()
 ) {
 
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()

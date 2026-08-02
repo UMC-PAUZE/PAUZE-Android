@@ -81,23 +81,33 @@ class ReportViewModel @Inject constructor(
     }
 }
 
-private fun WeeklyReportDto.toAverageScoreUiState() = AverageScoreUiState(
-    title = "이번 주 평균 민감 지수",
-    score = averageScore,
-    bars = dailyScores.map { ChartBar(it.day, it.score.toInt()) },
-    bestLabel = "최고 민감 요일",
-    bestValue = hardestDay,
-    executionCount = pauzeCount.toInt()
-)
+private val weekDayOrder = listOf("월", "화", "수", "목", "금", "토", "일")
 
-private fun MonthlyReportDto.toAverageScoreUiState() = AverageScoreUiState(
-    title = "이번 달 평균 민감 지수",
-    score = averageScore,
-    bars = weeklyScores.map { ChartBar(it.week, it.averageScore.toInt()) },
-    bestLabel = "최고 민감 주차",
-    bestValue = hardestWeek,
-    executionCount = pauzeCount.toInt()
-)
+private fun WeeklyReportDto.toAverageScoreUiState(): AverageScoreUiState {
+    val scoreByDay = dailyScores.associateBy { it.day }
+    return AverageScoreUiState(
+        title = "이번 주 평균 민감 지수",
+        score = averageScore,
+        bars = weekDayOrder.map { day -> ChartBar(day, scoreByDay[day]?.score?.toInt() ?: 0) },
+        bestLabel = "최고 민감 요일",
+        bestValue = hardestDay,
+        executionCount = pauzeCount.toInt()
+    )
+}
+
+private val monthWeekOrder = listOf("1주차", "2주차", "3주차", "4주차", "5주차")
+
+private fun MonthlyReportDto.toAverageScoreUiState(): AverageScoreUiState {
+    val scoreByWeek = weeklyScores.associateBy { it.week }
+    return AverageScoreUiState(
+        title = "이번 달 평균 민감 지수",
+        score = averageScore,
+        bars = monthWeekOrder.map { week -> ChartBar(week, scoreByWeek[week]?.averageScore?.toInt() ?: 0) },
+        bestLabel = "최고 민감 주차",
+        bestValue = hardestWeek,
+        executionCount = pauzeCount.toInt()
+    )
+}
 
 private fun WeeklyReportDto.toInsightUiState() = InsightUiState(
     title = "이번 주 인사이트",
@@ -109,23 +119,23 @@ private fun MonthlyReportDto.toInsightUiState() = InsightUiState(
     paragraphs = insights
 )
 
+private val allTriggerCategories = listOf(
+    "소음 노출" to TriggerColorToken.NOISE,
+    "수면 부족" to TriggerColorToken.SLEEP,
+    "사회피로" to TriggerColorToken.SOCIAL,
+    "에너지 소진" to TriggerColorToken.ENERGY,
+    "과한 시각 정보" to TriggerColorToken.VISUAL_OVERLOAD
+)
+
 private fun List<TopTrigger>.toTriggerUiStateList(): List<TriggerUiState> {
-    val total = sumOf {it.count}
-    if (total == 0L) return emptyList()
-    return map {
+    val total = sumOf { it.count }
+    val countByLabel = associate { it.trigger to it.count }
+    return allTriggerCategories.map { (label, colorToken) ->
+        val count = countByLabel[label] ?: 0L
         TriggerUiState(
-            label = it.trigger,
-            percent = it.count / total.toFloat(),
-            colorToken = it.trigger.toTriggerColorToken()
+            label = label,
+            percent = if (total == 0L) 0f else count / total.toFloat(),
+            colorToken = colorToken
         )
     }
-}
-
-private fun String.toTriggerColorToken(): TriggerColorToken = when(this){
-    "소음 노출" -> TriggerColorToken.NOISE
-    "수면 부족" -> TriggerColorToken.SLEEP
-    "사회피로" -> TriggerColorToken.SOCIAL
-    "에너지 소진" -> TriggerColorToken.ENERGY
-    "과한 시각 정보" -> TriggerColorToken.VISUAL_OVERLOAD
-    else -> TriggerColorToken.NOISE
 }

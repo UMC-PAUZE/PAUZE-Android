@@ -9,7 +9,7 @@ data class ChartBar(val label: String, val score: Int)
 data class WeeklyReportDto(
     val averageScore: Double,
     val hardestDay: String,
-    val hardestScore: Long,
+    val hardestScore: Double,
     val pauzeCount: Long,
     val scoreChange: Double?,
     val dailyScores: List<DailyScore>,
@@ -31,7 +31,7 @@ data class TopTrigger(
 data class MonthlyReportDto(
     val averageScore: Double,
     val hardestWeek: String,
-    val hardestScore: Long,
+    val hardestScore: Double,
     val pauzeCount: Long,
     val scoreChange: Double?,
     val weeklyScores: List<WeeklyScore>,
