@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import javax.inject.Inject
+import com.example.pauze.data.model.toCurationPost
 
 data class CurationBoardState(
     val keyword: String = "",
@@ -130,6 +131,48 @@ class CurationBoardViewModel @Inject constructor(
     fun selectPost(postId: Long) {
         _curationState.update { state ->
             state.copy(selectedPostId = postId)
+        }
+
+        loadCurationPostDetail(postId)
+    }
+
+    private fun loadCurationPostDetail(
+        postId: Long,
+    ) {
+        launch {
+            val detail =
+                curationRepository.getCurationPostDetail(
+                    postId = postId,
+                )
+
+            _curationState.update { state ->
+                val existingPost = state.posts.firstOrNull {
+                        post -> post.postId == postId
+                }
+
+                val detailPost = detail.toCurationPost(
+                    summary = existingPost?.summary
+                        ?: detail.content,
+                )
+
+                val updatedPosts =
+                    if (existingPost == null) {
+                        state.posts + detailPost
+                    } else {
+                        state.posts.map { post ->
+                            if (post.postId == postId) {
+                                detailPost
+                            } else {
+                                post
+                            }
+                        }
+                    }
+
+                state.copy(
+                    posts = updatedPosts,
+                    selectedPostId = postId,
+                )
+            }
         }
     }
 

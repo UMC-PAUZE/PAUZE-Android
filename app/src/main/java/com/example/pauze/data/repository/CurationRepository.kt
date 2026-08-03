@@ -1,6 +1,7 @@
 package com.example.pauze.data.repository
 
 import com.example.pauze.data.model.CurationPostListResultDto
+import com.example.pauze.data.model.CurationPostDetailDto
 
 interface CurationRepository {
 
@@ -10,4 +11,8 @@ interface CurationRepository {
         page: Int = 1,
         size: Int = 10,
     ): CurationPostListResultDto
+
+    suspend fun getCurationPostDetail(
+        postId: Long,
+    ): CurationPostDetailDto
 }

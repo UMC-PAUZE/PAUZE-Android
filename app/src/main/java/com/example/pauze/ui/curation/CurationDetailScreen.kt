@@ -88,8 +88,8 @@ fun CurationDetailScreen(
         mutableStateOf(false)
     }
 
-    val paragraphs = remember(post.summary) {
-        post.summary
+    val paragraphs = remember(post.content) {
+        post.content
             .split(paragraphSeparatorPattern)
             .map(String::trim)
             .filter(String::isNotEmpty)
