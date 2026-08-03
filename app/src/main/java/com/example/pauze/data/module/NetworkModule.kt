@@ -1,5 +1,6 @@
 package com.example.pauze.data.module
 
+import com.example.pauze.data.service.ReportService
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -19,7 +20,7 @@ annotation class PauzeBaseUrl
 @Module
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
-    private const val BASE_URL = "https://pauze.cloud/api/" // todo: 미배포
+    private const val BASE_URL = "https://pauze.cloud/api/"
 
     @Provides
     @Singleton
@@ -33,6 +34,7 @@ object NetworkModule {
     ): OkHttpClient =
         OkHttpClient.Builder()
             .addInterceptor(loggingInterceptor)
+            .addInterceptor(AuthInterceptor())
             .connectTimeout(60, TimeUnit.SECONDS)
             .readTimeout(60, TimeUnit.SECONDS)
             .writeTimeout(60, TimeUnit.SECONDS)
@@ -47,4 +49,10 @@ object NetworkModule {
             .client(client)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
+
+    //리포트
+    @Provides
+    @Singleton
+    fun provideReportService(@PauzeBaseUrl retrofit: Retrofit) : ReportService = retrofit.create(
+        ReportService::class.java)
 }

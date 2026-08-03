@@ -39,13 +39,14 @@ import com.example.pauze.ui.mypage.AccountInfoScreen
 import com.example.pauze.ui.mypage.MyPageNavDestination
 import com.example.pauze.ui.mypage.MyPageScreen
 import com.example.pauze.ui.mypage.ProfileEditScreen
-import com.example.pauze.ui.pauze.PauzeNavDestination
 import com.example.pauze.ui.pauze.PauzeStartActivity
 import com.example.pauze.ui.report.ReportScreen
 import com.example.pauze.ui.theme.AppTheme
 import com.example.pauze.ui.theme.MainPaletteTheme
 import com.example.pauze.ui.theme.captionTextMedium
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

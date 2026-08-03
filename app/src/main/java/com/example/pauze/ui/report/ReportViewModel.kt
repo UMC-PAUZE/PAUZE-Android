@@ -6,47 +6,86 @@ import androidx.compose.runtime.setValue
 import com.example.pauze.data.dummies.ReportDummyData
 import com.example.pauze.data.model.AverageScoreUiState
 import com.example.pauze.data.model.BaseUiState
+import com.example.pauze.data.model.ChartBar
 import com.example.pauze.data.model.Condition
 import com.example.pauze.data.model.InsightUiState
+import com.example.pauze.data.model.MonthlyReportDto
 import com.example.pauze.data.model.ReportPeriod
+import com.example.pauze.data.model.ReportState
+import com.example.pauze.data.model.TopTrigger
+import com.example.pauze.data.model.TriggerColorToken
 import com.example.pauze.data.model.TriggerUiState
+import com.example.pauze.data.model.WeeklyReportDto
+import com.example.pauze.data.repository.ReportRepository
 import com.example.pauze.ui.BaseViewModel
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 
 sealed interface ReportEffect  {
     object NavigateToConditionInput: ReportEffect
     object NavigateToLogin: ReportEffect
 }
-class ReportViewModel : BaseViewModel<ReportEffect, Unit>(
-    uiState = BaseUiState(data = Unit)
+@HiltViewModel
+class ReportViewModel @Inject constructor(
+    private val reportRepository: ReportRepository
+) : BaseViewModel<ReportEffect, ReportState>(
+    uiState = BaseUiState(data = ReportState())
 ) {
     var selectedPeriod by mutableStateOf(ReportPeriod.WEEKLY)
         private set
+
+    init {
+        fetchWeekly()
+        fetchMonthly()
+    }
 
     fun selectPeriod(period: ReportPeriod) {
         selectedPeriod = period
     }
 
+    private fun fetchWeekly() {
+        launch {
+            try {
+                val weekly = reportRepository.getWeeklyReport()
+                updateData { it.copy(weekly = weekly, weeklyError = null) }
+            } catch (e: Exception) {
+                updateData { it.copy(weeklyError = e.message ?: "주간 리포트를 불러오지 못했습니다") }
+            }
+        }
+    }
+
+    private fun fetchMonthly() {
+        launch {
+            try {
+                val monthly = reportRepository.getMonthlyReport()
+                updateData { it.copy(monthly = monthly, monthlyError = null) }
+            } catch (e: Exception) {
+                updateData { it.copy(monthlyError = e.message ?: "월간 리포트를 불러오지 못했습니다") }
+            }
+        }
+    }
+
     val todayCondition: Condition? = ReportDummyData.todayCondition // todo: 오늘의 컨디션 api 연동 시 교체
 
-    val averageScore: AverageScoreUiState
+    val averageScore: AverageScoreUiState?
         get() = if (selectedPeriod == ReportPeriod.WEEKLY) {
-            ReportDummyData.dailyAverageScore
+            uiState.value.data.weekly?.toAverageScoreUiState()
         } else {
-            ReportDummyData.weeklyAverageScore
+            uiState.value.data.monthly?.toAverageScoreUiState()
         }
 
-    val insight: InsightUiState
+    val insight: InsightUiState?
         get() = if (selectedPeriod == ReportPeriod.WEEKLY){
-            ReportDummyData.dailyInsight
+            uiState.value.data.weekly?.toInsightUiState()
         } else{
-            ReportDummyData.weeklyInsight
+            uiState.value.data.monthly?.toInsightUiState()
         }
 
     val triggers: List<TriggerUiState>
         get() = if (selectedPeriod == ReportPeriod.WEEKLY) {
-            ReportDummyData.dailyTriggers
+            uiState.value.data.weekly?.topTriggers?.toTriggerUiStateList() ?: emptyList()
         } else {
-            ReportDummyData.weeklyTriggers
+            uiState.value.data.monthly?.topTriggers?.toTriggerUiStateList() ?: emptyList()
         }
 
     fun onConditionInputClick(){
@@ -55,5 +94,64 @@ class ReportViewModel : BaseViewModel<ReportEffect, Unit>(
 
     fun onGuestLoginClick(){
         sendEffect(ReportEffect.NavigateToLogin)
+    }
+}
+
+private val weekDayOrder = listOf("월", "화", "수", "목", "금", "토", "일")
+
+private fun WeeklyReportDto.toAverageScoreUiState(): AverageScoreUiState {
+    val scoreByDay = dailyScores.associateBy { it.day }
+    return AverageScoreUiState(
+        title = "이번 주 평균 민감 지수",
+        score = averageScore,
+        bars = weekDayOrder.map { day -> ChartBar(day, scoreByDay[day]?.score?.toInt() ?: 0) },
+        bestLabel = "최고 민감 요일",
+        bestValue = hardestDay,
+        executionCount = pauzeCount.toInt()
+    )
+}
+
+private val monthWeekOrder = listOf("1주차", "2주차", "3주차", "4주차", "5주차")
+
+private fun MonthlyReportDto.toAverageScoreUiState(): AverageScoreUiState {
+    val scoreByWeek = weeklyScores.associateBy { it.week }
+    return AverageScoreUiState(
+        title = "이번 달 평균 민감 지수",
+        score = averageScore,
+        bars = monthWeekOrder.map { week -> ChartBar(week, scoreByWeek[week]?.averageScore?.toInt() ?: 0) },
+        bestLabel = "최고 민감 주차",
+        bestValue = hardestWeek,
+        executionCount = pauzeCount.toInt()
+    )
+}
+
+private fun WeeklyReportDto.toInsightUiState() = InsightUiState(
+    title = "이번 주 인사이트",
+    paragraphs = insights
+)
+
+private fun MonthlyReportDto.toInsightUiState() = InsightUiState(
+    title = "이번 달 인사이트",
+    paragraphs = insights
+)
+
+private val allTriggerCategories = listOf(
+    "소음 노출" to TriggerColorToken.NOISE,
+    "수면 부족" to TriggerColorToken.SLEEP,
+    "사회피로" to TriggerColorToken.SOCIAL,
+    "에너지 소진" to TriggerColorToken.ENERGY,
+    "과한 시각 정보" to TriggerColorToken.VISUAL_OVERLOAD
+)
+
+private fun List<TopTrigger>.toTriggerUiStateList(): List<TriggerUiState> {
+    val total = sumOf { it.count }
+    val countByLabel = associate { it.trigger to it.count }
+    return allTriggerCategories.map { (label, colorToken) ->
+        val count = countByLabel[label] ?: 0L
+        TriggerUiState(
+            label = label,
+            percent = if (total == 0L) 0f else count / total.toFloat(),
+            colorToken = colorToken
+        )
     }
 }

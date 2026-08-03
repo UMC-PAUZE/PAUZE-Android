@@ -16,9 +16,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -26,7 +28,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.pauze.R
 import com.example.pauze.data.model.ReportPeriod
 import com.example.pauze.ui.component.Button
@@ -47,8 +50,11 @@ import com.example.pauze.ui.theme.headingSmBold
 fun ReportScreen(
     context: Context,
     isGuest: Boolean = true,
-    viewModel: ReportViewModel = viewModel()
+    viewModel: ReportViewModel = hiltViewModel()
 ) {
+
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
     LaunchedEffect(viewModel.effect) {
         viewModel.effect.collect { effect ->
             when (effect){
@@ -61,6 +67,7 @@ fun ReportScreen(
             }
         }
     }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -114,9 +121,19 @@ fun ReportScreen(
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     TodayConditionCard(viewModel.todayCondition, viewModel::onConditionInputClick)
-                    AverageScoreCard(viewModel.averageScore)
-                    TriggerCard(viewModel.triggers)
-                    InsightCard(viewModel.insight)
+
+                    val currentData = if (viewModel.selectedPeriod == ReportPeriod.WEEKLY) {
+                        uiState.data.weekly
+                    } else {
+                        uiState.data.monthly
+                    }
+                    if (currentData == null) {
+                        CircularProgressIndicator()
+                    } else {
+                        viewModel.averageScore?.let { AverageScoreCard(it) }
+                        TriggerCard(viewModel.triggers)
+                        viewModel.insight?.let { InsightCard(it) }
+                    }
                 }
             }
         }
