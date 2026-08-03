@@ -23,3 +23,20 @@ data class CurationPostListItemDto(
     val isBookmarked: Boolean,
     val createdAt: String,
 )
+
+fun CurationPostListItemDto.toCurationPost(): CurationPost {
+    return CurationPost(
+        postId = postId,
+        categoryId = categoryId,
+        categoryName = categoryName,
+        title = title,
+        summary = summary,
+        thumbnailUrl = thumbnailUrl,
+        viewCount = viewCount,
+        likeCount = likeCount,
+        readingTimeMinutes = estimatedReadTime,
+        isLiked = isLiked,
+        isBookmarked = isBookmarked,
+        createdAt = createdAt,
+    )
+}
