@@ -1,8 +1,9 @@
 package com.example.pauze.ui.curation
 
 import android.content.Intent
-import androidx.activity.compose.BackHandler
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.BackHandler
+import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -18,7 +19,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -51,8 +51,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.core.util.Consumer
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.pauze.R
 import com.example.pauze.data.dummies.curationCategories
 import com.example.pauze.data.model.CurationCategory
@@ -74,10 +74,12 @@ import java.util.TimeZone
 fun CurationBoardScreen(
     onPostClick: (Long) -> Unit = {},
     onBookmarkListClick: () -> Unit = {},
-    viewModel: CurationBoardViewModel = viewModel(),
+    viewModel: CurationBoardViewModel = hiltViewModel(),
 ) {
     val curationState by viewModel.curationState.collectAsState()
+
     val activity = LocalActivity.current as? ComponentActivity
+
     var deepLinkUri by remember(activity) {
         mutableStateOf(activity?.intent?.data)
     }
@@ -86,10 +88,13 @@ fun CurationBoardScreen(
         val newIntentListener = Consumer<Intent> { newIntent ->
             deepLinkUri = newIntent.data
         }
+
         activity?.addOnNewIntentListener(newIntentListener)
 
         onDispose {
-            activity?.removeOnNewIntentListener(newIntentListener)
+            activity?.removeOnNewIntentListener(
+                newIntentListener,
+            )
         }
     }
 
@@ -97,8 +102,14 @@ fun CurationBoardScreen(
         deepLinkUri?.toCurationPostIdOrNull()
     }
 
-    LaunchedEffect(deepLinkUri, deepLinkPostId) {
-        if (deepLinkUri != null && deepLinkPostId != null) {
+    LaunchedEffect(
+        deepLinkUri,
+        deepLinkPostId,
+    ) {
+        if (
+            deepLinkUri != null &&
+            deepLinkPostId != null
+        ) {
             viewModel.selectPostFromDeepLink(
                 deepLink = deepLinkUri.toString(),
                 postId = deepLinkPostId,
@@ -123,12 +134,17 @@ fun CurationBoardScreen(
     val selectedPost = curationState.selectedPost
     val filteredPosts = curationState.filteredPosts
 
-    BackHandler(enabled = selectedPost != null) {
+    BackHandler(
+        enabled = selectedPost != null,
+    ) {
         viewModel.clearSelectedPost()
     }
 
     BackHandler(
-        enabled = isBookmarkScreenVisible && selectedPost == null,
+        enabled = (
+                isBookmarkScreenVisible &&
+                        selectedPost == null
+                ),
     ) {
         isBookmarkScreenVisible = false
     }
@@ -145,7 +161,8 @@ fun CurationBoardScreen(
 
     if (isBookmarkScreenVisible) {
         CurationBookmarkScreen(
-            bookmarkedPosts = curationState.bookmarkedPosts,
+            bookmarkedPosts =
+                curationState.bookmarkedPosts,
             onBackClick = {
                 isBookmarkScreenVisible = false
             },
@@ -154,7 +171,8 @@ fun CurationBoardScreen(
                 onPostClick(postId)
             },
             onLikeClick = viewModel::toggleLike,
-            onBookmarkClick = viewModel::toggleBookmark,
+            onBookmarkClick =
+                viewModel::toggleBookmark,
         )
         return
     }
@@ -162,7 +180,9 @@ fun CurationBoardScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(AppTheme.palette.gray.getColor(9)),
+            .background(
+                AppTheme.palette.gray.getColor(9),
+            ),
     ) {
         Column(
             modifier = Modifier.fillMaxSize(),
@@ -173,13 +193,15 @@ fun CurationBoardScreen(
                 rightIcon = {
                     Image(
                         painter = painterResource(
-                            id = R.drawable.ic_bookmark_off_curation,
+                            id = R.drawable
+                                .ic_bookmark_off_curation,
                         ),
                         contentDescription = "북마크 목록",
                         modifier = Modifier
                             .fillMaxSize()
                             .clickable {
-                                isBookmarkScreenVisible = true
+                                isBookmarkScreenVisible =
+                                    true
                                 onBookmarkListClick()
                             },
                     )
@@ -189,10 +211,13 @@ fun CurationBoardScreen(
             CurationSearchFilter(
                 keyword = curationState.keyword,
                 categories = curationCategories,
-                selectedCategoryId = curationState.selectedCategoryId,
-                onKeywordChange = viewModel::updateKeyword,
+                selectedCategoryId =
+                    curationState.selectedCategoryId,
+                onKeywordChange =
+                    viewModel::updateKeyword,
                 onSearch = viewModel::search,
-                onCategorySelected = viewModel::selectCategory,
+                onCategorySelected =
+                    viewModel::selectCategory,
                 modifier = Modifier.padding(
                     horizontal = 20.dp,
                     vertical = 16.dp,
@@ -222,7 +247,8 @@ fun CurationBoardScreen(
                         end = 20.dp,
                         bottom = 88.dp,
                     ),
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                    verticalArrangement =
+                        Arrangement.spacedBy(12.dp),
                 ) {
                     items(
                         items = filteredPosts,
@@ -233,11 +259,15 @@ fun CurationBoardScreen(
                         CurationPostCard(
                             post = post,
                             onPostClick = { postId ->
-                                viewModel.selectPost(postId)
+                                viewModel.selectPost(
+                                    postId,
+                                )
                                 onPostClick(postId)
                             },
-                            onLikeClick = viewModel::toggleLike,
-                            onBookmarkClick = viewModel::toggleBookmark,
+                            onLikeClick =
+                                viewModel::toggleLike,
+                            onBookmarkClick =
+                                viewModel::toggleBookmark,
                         )
                     }
                 }
@@ -268,16 +298,21 @@ private fun CurationEmptyBoard(
 ) {
     Column(
         modifier = modifier,
-        horizontalAlignment = Alignment.CenterHorizontally,
+        horizontalAlignment =
+            Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
         Image(
-            painter = painterResource(R.drawable.ic_empty_curation),
+            painter = painterResource(
+                R.drawable.ic_empty_curation,
+            ),
             contentDescription = null,
             modifier = Modifier.size(160.dp),
         )
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(
+            modifier = Modifier.height(16.dp),
+        )
 
         Text(
             text = "아직 등록된 게시글이 없어요",
@@ -285,7 +320,9 @@ private fun CurationEmptyBoard(
             color = AppTheme.palette.gray.getColor(2),
         )
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(
+            modifier = Modifier.height(8.dp),
+        )
 
         Text(
             text = "새로운 글이 등록되면 이곳에서 확인할 수 있어요.",
@@ -301,16 +338,21 @@ private fun CurationEmptySearchResult(
 ) {
     Column(
         modifier = modifier,
-        horizontalAlignment = Alignment.CenterHorizontally,
+        horizontalAlignment =
+            Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
         Image(
-            painter = painterResource(R.drawable.ic_empty_curation),
+            painter = painterResource(
+                R.drawable.ic_empty_curation,
+            ),
             contentDescription = null,
             modifier = Modifier.size(160.dp),
         )
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(
+            modifier = Modifier.height(16.dp),
+        )
 
         Text(
             text = "검색 결과가 없어요",
@@ -334,7 +376,8 @@ private fun CurationSearchFilter(
 
     Column(
         modifier = modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
+        verticalArrangement =
+            Arrangement.spacedBy(16.dp),
     ) {
         BasicTextField(
             value = keyword,
@@ -342,7 +385,8 @@ private fun CurationSearchFilter(
             modifier = Modifier.fillMaxWidth(),
             singleLine = true,
             textStyle = bodyTextLgRegular.copy(
-                color = AppTheme.palette.gray.getColor(2),
+                color =
+                    AppTheme.palette.gray.getColor(2),
             ),
             cursorBrush = SolidColor(
                 AppTheme.palette.primary.getColor(4),
@@ -361,25 +405,34 @@ private fun CurationSearchFilter(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(48.dp)
-                        .clip(RoundedCornerShape(24.dp))
+                        .clip(
+                            RoundedCornerShape(24.dp),
+                        )
                         .background(
-                            AppTheme.palette.gray.getColor(8),
+                            AppTheme.palette.gray
+                                .getColor(8),
                         )
                         .padding(
                             start = 16.dp,
                             end = 4.dp,
                         ),
-                    verticalAlignment = Alignment.CenterVertically,
+                    verticalAlignment =
+                        Alignment.CenterVertically,
                 ) {
                     Box(
                         modifier = Modifier.weight(1f),
-                        contentAlignment = Alignment.CenterStart,
+                        contentAlignment =
+                            Alignment.CenterStart,
                     ) {
                         if (keyword.isEmpty()) {
                             Text(
-                                text = "검색어를 입력해주세요",
-                                style = bodyTextMdMedium,
-                                color = AppTheme.palette.gray.getColor(6),
+                                text =
+                                    "검색어를 입력해주세요",
+                                style =
+                                    bodyTextMdMedium,
+                                color =
+                                    AppTheme.palette.gray
+                                        .getColor(6),
                             )
                         }
 
@@ -395,11 +448,15 @@ private fun CurationSearchFilter(
                     ) {
                         Icon(
                             painter = painterResource(
-                                id = R.drawable.ic_search_curation,
+                                id = R.drawable
+                                    .ic_search_curation,
                             ),
                             contentDescription = "검색",
-                            modifier = Modifier.size(24.dp),
-                            tint = AppTheme.palette.gray.getColor(5),
+                            modifier =
+                                Modifier.size(24.dp),
+                            tint =
+                                AppTheme.palette.gray
+                                    .getColor(5),
                         )
                     }
                 }
@@ -411,8 +468,10 @@ private fun CurationSearchFilter(
             contentAlignment = Alignment.Center,
         ) {
             Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement =
+                    Arrangement.spacedBy(8.dp),
+                verticalAlignment =
+                    Alignment.CenterVertically,
             ) {
                 categories.forEach { category ->
                     CurationCategoryChip(
@@ -452,7 +511,8 @@ private fun CurationCategoryChip(
         } else {
             BorderStroke(
                 width = 1.5.dp,
-                color = AppTheme.palette.gray.getColor(7),
+                color =
+                    AppTheme.palette.gray.getColor(7),
             )
         },
     ) {
@@ -473,21 +533,28 @@ private fun CurationCategoryChip(
 }
 
 private const val MINUTE_MILLIS = 60_000L
-private const val HOUR_MILLIS = 60 * MINUTE_MILLIS
-private const val DAY_MILLIS = 24 * HOUR_MILLIS
-private const val MONTH_MILLIS = 30 * DAY_MILLIS
-private const val YEAR_MILLIS = 365 * DAY_MILLIS
+private const val HOUR_MILLIS =
+    60 * MINUTE_MILLIS
+private const val DAY_MILLIS =
+    24 * HOUR_MILLIS
+private const val MONTH_MILLIS =
+    30 * DAY_MILLIS
+private const val YEAR_MILLIS =
+    365 * DAY_MILLIS
 
 internal fun formatRelativeTime(
     createdAt: String,
-    currentTimeMillis: Long = System.currentTimeMillis(),
+    currentTimeMillis: Long =
+        System.currentTimeMillis(),
 ): String {
     val dateFormat = SimpleDateFormat(
         "yyyy-MM-dd'T'HH:mm:ss",
         Locale.getDefault(),
     ).apply {
         isLenient = false
-        timeZone = TimeZone.getTimeZone("Asia/Seoul")
+        timeZone = TimeZone.getTimeZone(
+            "Asia/Seoul",
+        )
     }
 
     val createdAtMillis = runCatching {
