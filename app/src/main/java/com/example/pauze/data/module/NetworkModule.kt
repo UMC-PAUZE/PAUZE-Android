@@ -1,5 +1,6 @@
 package com.example.pauze.data.module
 
+import com.example.pauze.data.service.ReportService
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -48,4 +49,10 @@ object NetworkModule {
             .client(client)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
+
+    //리포트
+    @Provides
+    @Singleton
+    fun provideReportService(@PauzeBaseUrl retrofit: Retrofit) : ReportService = retrofit.create(
+        ReportService::class.java)
 }

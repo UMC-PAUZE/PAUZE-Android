@@ -36,7 +36,7 @@ fun AverageScoreCard(state: AverageScoreUiState){
                 style = bodyTextLgRegular
             )
             Text(
-                text = "${state.score}점",
+                text = "${if (state.score % 1.0 == 0.0) state.score.toInt().toString() else "%.1f".format(state.score)}점",
                 color = AppTheme.palette.tertiary.getColor(3),
                 style = bodyTextLgBold
             )
