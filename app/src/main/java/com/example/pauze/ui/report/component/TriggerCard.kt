@@ -32,66 +32,75 @@ import kotlin.math.asin
 fun TriggerCard(triggers: List<TriggerUiState>){
 
     val coloredTriggers = triggers.map {it to it.colorToken.toColor()}
+    val donutSegments = coloredTriggers.filter { (trigger, _) -> trigger.percent > 0f }
 
-    ReportCard(horizontalAlignment = Alignment.CenterHorizontally) {
+    ReportCard {
         Text(
             text = "주요 트리거",
             style = bodyTextXlMedium,
             color = AppTheme.palette.gray.getColor(2)
         )
 
-        Canvas(modifier = Modifier.size(180.dp)) {
-            val ringThickness = 36.dp.toPx()
-            val cornerRadius = 3.dp.toPx()
-
-            val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-                style = Paint.Style.FILL_AND_STROKE
-                strokeWidth = cornerRadius * 2
-                strokeJoin = Paint.Join.ROUND
-            }
-
-            val cx = size.width / 2
-            val cy = size.height / 2
-            val outerRadius = size.minDimension / 2 - cornerRadius
-            val innerRadius = size.minDimension / 2 - ringThickness + cornerRadius
-            val outerRect = RectF(cx - outerRadius, cy - outerRadius, cx + outerRadius, cy + outerRadius)
-            val innerRect = RectF(cx - innerRadius, cy - innerRadius, cx + innerRadius, cy + innerRadius)
-
-            val halfGap = 0.65.dp.toPx() + cornerRadius
-            val outerInset = Math.toDegrees(asin((halfGap / outerRadius).toDouble())).toFloat()
-            val innerInset = Math.toDegrees(asin((halfGap / innerRadius).toDouble())).toFloat()
-
-            var startAngle = -90f
-            coloredTriggers.forEach { (trigger, color) ->
-                val sweep = trigger.percent * 360f
-                val path = Path().apply {
-                    arcTo(outerRect, startAngle - outerInset, -(sweep - 2 * outerInset))
-                    arcTo(innerRect, startAngle - sweep + innerInset, sweep - 2 * innerInset)
-                    close()
-                }
-                paint.color = color.toArgb()
-                drawIntoCanvas { it.nativeCanvas.drawPath(path, paint) }
-
-                startAngle -= sweep
-            }
-        }
-
         Column(
             modifier = Modifier.fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            verticalArrangement = Arrangement.spacedBy(32.dp)
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                coloredTriggers.take(3).forEach { (trigger, color) ->
-                    LegendItem(trigger.label, color)
+            Canvas(modifier = Modifier.size(180.dp)) {
+                val ringThickness = 36.dp.toPx()
+                val cornerRadius = 3.dp.toPx()
+
+                val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+                    style = Paint.Style.FILL_AND_STROKE
+                    strokeWidth = cornerRadius * 2
+                    strokeJoin = Paint.Join.ROUND
+                }
+
+                val cx = size.width / 2
+                val cy = size.height / 2
+                val outerRadius = size.minDimension / 2 - cornerRadius
+                val innerRadius = size.minDimension / 2 - ringThickness + cornerRadius
+                val outerRect = RectF(cx - outerRadius, cy - outerRadius, cx + outerRadius, cy + outerRadius)
+                val innerRect = RectF(cx - innerRadius, cy - innerRadius, cx + innerRadius, cy + innerRadius)
+
+                val halfGap = 0.65.dp.toPx() + cornerRadius
+                val outerInset = Math.toDegrees(asin((halfGap / outerRadius).toDouble())).toFloat()
+                val innerInset = Math.toDegrees(asin((halfGap / innerRadius).toDouble())).toFloat()
+
+                var startAngle = -90f
+                donutSegments.forEach { (trigger, color) ->
+                    val sweep = trigger.percent * 360f
+                    val outerSweep = (sweep - 2 * outerInset).coerceAtLeast(0f)
+                    val innerSweep = (sweep - 2 * innerInset).coerceAtLeast(0f)
+                    val path = Path().apply {
+                        arcTo(outerRect, startAngle - outerInset, -outerSweep)
+                        arcTo(innerRect, startAngle - sweep + innerInset, innerSweep)
+                        close()
+                    }
+                    paint.color = color.toArgb()
+                    drawIntoCanvas { it.nativeCanvas.drawPath(path, paint) }
+
+                    startAngle -= sweep
                 }
             }
-            Row(horizontalArrangement = Arrangement.spacedBy(24.dp)) {
-                coloredTriggers.drop(3).forEach { (trigger, color) ->
-                    LegendItem(trigger.label, color)
+
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    coloredTriggers.take(3).forEach { (trigger, color) ->
+                        LegendItem(trigger.label, color)
+                    }
+                }
+                Row(horizontalArrangement = Arrangement.spacedBy(24.dp)) {
+                    coloredTriggers.drop(3).forEach { (trigger, color) ->
+                        LegendItem(trigger.label, color)
+                    }
                 }
             }
         }
