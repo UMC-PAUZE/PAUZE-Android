@@ -12,9 +12,9 @@ data class WeeklyReportDto(
     val hardestScore: Double,
     val pauzeCount: Long,
     val scoreChange: Double?,
-    val dailyScores: List<DailyScore>,
-    val topTriggers: List<TopTrigger>,
-    val insights: List<String>,
+    val dailyScores: List<DailyScore> = emptyList(),
+    val topTriggers: List<TopTrigger> = emptyList(),
+    val insights: List<String> = emptyList(),
 )
 
 data class DailyScore(
@@ -34,9 +34,9 @@ data class MonthlyReportDto(
     val hardestScore: Double,
     val pauzeCount: Long,
     val scoreChange: Double?,
-    val weeklyScores: List<WeeklyScore>,
-    val topTriggers: List<TopTrigger>,
-    val insights: List<String>,
+    val weeklyScores: List<WeeklyScore> = emptyList(),
+    val topTriggers: List<TopTrigger> = emptyList(),
+    val insights: List<String> = emptyList(),
 )
 
 data class WeeklyScore(
@@ -47,7 +47,9 @@ data class WeeklyScore(
 // State
 data class ReportState(
     val weekly: WeeklyReportDto? = null,
-    val monthly: MonthlyReportDto? = null
+    val monthly: MonthlyReportDto? = null,
+    val weeklyError: String? = null,
+    val monthlyError: String? = null
 )
 
 data class AverageScoreUiState(

@@ -35,18 +35,34 @@ class ReportViewModel @Inject constructor(
         private set
 
     init {
-        launch {
-            val weekly = reportRepository.getWeeklyReport()
-            updateData { it.copy(weekly = weekly) }
-        }
-
-        launch {
-            val monthly = reportRepository.getMonthlyReport()
-            updateData { it.copy(monthly = monthly) }
-        }
+        fetchWeekly()
+        fetchMonthly()
     }
+
     fun selectPeriod(period: ReportPeriod) {
         selectedPeriod = period
+    }
+
+    private fun fetchWeekly() {
+        launch {
+            try {
+                val weekly = reportRepository.getWeeklyReport()
+                updateData { it.copy(weekly = weekly, weeklyError = null) }
+            } catch (e: Exception) {
+                updateData { it.copy(weeklyError = e.message ?: "주간 리포트를 불러오지 못했습니다") }
+            }
+        }
+    }
+
+    private fun fetchMonthly() {
+        launch {
+            try {
+                val monthly = reportRepository.getMonthlyReport()
+                updateData { it.copy(monthly = monthly, monthlyError = null) }
+            } catch (e: Exception) {
+                updateData { it.copy(monthlyError = e.message ?: "월간 리포트를 불러오지 못했습니다") }
+            }
+        }
     }
 
     val todayCondition: Condition? = ReportDummyData.todayCondition // todo: 오늘의 컨디션 api 연동 시 교체

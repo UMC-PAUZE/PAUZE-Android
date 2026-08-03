@@ -127,7 +127,6 @@ fun ReportScreen(
                     } else {
                         uiState.data.monthly
                     }
-
                     if (currentData == null) {
                         CircularProgressIndicator()
                     } else {

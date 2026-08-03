@@ -9,10 +9,12 @@ class ReportRepositoryImpl @Inject constructor(
     val reportService: ReportService
 ) : ReportRepository {
     override suspend fun getWeeklyReport(): WeeklyReportDto {
-        return reportService.getWeeklyReport().result!!
+        val response = reportService.getWeeklyReport()
+        return response.result ?: throw IllegalStateException("[${response.code}] ${response.message}")
     }
 
     override suspend fun getMonthlyReport(): MonthlyReportDto {
-        return reportService.getMonthlyReport().result!!
+        val response = reportService.getMonthlyReport()
+        return response.result ?: throw IllegalStateException("[${response.code}] ${response.message}")
     }
 }

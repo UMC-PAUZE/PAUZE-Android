@@ -70,9 +70,11 @@ fun TriggerCard(triggers: List<TriggerUiState>){
                 var startAngle = -90f
                 donutSegments.forEach { (trigger, color) ->
                     val sweep = trigger.percent * 360f
+                    val outerSweep = (sweep - 2 * outerInset).coerceAtLeast(0f)
+                    val innerSweep = (sweep - 2 * innerInset).coerceAtLeast(0f)
                     val path = Path().apply {
-                        arcTo(outerRect, startAngle - outerInset, -(sweep - 2 * outerInset))
-                        arcTo(innerRect, startAngle - sweep + innerInset, sweep - 2 * innerInset)
+                        arcTo(outerRect, startAngle - outerInset, -outerSweep)
+                        arcTo(innerRect, startAngle - sweep + innerInset, innerSweep)
                         close()
                     }
                     paint.color = color.toArgb()
