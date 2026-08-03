@@ -19,7 +19,7 @@ annotation class PauzeBaseUrl
 @Module
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
-    private const val BASE_URL = "https://pauze.cloud/api/" // todo: 미배포
+    private const val BASE_URL = "https://pauze.cloud/api/"
 
     @Provides
     @Singleton
