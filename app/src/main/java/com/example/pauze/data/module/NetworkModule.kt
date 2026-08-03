@@ -19,7 +19,7 @@ annotation class PauzeBaseUrl
 @Module
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
-    private const val BASE_URL = "https://pauze.cloud/api/" // todo: 미배포
+    private const val BASE_URL = "https://pauze.cloud/api/"
 
     @Provides
     @Singleton
@@ -33,6 +33,7 @@ object NetworkModule {
     ): OkHttpClient =
         OkHttpClient.Builder()
             .addInterceptor(loggingInterceptor)
+            .addInterceptor(AuthInterceptor())
             .connectTimeout(60, TimeUnit.SECONDS)
             .readTimeout(60, TimeUnit.SECONDS)
             .writeTimeout(60, TimeUnit.SECONDS)
