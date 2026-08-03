@@ -74,3 +74,10 @@ data class StabilityContentUpdate(
 data class WithdrawRequest(
     val confirm: Boolean,
 )
+
+// State
+data class MyPageState(
+    val profile: UserMeResultDto? = null,
+    val stats: Stats? = null,
+    val profileError: String? = null
+)

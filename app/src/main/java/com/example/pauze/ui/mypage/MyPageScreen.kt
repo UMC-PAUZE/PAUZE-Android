@@ -20,17 +20,18 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.pauze.R
-import com.example.pauze.data.repository.UserProfileRepository
 import com.example.pauze.ui.component.TopBar
 import com.example.pauze.ui.mypage.component.MySettings
 import com.example.pauze.ui.mypage.component.MySettingsVariant
@@ -46,8 +47,11 @@ import com.example.pauze.ui.theme.headingSmBold
 @Composable
 fun MyPageScreen(
     navController: NavController,
-    viewModel: MyPageViewModel = viewModel()
+    viewModel: MyPageViewModel = hiltViewModel()
 ){
+
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
     LaunchedEffect(viewModel.effect) {
         viewModel.effect.collect { effect ->
             when (effect) {
@@ -72,8 +76,8 @@ fun MyPageScreen(
             verticalArrangement = Arrangement.spacedBy(48.dp)
         ) {
             ProfileCard(
-                nickname = UserProfileRepository.nickname,
-                loginProvider = "카카오 계정 연동",
+                nickname = uiState.data.profile?.nickname ?:"",
+                loginProvider = if ("KAKAO" in (uiState.data.profile?.socialTypes ?: emptyList())) "카카오 계정 연동" else null,
                 onClick = viewModel::onProfileClick
             )
 
@@ -88,11 +92,13 @@ fun MyPageScreen(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    StatCard(label = "총 측정", value = "24회", modifier = Modifier.weight(1f))
-                    StatCard(label = "연속 측정", value = "5일", modifier = Modifier.weight(1f))
+                    StatCard(label = "총 측정", value = "${uiState.data.stats?.totalMeasurements ?: 0}회", modifier = Modifier.weight(1f))
+                    StatCard(label = "연속 측정", value = "${uiState.data.stats?.consecutiveDays ?: 0}일", modifier = Modifier.weight(1f))
                     StatCard(
                         label = "평균 민감지수",
-                        value = "58점",
+                        value = uiState.data.stats?.averageSensitivity?.let {
+                            "${if (it % 1.0 == 0.0) it.toInt().toString() else "%.1f".format(it)}점"
+                        } ?: "-",
                         valueColor = AppTheme.palette.tertiary.getColor(3),
                         modifier = Modifier.weight(1f)
                     )
@@ -166,7 +172,7 @@ fun MyPageScreen(
 @Composable
 private fun ProfileCard(
     nickname: String,
-    loginProvider: String,
+    loginProvider: String?,
     onClick: () -> Unit
 ){
     Row(
@@ -198,7 +204,9 @@ private fun ProfileCard(
             verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             Text(text = nickname,  style = bodyTextXlMedium, color = AppTheme.palette.gray.getColor(2))
-            Text(text = loginProvider, style= bodyTextMdRegular, color = AppTheme.palette.gray.getColor(5))
+            loginProvider?.let {
+                Text(text = it, style= bodyTextMdRegular, color = AppTheme.palette.gray.getColor(5))
+            }
         }
         Icon(
             painter = painterResource(R.drawable.ic_arrow_forward),
