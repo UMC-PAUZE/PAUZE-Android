@@ -4,6 +4,8 @@ import com.example.pauze.data.model.CurationPostListResultDto
 import com.example.pauze.data.service.CurationService
 import javax.inject.Inject
 import com.example.pauze.data.model.CurationPostDetailDto
+import com.example.pauze.data.model.CurationPostBookmarkResultDto
+import com.example.pauze.data.model.CurationPostLikeResultDto
 
 class CurationRepositoryImpl @Inject constructor(
     private val curationService: CurationService,
@@ -49,6 +51,40 @@ class CurationRepositoryImpl @Inject constructor(
         return response.result
             ?: throw IllegalStateException(
                 "${response.code}: 상세 게시글 데이터가 비어 있습니다.",
+            )
+    }
+
+    override suspend fun toggleCurationPostLike(
+        postId: Long,
+    ): CurationPostLikeResultDto {
+        val response = curationService.toggleCurationPostLike(postId)
+
+        if (!response.isSuccess) {
+            throw IllegalStateException(
+                "${response.code}: ${response.message}",
+            )
+        }
+
+        return response.result
+            ?: throw IllegalStateException(
+                "${response.code}: 좋아요 응답 결과가 비어 있습니다.",
+            )
+    }
+
+    override suspend fun toggleCurationPostBookmark(
+        postId: Long,
+    ): CurationPostBookmarkResultDto {
+        val response = curationService.toggleCurationPostBookmark(postId)
+
+        if (!response.isSuccess) {
+            throw IllegalStateException(
+                "${response.code}: ${response.message}",
+            )
+        }
+
+        return response.result
+            ?: throw IllegalStateException(
+                "${response.code}: 북마크 응답 결과가 비어 있습니다.",
             )
     }
 }
