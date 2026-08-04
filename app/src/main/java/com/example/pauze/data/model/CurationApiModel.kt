@@ -42,6 +42,16 @@ data class CurationPostDetailDto(
     val updatedAt: String?,
 )
 
+data class CurationPostLikeResultDto(
+    val postId: Long,
+    val liked: Boolean,
+)
+
+data class CurationPostBookmarkResultDto(
+    val postId: Long,
+    val bookmarked: Boolean,
+)
+
 fun CurationPostListItemDto.toCurationPost(): CurationPost {
     return CurationPost(
         postId = postId,
