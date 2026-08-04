@@ -2,6 +2,8 @@ package com.example.pauze.data.repository
 
 import com.example.pauze.data.model.CurationPostListResultDto
 import com.example.pauze.data.model.CurationPostDetailDto
+import com.example.pauze.data.model.CurationPostBookmarkResultDto
+import com.example.pauze.data.model.CurationPostLikeResultDto
 
 interface CurationRepository {
 
@@ -15,4 +17,12 @@ interface CurationRepository {
     suspend fun getCurationPostDetail(
         postId: Long,
     ): CurationPostDetailDto
+
+    suspend fun toggleCurationPostLike(
+        postId: Long,
+    ): CurationPostLikeResultDto
+
+    suspend fun toggleCurationPostBookmark(
+        postId: Long,
+    ): CurationPostBookmarkResultDto
 }
