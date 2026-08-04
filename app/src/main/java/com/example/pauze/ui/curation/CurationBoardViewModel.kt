@@ -10,7 +10,11 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import javax.inject.Inject
-import com.example.pauze.data.model.toCurationPost
+import com.example.pauze.data.repository.TokenRepository
+
+sealed interface CurationEffect {
+    object NavigateToLogin : CurationEffect
+}
 
 data class CurationBoardState(
     val keyword: String = "",
@@ -53,7 +57,7 @@ data class CurationBoardState(
 @HiltViewModel
 class CurationBoardViewModel @Inject constructor(
     private val curationRepository: CurationRepository,
-) : BaseViewModel<Nothing, Unit>(
+) : BaseViewModel<CurationEffect, Unit>(
     uiState = BaseUiState(data = Unit),
 ) {
     private val _curationState = MutableStateFlow(
@@ -195,41 +199,67 @@ class CurationBoardViewModel @Inject constructor(
     }
 
     fun toggleLike(postId: Long) {
-        _curationState.update { state ->
-            state.copy(
-                posts = state.posts.map { post ->
-                    if (post.postId == postId) {
-                        val willBeLiked = !post.isLiked
+        if (TokenRepository.accessToken.isNullOrBlank()) {
+            sendEffect(CurationEffect.NavigateToLogin)
+            return
+        }
 
-                        post.copy(
-                            isLiked = willBeLiked,
-                            likeCount = (
-                                    post.likeCount +
-                                            if (willBeLiked) 1 else -1
-                                    ).coerceAtLeast(0),
-                        )
-                    } else {
-                        post
-                    }
-                },
-            )
+        launch {
+            val result =
+                curationRepository.toggleCurationPostLike(
+                    postId = postId,
+                )
+
+            _curationState.update { state ->
+                state.copy(
+                    posts = state.posts.map { post ->
+                        if (post.postId == result.postId) {
+                            val likeCountChange = when {
+                                post.isLiked == result.liked -> 0
+                                result.liked -> 1
+                                else -> -1
+                            }
+
+                            post.copy(
+                                isLiked = result.liked,
+                                likeCount = (
+                                        post.likeCount + likeCountChange
+                                        ).coerceAtLeast(0),
+                            )
+                        } else {
+                            post
+                        }
+                    },
+                )
+            }
         }
     }
 
     fun toggleBookmark(postId: Long) {
-        _curationState.update { state ->
-            state.copy(
-                posts = state.posts.map { post ->
-                    if (post.postId == postId) {
-                        post.copy(
-                            isBookmarked =
-                                !post.isBookmarked,
-                        )
-                    } else {
-                        post
-                    }
-                },
-            )
+        if (TokenRepository.accessToken.isNullOrBlank()) {
+            sendEffect(CurationEffect.NavigateToLogin)
+            return
+        }
+
+        launch {
+            val result =
+                curationRepository.toggleCurationPostBookmark(
+                    postId = postId,
+                )
+
+            _curationState.update { state ->
+                state.copy(
+                    posts = state.posts.map { post ->
+                        if (post.postId == result.postId) {
+                            post.copy(
+                                isBookmarked = result.bookmarked,
+                            )
+                        } else {
+                            post
+                        }
+                    },
+                )
+            }
         }
     }
 
