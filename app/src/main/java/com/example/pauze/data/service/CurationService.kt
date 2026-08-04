@@ -6,6 +6,10 @@ import retrofit2.http.GET
 import retrofit2.http.Query
 import com.example.pauze.data.model.CurationPostDetailDto
 import retrofit2.http.Path
+import com.example.pauze.data.model.CurationPostBookmarkResultDto
+import com.example.pauze.data.model.CurationPostLikeResultDto
+import retrofit2.http.PATCH
+
 interface CurationService {
 
     @GET("curation-posts")
@@ -20,4 +24,14 @@ interface CurationService {
     suspend fun getCurationPostDetail(
         @Path("postId") postId: Long,
     ): BaseResponse<CurationPostDetailDto>
+
+    @PATCH("curation-posts/{postId}/likes")
+    suspend fun toggleCurationPostLike(
+        @Path("postId") postId: Long,
+    ): BaseResponse<CurationPostLikeResultDto>
+
+    @PATCH("curation-posts/{postId}/bookmarks")
+    suspend fun toggleCurationPostBookmark(
+        @Path("postId") postId: Long,
+    ): BaseResponse<CurationPostBookmarkResultDto>
 }
