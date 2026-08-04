@@ -165,7 +165,8 @@ fun ProfileEditScreen(
 
                 SetBirthday(
                     birthday = viewModel.birthday?.format(dateFormat) ?: "생년월일을 입력해주세요",
-                    onClick = {  }
+                    onClick = {  },
+                    showDropdownIcon = false
                 )
             }
         }

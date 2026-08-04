@@ -22,6 +22,10 @@ class MyPageViewModel @Inject constructor(
     uiState = BaseUiState(data = MyPageState())
 ) {
     init {
+        refresh()
+    }
+
+    fun refresh() {
         launch {
             try {
                 val profile = myPageRepository.getMyPage()

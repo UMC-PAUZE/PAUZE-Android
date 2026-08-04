@@ -57,6 +57,9 @@ class MyPageRepositoryImpl @Inject constructor(
     }
 
     override suspend fun withdraw() {
-        myPageService.withdraw(WithdrawRequest(confirm = true))
+        val response = myPageService.withdraw(WithdrawRequest(confirm = true))
+        if (!response.isSuccess) {
+            throw IllegalStateException("[${response.code}] ${response.message}")
+        }
     }
 }
