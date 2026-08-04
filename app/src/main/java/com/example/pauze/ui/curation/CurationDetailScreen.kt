@@ -29,7 +29,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -72,18 +71,7 @@ fun CurationDetailScreen(
         shareUrl ?: createCurationShareUrl(post.postId)
     }
 
-    var isLiked by rememberSaveable(post.postId, post.isLiked) {
-        mutableStateOf(post.isLiked)
-    }
-    var isBookmarked by rememberSaveable(
-        post.postId,
-        post.isBookmarked,
-    ) {
-        mutableStateOf(post.isBookmarked)
-    }
-    var likeCount by rememberSaveable(post.postId, post.likeCount) {
-        mutableIntStateOf(post.likeCount)
-    }
+
     var showShareBottomSheet by rememberSaveable {
         mutableStateOf(false)
     }
@@ -151,19 +139,13 @@ fun CurationDetailScreen(
                 Spacer(modifier = Modifier.height(28.dp))
 
                 CurationDetailActions(
-                    likeCount = likeCount,
-                    isLiked = isLiked,
-                    isBookmarked = isBookmarked,
+                    likeCount = post.likeCount,
+                    isLiked = post.isLiked,
+                    isBookmarked = post.isBookmarked,
                     onLikeClick = {
-                        val willBeLiked = !isLiked
-                        isLiked = willBeLiked
-                        likeCount = (
-                            likeCount + if (willBeLiked) 1 else -1
-                            ).coerceAtLeast(0)
                         onLikeClick(post.postId)
                     },
                     onBookmarkClick = {
-                        isBookmarked = !isBookmarked
                         onBookmarkClick(post.postId)
                     },
                     onShareClick = {
