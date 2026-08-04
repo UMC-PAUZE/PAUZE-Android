@@ -57,8 +57,10 @@ import com.example.pauze.R
 import com.example.pauze.data.dummies.curationCategories
 import com.example.pauze.data.model.CurationCategory
 import com.example.pauze.ui.component.TopBar
+import com.example.pauze.ui.curation.component.CurationLoginRequiredDialog
 import com.example.pauze.ui.curation.component.CurationPostCard
 import com.example.pauze.ui.curation.component.CurationScrollToTopButton
+import com.example.pauze.ui.login.LoginActivity
 import com.example.pauze.ui.theme.AppTheme
 import com.example.pauze.ui.theme.PAUZEAndroidTheme
 import com.example.pauze.ui.theme.bodyTextLgRegular
@@ -80,8 +82,22 @@ fun CurationBoardScreen(
 
     val activity = LocalActivity.current as? ComponentActivity
 
+    var isLoginRequiredDialogVisible by rememberSaveable {
+        mutableStateOf(false)
+    }
+
     var deepLinkUri by remember(activity) {
         mutableStateOf(activity?.intent?.data)
+    }
+
+    LaunchedEffect(viewModel) {
+        viewModel.effect.collect { effect ->
+            when (effect) {
+                CurationEffect.NavigateToLogin -> {
+                    isLoginRequiredDialogVisible = true
+                }
+            }
+        }
     }
 
     DisposableEffect(activity) {
@@ -147,6 +163,24 @@ fun CurationBoardScreen(
                 ),
     ) {
         isBookmarkScreenVisible = false
+    }
+
+    if (isLoginRequiredDialogVisible) {
+        CurationLoginRequiredDialog(
+            onLoginClick = {
+                isLoginRequiredDialogVisible = false
+
+                activity?.startActivity(
+                    Intent(
+                        activity,
+                        LoginActivity::class.java,
+                    ),
+                )
+            },
+            onDismissRequest = {
+                isLoginRequiredDialogVisible = false
+            },
+        )
     }
 
     if (selectedPost != null) {
