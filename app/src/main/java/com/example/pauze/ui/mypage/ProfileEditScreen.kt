@@ -31,6 +31,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
@@ -51,7 +52,7 @@ import kotlinx.datetime.format.char
 @Composable
 fun ProfileEditScreen(
     navController: NavController,
-    viewModel: ProfileEditViewModel = viewModel()
+    viewModel: ProfileEditViewModel = hiltViewModel()
 ) {
     LaunchedEffect(viewModel.effect) {
         viewModel.effect.collect { effect ->
@@ -61,9 +62,6 @@ fun ProfileEditScreen(
         }
     }
 
-    var tempDay by remember { mutableStateOf(viewModel.birthday) }
-    var showBottomSheet by remember { mutableStateOf(false) }
-
     val dateFormat = LocalDate.Format {
         year(); char('.'); char(' ')
         monthNumber(); char('.'); char(' ')
@@ -72,7 +70,7 @@ fun ProfileEditScreen(
 
     val pickImageLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickVisualMedia()
-    ) { uri -> uri?.let { viewModel.profileImageUri = it } }
+    ) { uri -> uri?.let { viewModel.newProfileImageUri = it } }
 
     Column(
         modifier = Modifier
@@ -98,9 +96,10 @@ fun ProfileEditScreen(
                             ),
                         contentAlignment = Alignment.Center
                     ) {
-                        if (viewModel.profileImageUri != null) {
+                        val imageModel = viewModel.newProfileImageUri ?: viewModel.profileImageUrl
+                        if (imageModel != null) {
                             AsyncImage(
-                                model = viewModel.profileImageUri,
+                                model = imageModel,
                                 contentDescription = "프로필 이미지",
                                 modifier = Modifier
                                     .size(88.dp)
@@ -166,17 +165,9 @@ fun ProfileEditScreen(
 
                 SetBirthday(
                     birthday = viewModel.birthday?.format(dateFormat) ?: "생년월일을 입력해주세요",
-                    onClick = { showBottomSheet = true }
+                    onClick = {  }
                 )
             }
-        }
-
-        if (showBottomSheet) {
-            BirthdayBottomSheet(
-                onDismissRequest = { showBottomSheet = false },
-                onDateChanged = { tempDay = it },
-                onClick = { viewModel.birthday = tempDay; showBottomSheet = false }
-            )
         }
 
         Button(

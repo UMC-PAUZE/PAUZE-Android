@@ -1,5 +1,6 @@
 package com.example.pauze.data.module
 
+import com.example.pauze.data.service.MyPageService
 import com.example.pauze.data.service.ReportService
 import dagger.Module
 import dagger.Provides
@@ -55,4 +56,10 @@ object NetworkModule {
     @Singleton
     fun provideReportService(@PauzeBaseUrl retrofit: Retrofit) : ReportService = retrofit.create(
         ReportService::class.java)
+
+    //마이페이지
+    @Provides
+    @Singleton
+    fun provideMyPageService(@PauzeBaseUrl retrofit: Retrofit) : MyPageService = retrofit.create(
+        MyPageService::class.java)
 }

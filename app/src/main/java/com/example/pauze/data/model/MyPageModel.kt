@@ -81,3 +81,10 @@ data class MyPageState(
     val stats: Stats? = null,
     val profileError: String? = null
 )
+
+data class AccountInfoState(
+    val email: String? = null,
+    val joinedAt: String? = null,
+    val socialTypes: List<String> = emptyList(),
+    val loadError: String? = null
+)

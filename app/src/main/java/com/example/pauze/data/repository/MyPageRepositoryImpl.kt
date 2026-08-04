@@ -18,11 +18,13 @@ class MyPageRepositoryImpl @Inject constructor(
     private val myPageService: MyPageService
 ): MyPageRepository {
     override suspend fun getMyPage(): UserMeResultDto {
-        return myPageService.getMyPage().result!!
+        val response = myPageService.getMyPage()
+        return response.result ?: throw IllegalStateException("[${response.code}] ${response.message}")
     }
 
     override suspend fun getProfile(): UserProfileResultDto {
-        return myPageService.getProfile().result!!
+        val response = myPageService.getProfile()
+        return response.result ?: throw IllegalStateException("[${response.code}] ${response.message}")
     }
 
     override suspend fun updateProfile(
@@ -35,21 +37,23 @@ class MyPageRepositoryImpl @Inject constructor(
         val textType = "text/plain".toMediaTypeOrNull()
         val imagePart = profileImage?.let {
             MultipartBody.Part.createFormData(
-                "profileImage", it.name, it.asRequestBody("image/*".toMediaTypeOrNull())
+                "profileImage", it.name, it.asRequestBody("image/jpeg".toMediaTypeOrNull())
             )
         }
 
-        return myPageService.updateProfile(
+        val response = myPageService.updateProfile(
             name = name?.toRequestBody(textType),
             nickname = nickname?.toRequestBody(textType),
             introduction = introduction?.toRequestBody(textType),
             profileImage = imagePart,
             removeProfileImage = removeProfileImage?.toString()?.toRequestBody(textType)
-        ).result!!
+        )
+        return response.result ?: throw IllegalStateException("[${response.code}] ${response.message}")
     }
 
     override suspend fun updateSettings(request: UpdateSettingsRequest): Settings {
-        return myPageService.updateSettings(request).result!!
+        val response = myPageService.updateSettings(request)
+        return response.result ?: throw IllegalStateException("[${response.code}] ${response.message}")
     }
 
     override suspend fun withdraw() {

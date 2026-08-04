@@ -23,7 +23,9 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -31,6 +33,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import coil.compose.AsyncImage
 import com.example.pauze.R
 import com.example.pauze.ui.component.TopBar
 import com.example.pauze.ui.mypage.component.MySettings
@@ -77,6 +80,7 @@ fun MyPageScreen(
         ) {
             ProfileCard(
                 nickname = uiState.data.profile?.nickname ?:"",
+                profileImageUrl = uiState.data.profile?.profileImageUrl,
                 loginProvider = if ("KAKAO" in (uiState.data.profile?.socialTypes ?: emptyList())) "카카오 계정 연동" else null,
                 onClick = viewModel::onProfileClick
             )
@@ -172,6 +176,7 @@ fun MyPageScreen(
 @Composable
 private fun ProfileCard(
     nickname: String,
+    profileImageUrl: String?,
     loginProvider: String?,
     onClick: () -> Unit
 ){
@@ -191,12 +196,23 @@ private fun ProfileCard(
                 .background(color = AppTheme.palette.gray.getColor(7), shape = CircleShape),
             contentAlignment = Alignment.Center
         ){
-            Icon(
-                painter = painterResource(R.drawable.ic_person),
-                contentDescription = "프로필 이미지",
-                tint = AppTheme.palette.gray.getColor(8),
-                modifier = Modifier.size(width = 33.dp, height = 42.dp)
-            )
+            if (profileImageUrl != null) {
+                AsyncImage(
+                    model = profileImageUrl,
+                    contentDescription = "프로필 이미지",
+                    modifier = Modifier
+                        .size(50.dp)
+                        .clip(CircleShape),
+                    contentScale = ContentScale.Crop
+                )
+            } else {
+                Icon(
+                    painter = painterResource(R.drawable.ic_person),
+                    contentDescription = "프로필 이미지",
+                    tint = AppTheme.palette.gray.getColor(8),
+                    modifier = Modifier.size(width = 33.dp, height = 42.dp)
+                )
+            }
         }
 
         Column(
