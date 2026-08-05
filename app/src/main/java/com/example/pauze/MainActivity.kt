@@ -197,7 +197,7 @@ fun MainScreen(
             startDestination = BottomNavDestination.Home
         ){
             composable<BottomNavDestination.Home>{
-                HomeScreen(context = context)
+                HomeScreen(context = context, navController = navController)
             }
             composable<BottomNavDestination.Report>{
                 // todo: 나중에 isGuest쪽 수정 현재-게스트모드 x
