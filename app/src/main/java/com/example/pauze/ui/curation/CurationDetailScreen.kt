@@ -45,6 +45,7 @@ import com.example.pauze.R
 import com.example.pauze.data.dummies.dummyCurationPosts
 import com.example.pauze.data.model.CurationPost
 import com.example.pauze.ui.component.TopBar
+import com.example.pauze.ui.curation.component.CurationThumbnail
 import com.example.pauze.ui.theme.AppTheme
 import com.example.pauze.ui.theme.PAUZEAndroidTheme
 import com.example.pauze.ui.theme.bodyTextLgBold
@@ -222,15 +223,10 @@ private fun CurationDetailHeader(
             horizontalArrangement = Arrangement.spacedBy(12.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Box(
-                modifier = Modifier
-                    .size(56.dp)
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(AppTheme.palette.gray.getColor(7)),
-                contentAlignment = Alignment.Center,
-            ) {
-                // TODO: 이미지 로더 추가 후 thumbnailUrl 표시
-            }
+            CurationThumbnail(
+                thumbnailUrl = post.thumbnailUrl,
+                modifier = Modifier.size(56.dp),
+            )
 
             Column(
                 modifier = Modifier.weight(1f),
