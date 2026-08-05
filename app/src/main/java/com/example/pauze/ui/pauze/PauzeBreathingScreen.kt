@@ -66,6 +66,8 @@ fun PauzeBreathingScreen(
     ) {
         TopBar("즉각 안정", onBackClick = viewModel::onBackClick)
 
+        Spacer(modifier = Modifier.height(16.dp))
+
         BreathTabBar(
             selectedIndex = viewModel.selectedTabIndex,
             onTabSelected = { viewModel.selectTab(it) }
