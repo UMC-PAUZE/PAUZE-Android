@@ -1,6 +1,11 @@
 package com.example.pauze.ui.mypage
 
+import android.Manifest
 import android.content.Intent
+import android.os.Build
+import android.provider.Settings
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -21,6 +26,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.app.NotificationManagerCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -47,10 +53,35 @@ fun MyPageScreen(
     isGuest: Boolean = true,
     viewModel: MyPageViewModel = hiltViewModel()
 ){
-
     val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     var showGuestDialog by remember { mutableStateOf(isGuest) }
+    // 알림 설정 권한
+    var showNotificationSettingsDialog by remember { mutableStateOf(false) }
+    var pendingToggle by remember { mutableStateOf<(() -> Unit)?>(null) }
+
+    val notificationPermissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        if (granted) pendingToggle?.invoke() else showNotificationSettingsDialog = true
+        pendingToggle = null
+    }
+
+    fun requireNotificationPermission(onGranted: () -> Unit) {
+        if (NotificationManagerCompat.from(context).areNotificationsEnabled()) {
+            onGranted()
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            pendingToggle = onGranted
+            notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+        } else {
+            showNotificationSettingsDialog = true
+        }
+    }
+
+    fun onNotificationToggle(isOn: Boolean, toggle: () -> Unit) {
+        if (isOn) toggle() else requireNotificationPermission(toggle)
+    }
+
 
     LifecycleResumeEffect(Unit) {
         viewModel.refresh()
@@ -117,14 +148,14 @@ fun MyPageScreen(
                     caption = "매일 컨디션 입력 알림",
                     variant = MySettingsVariant.Toggle,
                     toggleSelected = viewModel.dailyReminder,
-                    onClick = viewModel::toggleDailyReminder
+                    onClick = { onNotificationToggle(viewModel.dailyReminder, viewModel::toggleDailyReminder) }
                 )
                 MySettings(
                     title = "예민함 위험 알림",
                     caption = "수치가 높을 때 즉시 알림",
                     variant = MySettingsVariant.Toggle,
                     toggleSelected = viewModel.riskAlert,
-                    onClick = viewModel::toggleRiskAlert
+                    onClick = { onNotificationToggle(viewModel.riskAlert, viewModel::toggleRiskAlert) }
                 )
             }
 
@@ -188,6 +219,24 @@ fun MyPageScreen(
             onContinue = {
                 showGuestDialog = false
                 context.startActivity(Intent(context, LoginActivity::class.java))
+            }
+        )
+    }
+
+    if (showNotificationSettingsDialog) {
+        Dialog(
+            title = "알림 권한이 필요해요",
+            content = "설정에서 알림을 허용해주세요",
+            btnCancel = "취소",
+            btnContinue = "설정으로 이동",
+            onDismissRequest = { showNotificationSettingsDialog = false },
+            onContinue = {
+                showNotificationSettingsDialog = false
+                context.startActivity(
+                    Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).apply {
+                        putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
+                    }
+                )
             }
         )
     }
