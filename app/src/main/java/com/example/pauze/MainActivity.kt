@@ -32,6 +32,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.example.pauze.data.repository.TokenRepository
 import com.example.pauze.ui.curation.CurationBoardScreen
 import com.example.pauze.ui.home.HomeScreen
 import com.example.pauze.ui.login.LoginActivity
@@ -200,15 +201,13 @@ fun MainScreen(
                 HomeScreen(context = context)
             }
             composable<BottomNavDestination.Report>{
-                // todo: 나중에 isGuest쪽 수정 현재-게스트모드 x
-                ReportScreen(context = context, isGuest = false)
+                ReportScreen(context = context, isGuest = TokenRepository.accessToken == null)
             }
             composable<BottomNavDestination.Find>{
                 CurationBoardScreen()
             }
             composable<BottomNavDestination.MyPage> {
-                // todo: 나중에 isGuest쪽 수정 현재-게스트모드 x
-                MyPageScreen(navController = navController, isGuest = false)
+                MyPageScreen(navController = navController, isGuest = TokenRepository.accessToken == null)
             }
             composable<MyPageNavDestination.ProfileEdit> {
                 ProfileEditScreen(navController = navController)
