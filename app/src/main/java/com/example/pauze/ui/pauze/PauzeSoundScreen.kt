@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -36,7 +37,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.pauze.R
+import com.example.pauze.data.dummies.Sounds
+import com.example.pauze.data.model.SoundCategory
 import com.example.pauze.data.model.SoundItem
+import com.example.pauze.data.repository.PauzeSoundRepository
+import com.example.pauze.data.repository.SoundLikeResult
+import com.example.pauze.data.repository.SoundSaveResult
 import com.example.pauze.ui.component.SearchBar
 import com.example.pauze.ui.component.SoundItem
 import com.example.pauze.ui.component.TopBar
@@ -54,7 +60,7 @@ fun PauzeSoundScreen(
     var currentDestination by remember { mutableStateOf(SoundDestination.LIST) }
     var detailOrigin by remember { mutableStateOf(SoundDestination.LIST) }
     var selectedSoundId by remember { mutableStateOf<String?>(null) }
-    val categories = listOf("전체", "자연소리", "ASMR", "노이즈")
+    val categories = SoundCategory.entries
 
     LaunchedEffect(viewModel.effect) {
         viewModel.effect.collect { effect ->
@@ -128,10 +134,10 @@ fun PauzeSoundScreen(
                     categories.forEach { category ->
                         val isSelected = state.selectedCategory == category
                         val buttonWidth = when (category) {
-                            "전체" -> 50.dp
-                            "자연소리" -> 75.dp
-                            "ASMR" -> 62.dp
-                            else -> 63.dp
+                            SoundCategory.ALL -> 50.dp
+                            SoundCategory.NATURE_SOUND -> 75.dp
+                            SoundCategory.ASMR -> 62.dp
+                            SoundCategory.NOISE -> 63.dp
                         }
                         Box(
                             modifier = Modifier
@@ -151,7 +157,7 @@ fun PauzeSoundScreen(
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
-                                text = category,
+                                text = category.displayName,
                                 style = bodyTextMdMedium,
                                 color = if (isSelected) AppTheme.palette.base.getColor(0)
                                 else AppTheme.palette.gray.getColor(4)
@@ -162,18 +168,102 @@ fun PauzeSoundScreen(
 
                 Spacer(modifier = Modifier.height(32.dp))
 
-                SoundList(
-                    sounds = state.filteredSounds,
-                    onItemClick = { sound ->
-                        viewModel.openDetail(sound.id, SoundDestination.LIST)
-                    },
-                    onToggleLike = viewModel::toggleLike,
-                    onToggleBookmark = viewModel::toggleBookmark,
-                    modifier = Modifier
-                        .weight(1f)
-                        .width(312.dp)
-                )
+                when {
+                    state.isLoading && state.filteredSounds.isEmpty() -> {
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .width(312.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularProgressIndicator(
+                                color = AppTheme.palette.primary.getColor(3)
+                            )
+                        }
+                    }
+
+                    state.errorMessage != null && state.filteredSounds.isEmpty() -> {
+                        SoundMessage(
+                            message = state.errorMessage.orEmpty(),
+                            actionText = "다시 시도",
+                            onActionClick = viewModel::retry,
+                            modifier = Modifier
+                                .weight(1f)
+                                .width(312.dp)
+                        )
+                    }
+
+                    state.filteredSounds.isEmpty() -> {
+                        SoundMessage(
+                            message = if (state.searchQuery.isBlank()) {
+                                "등록된 소리가 없어요."
+                            } else {
+                                "검색 결과가 없어요."
+                            },
+                            modifier = Modifier
+                                .weight(1f)
+                                .width(312.dp)
+                        )
+                    }
+
+                    else -> {
+                        Column(
+                            modifier = Modifier
+                                .weight(1f)
+                                .width(312.dp)
+                        ) {
+                            state.errorMessage?.let { message ->
+                                Text(
+                                    text = message,
+                                    style = bodyTextMdMedium,
+                                    color = AppTheme.palette.primary.getColor(3),
+                                    modifier = Modifier.padding(bottom = 12.dp)
+                                )
+                            }
+
+                            SoundList(
+                                sounds = state.filteredSounds,
+                                onItemClick = { sound ->
+                                    viewModel.openDetail(sound.id, SoundDestination.LIST)
+                                },
+                                onToggleLike = viewModel::toggleLike,
+                                onToggleBookmark = viewModel::toggleBookmark,
+                                modifier = Modifier.fillMaxSize()
+                            )
+                        }
+                    }
+                }
             }
+        }
+    }
+}
+
+@Composable
+private fun SoundMessage(
+    message: String,
+    modifier: Modifier = Modifier,
+    actionText: String? = null,
+    onActionClick: () -> Unit = {}
+) {
+    Column(
+        modifier = modifier,
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Text(
+            text = message,
+            style = bodyTextMdMedium,
+            color = AppTheme.palette.gray.getColor(4)
+        )
+
+        actionText?.let {
+            Spacer(modifier = Modifier.height(12.dp))
+            Text(
+                text = it,
+                style = bodyTextMdMedium,
+                color = AppTheme.palette.primary.getColor(3),
+                modifier = Modifier.clickable(onClick = onActionClick)
+            )
         }
     }
 }
@@ -205,9 +295,24 @@ fun SoundList(
 @Preview(showBackground = true, device = "spec:width=360dp,height=800dp,dpi=441")
 @Composable
 private fun PauzeSoundScreenPreview() {
-    val previewViewModel = remember { PauzeSoundViewModel() }
+    val previewViewModel = remember {
+        PauzeSoundViewModel(repository = PreviewPauzeSoundRepository)
+    }
 
     MainPaletteTheme {
         PauzeSoundScreen(viewModel = previewViewModel)
     }
+}
+
+internal object PreviewPauzeSoundRepository : PauzeSoundRepository {
+    override suspend fun getAllSounds(): List<SoundItem> = Sounds.items
+
+    override suspend fun getSoundsByCategory(category: SoundCategory): List<SoundItem> =
+        Sounds.items.filter { it.category == category.displayName }
+
+    override suspend fun toggleLike(soundId: String): SoundLikeResult =
+        SoundLikeResult(soundId = soundId, isLiked = true)
+
+    override suspend fun saveSound(soundId: String): SoundSaveResult =
+        SoundSaveResult(soundId = soundId, isSaved = true, audioUrl = "")
 }

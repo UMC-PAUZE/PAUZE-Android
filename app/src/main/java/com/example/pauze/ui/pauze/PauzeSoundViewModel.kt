@@ -1,12 +1,22 @@
 package com.example.pauze.ui.pauze
 
+import androidx.lifecycle.viewModelScope
 import com.example.pauze.data.model.PauzeSoundState
+import com.example.pauze.data.model.SoundCategory
 import com.example.pauze.data.model.SoundItem
 import com.example.pauze.data.model.SoundStashTab
+import com.example.pauze.data.remote.AuthenticationRequiredException
+import com.example.pauze.data.repository.DefaultPauzeSoundRepository
+import com.example.pauze.data.repository.PauzeSoundRepository
 import com.example.pauze.ui.BaseViewModel
+import java.io.IOException
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
+import retrofit2.HttpException
 
 enum class SoundDestination {
     LIST,
@@ -24,16 +34,26 @@ sealed interface PauzeSoundEffect {
     data class NavigateTo(val destination: SoundDestination) : PauzeSoundEffect
 }
 
-class PauzeSoundViewModel : BaseViewModel<PauzeSoundEffect>() {
+class PauzeSoundViewModel(
+    private val repository: PauzeSoundRepository = DefaultPauzeSoundRepository()
+) : BaseViewModel<PauzeSoundEffect>() {
     private val _state = MutableStateFlow(PauzeSoundState())
     val state = _state.asStateFlow()
+    private var loadSoundsJob: Job? = null
+
+    init {
+        loadSounds(SoundCategory.ALL)
+    }
 
     fun updateSearchQuery(query: String) {
         _state.update { it.copy(searchQuery = query) }
     }
 
-    fun selectCategory(category: String) {
-        _state.update { it.copy(selectedCategory = category) }
+    fun selectCategory(category: SoundCategory) {
+        if (_state.value.selectedCategory == category) return
+
+        _state.update { it.copy(selectedCategory = category, errorMessage = null) }
+        loadSounds(category)
     }
 
     fun updateStashSearchQuery(query: String) {
@@ -45,11 +65,43 @@ class PauzeSoundViewModel : BaseViewModel<PauzeSoundEffect>() {
     }
 
     fun toggleLike(soundId: String) {
-        updateSound(soundId) { sound -> sound.copy(isLiked = !sound.isLiked) }
+        viewModelScope.launch {
+            try {
+                val result = repository.toggleLike(soundId)
+                updateSound(result.soundId) { sound ->
+                    sound.copy(isLiked = result.isLiked)
+                }
+            } catch (error: CancellationException) {
+                throw error
+            } catch (error: Throwable) {
+                showError(error)
+            }
+        }
     }
 
     fun toggleBookmark(soundId: String) {
-        updateSound(soundId) { sound -> sound.copy(isBookmarked = !sound.isBookmarked) }
+        val sound = findSound(soundId) ?: return
+        if (sound.isBookmarked) return
+
+        viewModelScope.launch {
+            try {
+                val result = repository.saveSound(soundId)
+                updateSound(result.soundId) { currentSound ->
+                    currentSound.copy(
+                        isBookmarked = result.isSaved,
+                        audioUrl = result.audioUrl.ifBlank { currentSound.audioUrl }
+                    )
+                }
+            } catch (error: CancellationException) {
+                throw error
+            } catch (error: Throwable) {
+                showError(error)
+            }
+        }
+    }
+
+    fun retry() {
+        loadSounds(_state.value.selectedCategory)
     }
 
     fun openStash() {
@@ -68,13 +120,102 @@ class PauzeSoundViewModel : BaseViewModel<PauzeSoundEffect>() {
         sendEffect(PauzeSoundEffect.NavigateBack)
     }
 
+    private fun loadSounds(category: SoundCategory) {
+        loadSoundsJob?.cancel()
+        loadSoundsJob = viewModelScope.launch {
+            _state.update { it.copy(isLoading = true, errorMessage = null) }
+
+            try {
+                val remoteSounds = if (category == SoundCategory.ALL) {
+                    repository.getAllSounds()
+                } else {
+                    repository.getSoundsByCategory(category)
+                }
+
+                _state.update { currentState ->
+                    val localSounds = currentState.sounds + currentState.categorySounds.orEmpty()
+                    val mergedSounds = mergeRemoteWithLocal(remoteSounds, localSounds)
+
+                    if (category == SoundCategory.ALL) {
+                        currentState.copy(
+                            sounds = mergedSounds,
+                            categorySounds = null,
+                            isLoading = false
+                        )
+                    } else {
+                        currentState.copy(
+                            sounds = mergeIntoAll(currentState.sounds, mergedSounds),
+                            categorySounds = mergedSounds,
+                            isLoading = false
+                        )
+                    }
+                }
+            } catch (error: CancellationException) {
+                throw error
+            } catch (error: Throwable) {
+                _state.update {
+                    it.copy(isLoading = false, errorMessage = error.toUserMessage())
+                }
+            }
+        }
+    }
+
     private fun updateSound(soundId: String, transform: (SoundItem) -> SoundItem) {
         _state.update { currentState ->
             currentState.copy(
                 sounds = currentState.sounds.map { sound ->
                     if (sound.id == soundId) transform(sound) else sound
-                }
+                },
+                categorySounds = currentState.categorySounds?.map { sound ->
+                    if (sound.id == soundId) transform(sound) else sound
+                },
+                errorMessage = null
             )
         }
     }
+
+    private fun findSound(soundId: String): SoundItem? =
+        (_state.value.categorySounds.orEmpty() + _state.value.sounds)
+            .firstOrNull { it.id == soundId }
+
+    private fun showError(error: Throwable) {
+        _state.update { it.copy(errorMessage = error.toUserMessage()) }
+    }
+}
+
+private fun mergeRemoteWithLocal(
+    remoteSounds: List<SoundItem>,
+    localSounds: List<SoundItem>
+): List<SoundItem> {
+    val localById = localSounds.associateBy(SoundItem::id)
+
+    return remoteSounds.map { remote ->
+        val local = localById[remote.id]
+        remote.copy(
+            isBookmarked = local?.isBookmarked ?: remote.isBookmarked,
+            audioUrl = remote.audioUrl.ifBlank { local?.audioUrl.orEmpty() }
+        )
+    }
+}
+
+private fun mergeIntoAll(
+    currentSounds: List<SoundItem>,
+    updatedSounds: List<SoundItem>
+): List<SoundItem> {
+    val updatedById = updatedSounds.associateBy(SoundItem::id)
+    val merged = currentSounds.map { sound -> updatedById[sound.id] ?: sound }
+    val existingIds = currentSounds.mapTo(mutableSetOf(), SoundItem::id)
+    return merged + updatedSounds.filterNot { it.id in existingIds }
+}
+
+private fun Throwable.toUserMessage(): String = when (this) {
+    is AuthenticationRequiredException -> message ?: "로그인이 필요한 기능입니다."
+    is HttpException -> when (code()) {
+        400 -> "잘못된 요청입니다."
+        401 -> "로그인이 필요한 기능입니다."
+        404 -> "요청한 소리를 찾을 수 없습니다."
+        else -> "서버 요청에 실패했습니다. (${code()})"
+    }
+    is IOException -> "서버에 연결할 수 없습니다. 네트워크 상태를 확인해주세요."
+    else -> message ?: "알 수 없는 오류가 발생했습니다."
 }
