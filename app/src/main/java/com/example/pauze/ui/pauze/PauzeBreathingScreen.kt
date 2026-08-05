@@ -16,6 +16,10 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -24,6 +28,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.pauze.R
+import com.example.pauze.ui.component.Dialog
 import com.example.pauze.ui.component.Tab
 import com.example.pauze.ui.component.TopBar
 import com.example.pauze.ui.theme.*
@@ -39,11 +44,16 @@ fun PauzeBreathingScreen(
     viewModel: PauzeBreathingViewModel = viewModel()
 ) {
 
+    var showExitDialog by remember { mutableStateOf(false) }
+
     LaunchedEffect(viewModel.effect) {
         viewModel.effect.collect { effect ->
             when (effect) {
                 is BreathingEffect.NavigateToBack -> {
                     navController.popBackStack()
+                }
+                is BreathingEffect.ShowExitDialog -> {
+                    showExitDialog = true
                 }
             }
         }
@@ -164,6 +174,23 @@ fun PauzeBreathingScreen(
                 )
             }
         }
+    }
+
+    if (showExitDialog) {
+        Dialog(
+            title = "즉각 안정을 중단하시겠어요?",
+            content = "진행 과정은 저장되지 않습니다",
+            btnCancel = "계속하기",
+            btnContinue = "중단하기",
+            onDismissRequest = {
+                showExitDialog = false
+                viewModel.onExitCancel()
+            },
+            onContinue = {
+                showExitDialog = false
+                viewModel.onExitConfirm()
+            }
+        )
     }
 }
 @Composable
