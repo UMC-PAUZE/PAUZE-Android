@@ -1,10 +1,9 @@
-package com.example.pauze.ui.login
+package com.example.pauze.ui.component
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -15,98 +14,28 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import com.example.pauze.R
-import com.example.pauze.ui.component.Button
-import com.example.pauze.ui.login.component.ModeBasedTextField
-import com.example.pauze.ui.login.component.TextFieldMode
 import com.example.pauze.ui.theme.AppTheme
 import com.example.pauze.ui.theme.bodyTextLgMedium
 import com.example.pauze.ui.theme.bodyTextMdRegular
-import com.example.pauze.ui.theme.bodyTextSmRegular
-import dev.darkokoa.datetimewheelpicker.WheelDatePicker
 import com.example.pauze.ui.theme.bodyTextXlRegular
+import dev.darkokoa.datetimewheelpicker.WheelDatePicker
 import dev.darkokoa.datetimewheelpicker.core.WheelPickerDefaults
 import dev.darkokoa.datetimewheelpicker.core.format.CjkSuffixConfig
 import dev.darkokoa.datetimewheelpicker.core.format.DateOrder
 import dev.darkokoa.datetimewheelpicker.core.format.MonthDisplayStyle
 import dev.darkokoa.datetimewheelpicker.core.format.dateFormatter
 import kotlinx.datetime.LocalDate
-import kotlinx.datetime.format
-import kotlinx.datetime.format.char
-
-@Composable
-fun PersonalInfoContent(
-    viewModel: SignUpViewModel
-): Boolean {
-    val focusManager = LocalFocusManager.current
-    var tempDay by remember { mutableStateOf<LocalDate?>(null)}
-    var showBottomSheet by remember { mutableStateOf(false) }
-
-    val customDateFormat = LocalDate.Format{
-        year()
-        char('-')
-        monthNumber()
-        char('-')
-        day()
-    }
-
-    Column(
-        modifier = Modifier.clickable(
-                interactionSource = remember { MutableInteractionSource() },
-        indication = null
-        ){
-            focusManager.clearFocus()
-        }
-    ){
-        ModeBasedTextField(
-            mode = TextFieldMode.UserName,
-            value = viewModel.name,
-            onValueChanged = { viewModel.name = it },
-            imeAction = ImeAction.Done
-        )
-        Spacer(modifier = Modifier.height(4.dp))
-        Text(
-            "2자 이상 입력해주세요",
-            style = bodyTextSmRegular,
-            color = if(viewModel.name.length == 1) AppTheme.palette.secondary.getColor(4)
-                else AppTheme.palette.gray.getColor(5)
-        )
-        Spacer(modifier = Modifier.height(12.dp))
-        SetBirthday(
-            birthday = viewModel.birthday?.format(customDateFormat) ?: "생년월일을 입력해주세요",
-            onClick = {
-                focusManager.clearFocus()
-                showBottomSheet = true
-            }
-        )
-
-        if(showBottomSheet){
-            BirthdayBottomSheet(
-                onDismissRequest = { showBottomSheet = false },
-                onDateChanged = { tempDay = it },
-                onClick = { viewModel.birthday = tempDay; showBottomSheet = false }
-            )
-        }
-    }
-    return viewModel.name.length > 1 && viewModel.birthday != null
-}
 
 @Composable
 fun SetBirthday(
@@ -115,11 +44,14 @@ fun SetBirthday(
 ){
     Column(
         modifier = Modifier
-            .fillMaxWidth().border(
+            .fillMaxWidth()
+            .border(
                 width = 1.dp,
                 color = AppTheme.palette.gray.getColor(6),
                 shape = RoundedCornerShape(size = 16.dp)
-            ).padding(
+            )
+            .clickable(onClick = onClick)
+            .padding(
                 horizontal = 16.dp, vertical = 14.dp
             )
     ){
@@ -138,7 +70,7 @@ fun SetBirthday(
                     else AppTheme.palette.gray.getColor(2)
             )
             Image(
-                modifier = Modifier.clickable(onClick = onClick),
+                modifier = Modifier,
                 painter = painterResource(R.drawable.ic_dropdown),
                 contentDescription = "dropdown button"
             )
@@ -189,6 +121,7 @@ fun BirthdayBottomSheet(
         }
     }
 }
+
 @Composable
 fun BirthdayPicker(
     onDateChanged: (LocalDate) -> Unit
@@ -252,4 +185,3 @@ fun YMDText(ymd: String){
         color = AppTheme.palette.gray.getColor(4)
     )
 }
-

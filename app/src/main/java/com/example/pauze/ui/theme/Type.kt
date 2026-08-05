@@ -28,6 +28,23 @@ val fontFamily = FontFamily(
     ),
 )
 
+// Heading XL
+val headingXlBold = TextStyle(
+    fontFamily = fontFamily,
+    fontWeight = FontWeight.Bold,
+    fontSize = 64.sp,
+    letterSpacing = (-0.02).sp,
+    lineHeight = 64.sp
+)
+
+val headingXlMedium = TextStyle(
+    fontFamily = fontFamily,
+    fontWeight = FontWeight.Medium,
+    fontSize = 64.sp,
+    letterSpacing = (-0.02).sp,
+    lineHeight = 64.sp
+)
+
 // Heading Large
 val headingLgBold = TextStyle(
     fontFamily = fontFamily,

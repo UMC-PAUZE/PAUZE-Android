@@ -14,6 +14,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -34,6 +35,7 @@ fun MySettings(
     caption: String? = null,
     icon: Painter? = null,
     toggleSelected: Boolean = false,
+    titleColor: Color = AppTheme.palette.gray.getColor(2),
     onClick: () -> Unit = {},
 ){
     Row(
@@ -56,7 +58,7 @@ fun MySettings(
                 )
             }
             Column {
-                Text(text = title, style = bodyTextLgMedium, color = AppTheme.palette.gray.getColor(2))
+                Text(text = title, style = bodyTextLgMedium, color = titleColor)
                 if (caption != null) {
                     Text(text = caption, style = bodyTextSmRegular, color = AppTheme.palette.gray.getColor(4))
                 }

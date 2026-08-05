@@ -18,7 +18,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -47,7 +47,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
@@ -78,7 +77,7 @@ fun CurationBoardScreen(
     viewModel: CurationBoardViewModel = viewModel(),
 ) {
     val curationState by viewModel.curationState.collectAsState()
-    val activity = LocalContext.current as? ComponentActivity
+    val activity = LocalActivity.current as? ComponentActivity
     var deepLinkUri by remember(activity) {
         mutableStateOf(activity?.intent?.data)
     }
@@ -200,7 +199,13 @@ fun CurationBoardScreen(
                 ),
             )
 
-            if (filteredPosts.isEmpty()) {
+            if (curationState.posts.isEmpty()) {
+                CurationEmptyBoard(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f),
+                )
+            } else if (filteredPosts.isEmpty()) {
                 CurationEmptySearchResult(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -258,6 +263,39 @@ fun CurationBoardScreen(
 }
 
 @Composable
+private fun CurationEmptyBoard(
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        modifier = modifier,
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+    ) {
+        Image(
+            painter = painterResource(R.drawable.ic_empty_curation),
+            contentDescription = null,
+            modifier = Modifier.size(160.dp),
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Text(
+            text = "아직 등록된 게시글이 없어요",
+            style = headingSmBold,
+            color = AppTheme.palette.gray.getColor(2),
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Text(
+            text = "새로운 글이 등록되면 이곳에서 확인할 수 있어요.",
+            style = bodyTextSmRegular,
+            color = AppTheme.palette.gray.getColor(4),
+        )
+    }
+}
+
+@Composable
 private fun CurationEmptySearchResult(
     modifier: Modifier = Modifier,
 ) {
@@ -266,11 +304,10 @@ private fun CurationEmptySearchResult(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
-        Icon(
-            painter = painterResource(R.drawable.ic_headset),
+        Image(
+            painter = painterResource(R.drawable.ic_empty_curation),
             contentDescription = null,
-            modifier = Modifier.size(107.dp),
-            tint = AppTheme.palette.gray.getColor(2),
+            modifier = Modifier.size(160.dp),
         )
 
         Spacer(modifier = Modifier.height(16.dp))
