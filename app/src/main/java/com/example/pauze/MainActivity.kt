@@ -207,7 +207,8 @@ fun MainScreen(
                 CurationBoardScreen()
             }
             composable<BottomNavDestination.MyPage> {
-                MyPageScreen(navController = navController)
+                // todo: 나중에 isGuest쪽 수정 현재-게스트모드 x
+                MyPageScreen(navController = navController, isGuest = false)
             }
             composable<MyPageNavDestination.ProfileEdit> {
                 ProfileEditScreen(navController = navController)

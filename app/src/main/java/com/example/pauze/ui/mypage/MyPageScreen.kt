@@ -1,31 +1,23 @@
 package com.example.pauze.ui.mypage
 
+import android.content.Intent
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -34,27 +26,31 @@ import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import coil.compose.AsyncImage
+import com.example.pauze.BottomNavDestination
 import com.example.pauze.R
+import com.example.pauze.ui.component.Dialog
 import com.example.pauze.ui.component.TopBar
+import com.example.pauze.ui.login.LoginActivity
 import com.example.pauze.ui.mypage.component.MySettings
 import com.example.pauze.ui.mypage.component.MySettingsVariant
+import com.example.pauze.ui.mypage.component.ProfileCard
+import com.example.pauze.ui.mypage.component.SettingsSection
+import com.example.pauze.ui.mypage.component.StatCard
 import com.example.pauze.ui.theme.AppTheme
 import com.example.pauze.ui.theme.PAUZEAndroidTheme
 import com.example.pauze.ui.theme.bodyTextLgMedium
-import com.example.pauze.ui.theme.bodyTextMdRegular
-import com.example.pauze.ui.theme.bodyTextSmMedium
-import com.example.pauze.ui.theme.bodyTextXlMedium
-import com.example.pauze.ui.theme.headingSmBold
 
 
 @Composable
 fun MyPageScreen(
     navController: NavController,
+    isGuest: Boolean = true,
     viewModel: MyPageViewModel = hiltViewModel()
 ){
 
+    val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    var showGuestDialog by remember { mutableStateOf(isGuest) }
 
     LifecycleResumeEffect(Unit) {
         viewModel.refresh()
@@ -177,101 +173,25 @@ fun MyPageScreen(
         }
     }
 
-}
-
-@Composable
-private fun ProfileCard(
-    nickname: String,
-    profileImageUrl: String?,
-    loginProvider: String?,
-    onClick: () -> Unit
-){
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(78.dp)
-            .background(color = AppTheme.palette.gray.getColor(8), shape = RoundedCornerShape(16.dp))
-            .clickable(onClick = onClick)
-            .padding(12.dp),
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ){
-        Box(
-            modifier = Modifier
-                .size(50.dp)
-                .background(color = AppTheme.palette.gray.getColor(7), shape = CircleShape),
-            contentAlignment = Alignment.Center
-        ){
-            if (profileImageUrl != null) {
-                AsyncImage(
-                    model = profileImageUrl,
-                    contentDescription = "프로필 이미지",
-                    modifier = Modifier
-                        .size(50.dp)
-                        .clip(CircleShape),
-                    contentScale = ContentScale.Crop
-                )
-            } else {
-                Icon(
-                    painter = painterResource(R.drawable.ic_person),
-                    contentDescription = "프로필 이미지",
-                    tint = AppTheme.palette.gray.getColor(8),
-                    modifier = Modifier.size(width = 33.dp, height = 42.dp)
-                )
+    if (showGuestDialog){
+        Dialog(
+            title = "로그인하고 더 많은 컨텐츠를 즐겨보세요",
+            content = "좋아요, 저장 기능은 로그인 후 이용할 수 있어요",
+            btnCancel = "나중에 할게요",
+            btnContinue = "로그인·회원가입",
+            onDismissRequest = {
+                showGuestDialog = false
+                navController.navigate(BottomNavDestination.Home){
+                    popUpTo(BottomNavDestination.Home)
+                }
+            },
+            onContinue = {
+                showGuestDialog = false
+                context.startActivity(Intent(context, LoginActivity::class.java))
             }
-        }
-
-        Column(
-            modifier = Modifier.weight(1f),
-            verticalArrangement = Arrangement.spacedBy(4.dp)
-        ) {
-            Text(text = nickname,  style = bodyTextXlMedium, color = AppTheme.palette.gray.getColor(2))
-            loginProvider?.let {
-                Text(text = it, style= bodyTextMdRegular, color = AppTheme.palette.gray.getColor(5))
-            }
-        }
-        Icon(
-            painter = painterResource(R.drawable.ic_arrow_forward),
-            contentDescription = "이동하기 >",
-            tint = AppTheme.palette.gray.getColor(5)
         )
     }
-}
 
-@Composable
-private fun StatCard(
-    label: String,
-    value: String,
-    modifier: Modifier = Modifier,
-    valueColor: Color = AppTheme.palette.gray.getColor(2),
-){
-    Column(
-        modifier = modifier
-            .height(78.dp)
-            .background(color = AppTheme.palette.gray.getColor(8), shape = RoundedCornerShape(16.dp))
-            .border(width = 1.dp, color = AppTheme.palette.gray.getColor(7), shape = RoundedCornerShape(16.dp))
-            .padding(horizontal = 12.dp, vertical = 8.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp, alignment = Alignment.CenterVertically)
-    ) {
-        Text(text = label, style = bodyTextSmMedium, color = AppTheme.palette.gray.getColor(4))
-        Text(text = value, style = headingSmBold, color = valueColor)
-    }
-}
-
-@Composable
-private fun SettingsSection(
-    title: String,
-    content: @Composable ColumnScope.() -> Unit
-){
-    Column {
-        Text(
-            text = title,
-            style = bodyTextLgMedium,
-            color = AppTheme.palette.gray.getColor(4),
-            modifier = Modifier.padding(vertical = 12.dp)
-        )
-        content()
-    }
 }
 
 @Preview(showBackground = true, widthDp = 360, heightDp = 800)
