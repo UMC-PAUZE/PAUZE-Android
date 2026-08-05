@@ -26,7 +26,6 @@ fun SetPwdContent(
 ): Boolean{
 
     val focusManager = LocalFocusManager.current
-    val isAgreed = viewModel.isAgreed
     var isPwdFocused by remember { mutableStateOf(false) }
     val pwdCheck = Pattern.matches("^(?=.*[0-9])(?=.*[a-zA-Z])(?=.*[!@#$%^&*]).+$", viewModel.password)
 
@@ -66,8 +65,10 @@ fun SetPwdContent(
             )
         }
         Spacer(modifier = Modifier.height(48.dp))
-        AgreementCheckbox(viewModel, isAgreed, focusManager, false)
+        AgreementCheckbox(viewModel, viewModel.isAgreedToTerm, true, focusManager, false)
+        Spacer(modifier = Modifier.height(12.dp))
+        AgreementCheckbox(viewModel, viewModel.isAgreedToPolicy, false, focusManager, false)
     }
 
-    return viewModel.password.length > 7 && pwdCheck && isAgreed
+    return viewModel.password.length > 7 && pwdCheck && viewModel.isAgreedToTerm && viewModel.isAgreedToPolicy
 }

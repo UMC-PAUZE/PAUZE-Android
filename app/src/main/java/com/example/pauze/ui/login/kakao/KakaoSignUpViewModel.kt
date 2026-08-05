@@ -12,11 +12,12 @@ import android.os.Looper
 import androidx.compose.runtime.mutableIntStateOf
 import com.example.pauze.data.model.BaseUiState
 import com.example.pauze.ui.login.LoginNavDestination
+import com.example.pauze.ui.login.signup.SignUpEffect
 
 sealed interface KakaoSignUpEffect {
     object RestartVerifTimer: KakaoSignUpEffect
     object BackStack: KakaoSignUpEffect
-    object NavigateToPolicy: KakaoSignUpEffect
+    data class NavigateToPolicy(val isTermOfUse: Boolean): KakaoSignUpEffect
     object NavigateToCompleted: KakaoSignUpEffect
 }
 
@@ -25,8 +26,11 @@ class KakaoSignUpViewModel(
 ): BaseViewModel<KakaoSignUpEffect, Unit>(
     uiState = BaseUiState(data = Unit)
 ){
-    val initialAgreed = savedStateHandle.toRoute<LoginNavDestination.Kakao>().isAgreed
-    var isAgreed by mutableStateOf(initialAgreed)
+    private val isInitiallyAgreedToTerm = savedStateHandle.toRoute<LoginNavDestination.Kakao>().isAgreedToTerm
+    var isAgreedToTerm by mutableStateOf(isInitiallyAgreedToTerm)
+        private set
+    private val isInitiallyAgreedToPolicy = savedStateHandle.toRoute<LoginNavDestination.Kakao>().isAgreedToPolicy
+    var isAgreedToPolicy by mutableStateOf(isInitiallyAgreedToPolicy)
         private set
 
     var phase by mutableIntStateOf(0)
@@ -45,8 +49,12 @@ class KakaoSignUpViewModel(
     }
     fun checkVerifCodeRight(): Boolean = verifCode == "643590"
 
-    fun updateIsAgreed(isAgreed: Boolean){
-        this.isAgreed = isAgreed
+    fun updateIsAgreedToTerm(isAgreed: Boolean){
+        isAgreedToTerm = isAgreed
+    }
+
+    fun updateIsAgreedToPolicy(isAgreed: Boolean){
+        isAgreedToPolicy = isAgreed
     }
 
     fun updatePhase(){
@@ -84,7 +92,7 @@ class KakaoSignUpViewModel(
         sendEffect(KakaoSignUpEffect.NavigateToCompleted)
     }
 
-    fun checkPolicy(){
-        sendEffect(KakaoSignUpEffect.NavigateToPolicy)
+    fun checkPolicy(isTermOfUse: Boolean){
+        sendEffect(KakaoSignUpEffect.NavigateToPolicy(isTermOfUse))
     }
 }

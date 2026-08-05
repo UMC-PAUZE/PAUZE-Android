@@ -12,11 +12,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.pauze.ui.component.Button
 import com.example.pauze.ui.component.Tab
 import com.example.pauze.ui.component.TopBar
@@ -36,7 +38,12 @@ fun TermsAndPolicyScreen(
                 is TermsAndPolicyEffect.NavigateToSignUp -> {
                     navController.previousBackStackEntry
                         ?.savedStateHandle
-                        ?.set("isAgreed", effect.isAgreed)
+                        ?.set(
+                            if(viewModel.isTermOfUse) "isAgreedToTerm"
+                            else "isAgreedToPolicy",
+                            effect.isAgreed
+                        )
+
                     navController.popBackStack()
                 }
             }
@@ -47,29 +54,12 @@ fun TermsAndPolicyScreen(
         modifier = Modifier.fillMaxSize()
             .background(color = AppTheme.palette.gray.getColor(9))
     ){
-        TopBar("이용약관 및 개인정보 처리방침", onBackClick = { viewModel.backStack() })
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 16.dp, horizontal = 24.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center
-        ) {
-            Tab("이용약관",
-                modifier = Modifier.weight(1f),
-                onClick = { viewModel.changeTabIndex(0) },
-                selected = viewModel.tab == 0
-            )
-            Spacer(modifier = Modifier.width(16.dp))
-            Tab(
-                "개인정보 처리방침",
-                modifier = Modifier.weight(1f),
-                onClick = { viewModel.changeTabIndex(1) },
-                selected = viewModel.tab == 1
-            )
-        }
+        TopBar(
+            if(viewModel.isTermOfUse) "이용약관" else "개인정보 처리방침",
+            onBackClick = { viewModel.backStack() }
+        )
         Spacer(modifier = Modifier.height(16.dp))
-        if(viewModel.tab == 0){
+        if(viewModel.isTermOfUse){
             TermsOfUseScreen(Modifier.weight(1f))
         }
         else{
@@ -77,7 +67,7 @@ fun TermsAndPolicyScreen(
         }
         Button(
             "동의하고 돌아가기",
-            onClick = { viewModel.backToSignUp(isAgreed = true) },
+            onClick = { viewModel.backToSignUp(true) },
             modifier = Modifier.fillMaxWidth().padding(top = 16.dp, start = 24.dp, end = 24.dp, bottom = 48.dp),
             enabled = true
         )
