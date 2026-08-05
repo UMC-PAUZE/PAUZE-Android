@@ -56,7 +56,8 @@ fun PauzeOverloadScreen(
     navController: NavController,
     viewModel: PauzeOverloadViewModel = viewModel()
 ){
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val instantActions = viewModel.instantActions
+    val restGuideList = viewModel.restGuideList
 
     LaunchedEffect(viewModel.effect) {
         viewModel.effect.collect { effect ->
@@ -84,34 +85,26 @@ fun PauzeOverloadScreen(
             onBackClick = { viewModel.backStack() }
         )
         Spacer(modifier = Modifier.height(24.dp))
-        if(uiState.isLoading){
-            CircularProgressIndicator()
-        }
-        else if(uiState.error != null) {
-            Text("오류가 발생했습니다\n다시 시도해주세요", style = bodyTextXlBold, color = AppTheme.palette.gray.getColor(2))
-        }
-        else {
-            Text("지금 바로 할 수 있어요", style = bodyTextXlBold, color = AppTheme.palette.gray.getColor(2))
-            Spacer(modifier = Modifier.height(16.dp))
-            LazyRow {
-                items(uiState.data.instantActions.size){ index ->
-                    InstantActions(action = uiState.data.instantActions[index])
-                }
+        Text("지금 바로 할 수 있어요", style = bodyTextXlBold, color = AppTheme.palette.gray.getColor(2))
+        Spacer(modifier = Modifier.height(16.dp))
+        LazyRow {
+            items(instantActions.size){ index ->
+                InstantActions(action = instantActions.get(index))
             }
-            Spacer(modifier = Modifier.height(48.dp))
-            Text("쉼 가이드", style = bodyTextXlBold, color = AppTheme.palette.gray.getColor(2))
-            Spacer(modifier = Modifier.height(16.dp))
-            LazyColumn(
-                modifier = Modifier.fillMaxWidth().weight(1f)
-            ) {
-                items(uiState.data.restGuideList.size) { index ->
-                    RestGuide(guide = uiState.data.restGuideList[index])
-                }
-                item {
-                    Spacer(modifier = Modifier.height(48.dp))
-                    NavigationButton(toWhere = Destination.Find, onClick = { viewModel.navigateToFind() })
-                    Spacer(modifier = Modifier.height(40.dp))
-                }
+        }
+        Spacer(modifier = Modifier.height(48.dp))
+        Text("쉼 가이드", style = bodyTextXlBold, color = AppTheme.palette.gray.getColor(2))
+        Spacer(modifier = Modifier.height(16.dp))
+        LazyColumn(
+            modifier = Modifier.fillMaxWidth().weight(1f)
+        ) {
+            items(restGuideList.size) { index ->
+                RestGuide(guide = restGuideList.get(index))
+            }
+            item {
+                Spacer(modifier = Modifier.height(48.dp))
+                NavigationButton(toWhere = Destination.Find, onClick = { viewModel.navigateToFind() })
+                Spacer(modifier = Modifier.height(40.dp))
             }
         }
     }
@@ -159,11 +152,10 @@ fun RestGuide(guide: RestGuide){
             Row(
                 verticalAlignment = Alignment.CenterVertically
             ){
-                Box(
-                    modifier = Modifier.size(54.dp).background(
-                        color = AppTheme.palette.gray.getColor(2),
-                        shape = RoundedCornerShape(8.dp)
-                    )
+                Image(
+                    modifier = Modifier.size(56.dp),
+                    painter = painterResource(R.drawable.ic_rest_guide),
+                    contentDescription = null
                 )
                 Spacer(modifier = Modifier.width(12.dp))
                 Column{
