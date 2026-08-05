@@ -1,25 +1,29 @@
 package com.example.pauze.data.dummies
 
-import androidx.collection.objectListOf
+import com.example.pauze.R
 import com.example.pauze.data.model.InstantAction
 import com.example.pauze.data.model.RestGuide
 
 val actions = listOf<InstantAction>(
     InstantAction(
         duration = 10,
-        title = "눈 감고 10초 호흡"
+        title = "눈 감고 10초 호흡",
+        image = R.drawable.ic_closed_eyes
     ),
     InstantAction(
         duration = 60,
-        title = "어깨 스트레칭"
+        title = "어깨 스트레칭",
+        image = R.drawable.ic_muscle
     ),
     InstantAction(
         duration = 30,
-        title = "손목 털기"
+        title = "손목 털기",
+        image = R.drawable.ic_hands
     ),
     InstantAction(
         duration = 0,
-        title = "물 한 모금"
+        title = "물 한 모금",
+        image = R.drawable.ic_water
     ),
 )
 

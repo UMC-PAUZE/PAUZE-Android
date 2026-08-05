@@ -131,8 +131,8 @@ fun InstantActions(action: InstantAction){
     ){
         Column {
             Image(
-                painter = painterResource(R.drawable.ic_headset),
-                contentDescription = "헤드셋"
+                painter = painterResource(action.image),
+                contentDescription = "이미지"
             )
             Spacer(modifier = Modifier.height(24.dp))
             TimeBox(duration = action.duration)
@@ -174,7 +174,8 @@ fun RestGuide(guide: RestGuide){
                 Spacer(modifier = Modifier.weight(1f))
                 Icon(
                     modifier = Modifier.clickable(onClick = {isExpanded = !isExpanded}),
-                    painter = painterResource(R.drawable.ic_arrow_down),
+                    painter = if(isExpanded) painterResource(R.drawable.ic_arrow_up)
+                        else painterResource(R.drawable.ic_arrow_down),
                     contentDescription = "여닫기 버튼",
                     tint = AppTheme.palette.gray.getColor(2)
                 )
