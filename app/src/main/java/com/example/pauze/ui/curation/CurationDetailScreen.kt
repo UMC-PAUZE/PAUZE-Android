@@ -23,7 +23,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -45,7 +44,6 @@ import com.example.pauze.R
 import com.example.pauze.data.dummies.dummyCurationPosts
 import com.example.pauze.data.model.CurationPost
 import com.example.pauze.ui.component.TopBar
-import com.example.pauze.ui.curation.component.CurationThumbnail
 import com.example.pauze.ui.theme.AppTheme
 import com.example.pauze.ui.theme.PAUZEAndroidTheme
 import com.example.pauze.ui.theme.bodyTextLgBold
@@ -90,15 +88,36 @@ fun CurationDetailScreen(
             .background(AppTheme.palette.gray.getColor(9)),
     ) {
         TopBar(
-            title = "게시글",
+            title = "",
             onBackClick = onBackClick,
+            rightIcon = {
+                Image(
+                    painter = painterResource(
+                        id = if (post.isBookmarked) {
+                            R.drawable.ic_bookmark_on_curation
+                        } else {
+                            R.drawable.ic_bookmark_off_curation
+                        },
+                    ),
+                    contentDescription = if (post.isBookmarked) {
+                        "북마크 취소"
+                    } else {
+                        "북마크 추가"
+                    },
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clickable {
+                            onBookmarkClick(post.postId)
+                        },
+                )
+            },
         )
 
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(
-                start = 16.dp,
-                end = 20.dp,
+                start = 24.dp,
+                end = 24.dp,
                 top = 8.dp,
                 bottom = 32.dp,
             ),
@@ -142,12 +161,8 @@ fun CurationDetailScreen(
                 CurationDetailActions(
                     likeCount = post.likeCount,
                     isLiked = post.isLiked,
-                    isBookmarked = post.isBookmarked,
                     onLikeClick = {
                         onLikeClick(post.postId)
-                    },
-                    onBookmarkClick = {
-                        onBookmarkClick(post.postId)
                     },
                     onShareClick = {
                         showShareBottomSheet = true
@@ -218,33 +233,20 @@ private fun CurationDetailHeader(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        Row(
+        Text(
+            text = post.title,
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            CurationThumbnail(
-                thumbnailUrl = post.thumbnailUrl,
-                modifier = Modifier.size(56.dp),
-            )
+            style = bodyTextLgBold,
+            color = AppTheme.palette.gray.getColor(2),
+        )
 
-            Column(
-                modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(4.dp),
-            ) {
-                Text(
-                    text = post.title,
-                    style = bodyTextLgBold,
-                    color = AppTheme.palette.gray.getColor(2),
-                )
+        Spacer(modifier = Modifier.height(4.dp))
 
-                Text(
-                    text = formatRelativeTime(post.createdAt),
-                    style = bodyTextMdRegular,
-                    color = AppTheme.palette.gray.getColor(4),
-                )
-            }
-        }
+        Text(
+            text = formatRelativeTime(post.createdAt),
+            style = bodyTextSmRegular,
+            color = AppTheme.palette.gray.getColor(4),
+        )
     }
 }
 
@@ -252,9 +254,7 @@ private fun CurationDetailHeader(
 private fun CurationDetailActions(
     likeCount: Int,
     isLiked: Boolean,
-    isBookmarked: Boolean,
     onLikeClick: () -> Unit,
-    onBookmarkClick: () -> Unit,
     onShareClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -262,26 +262,23 @@ private fun CurationDetailActions(
         modifier = modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        IconButton(
-            onClick = onLikeClick,
-            modifier = Modifier.size(32.dp),
-        ) {
-            Image(
-                painter = painterResource(
-                    id = if (isLiked) {
-                        R.drawable.ic_heart_on_curation
-                    } else {
-                        R.drawable.ic_heart_off_curation
-                    },
-                ),
-                contentDescription = if (isLiked) {
-                    "좋아요 취소"
+        Image(
+            painter = painterResource(
+                id = if (isLiked) {
+                    R.drawable.ic_heart_on_curation
                 } else {
-                    "좋아요 추가"
+                    R.drawable.ic_heart_off_curation
                 },
-                modifier = Modifier.size(20.dp),
-            )
-        }
+            ),
+            contentDescription = if (isLiked) {
+                "좋아요 취소"
+            } else {
+                "좋아요 추가"
+            },
+            modifier = Modifier
+                .size(20.dp)
+                .clickable(onClick = onLikeClick),
+        )
 
         Spacer(modifier = Modifier.width(4.dp))
 
@@ -291,43 +288,17 @@ private fun CurationDetailActions(
             color = AppTheme.palette.secondary.getColor(3),
         )
 
-        Spacer(modifier = Modifier.width(8.dp))
+        Spacer(modifier = Modifier.width(12.dp))
 
-        IconButton(
-            onClick = onBookmarkClick,
-            modifier = Modifier.size(32.dp),
-        ) {
-            Image(
-                painter = painterResource(
-                    id = if (isBookmarked) {
-                        R.drawable.ic_bookmark_on_curation
-                    } else {
-                        R.drawable.ic_bookmark_off_curation
-                    },
-                ),
-                contentDescription = if (isBookmarked) {
-                    "북마크 취소"
-                } else {
-                    "북마크 추가"
-                },
-                modifier = Modifier.size(20.dp),
-            )
-        }
-
-        Spacer(modifier = Modifier.weight(1f))
-
-        IconButton(
-            onClick = onShareClick,
-            modifier = Modifier.size(40.dp),
-        ) {
-            Image(
-                painter = painterResource(
-                    id = R.drawable.ic_share_curation,
-                ),
-                contentDescription = "게시글 공유",
-                modifier = Modifier.size(24.dp),
-            )
-        }
+        Image(
+            painter = painterResource(
+                id = R.drawable.ic_share_curation,
+            ),
+            contentDescription = "게시글 공유",
+            modifier = Modifier
+                .size(20.dp)
+                .clickable(onClick = onShareClick),
+        )
     }
 }
 
