@@ -4,6 +4,7 @@ import com.example.pauze.data.model.CurationPostListResultDto
 import com.example.pauze.data.model.CurationPostDetailDto
 import com.example.pauze.data.model.CurationPostBookmarkResultDto
 import com.example.pauze.data.model.CurationPostLikeResultDto
+import com.example.pauze.data.model.MyBookmarkListResultDto
 
 interface CurationRepository {
 
@@ -25,4 +26,9 @@ interface CurationRepository {
     suspend fun toggleCurationPostBookmark(
         postId: Long,
     ): CurationPostBookmarkResultDto
+
+    suspend fun getMyBookmarks(
+        page: Int = 1,
+        size: Int = 10,
+    ): MyBookmarkListResultDto
 }

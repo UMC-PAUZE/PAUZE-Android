@@ -86,6 +86,10 @@ fun CurationBoardScreen(
         mutableStateOf(false)
     }
 
+    var isBookmarkScreenVisible by rememberSaveable {
+        mutableStateOf(false)
+    }
+
     var deepLinkUri by remember(activity) {
         mutableStateOf(activity?.intent?.data)
     }
@@ -95,6 +99,11 @@ fun CurationBoardScreen(
             when (effect) {
                 CurationEffect.NavigateToLogin -> {
                     isLoginRequiredDialogVisible = true
+                }
+
+                CurationEffect.OpenBookmarkList -> {
+                    isBookmarkScreenVisible = true
+                    onBookmarkListClick()
                 }
             }
         }
@@ -131,10 +140,6 @@ fun CurationBoardScreen(
                 postId = deepLinkPostId,
             )
         }
-    }
-
-    var isBookmarkScreenVisible by rememberSaveable {
-        mutableStateOf(false)
     }
 
     val listState = rememberLazyListState()
@@ -197,6 +202,8 @@ fun CurationBoardScreen(
         CurationBookmarkScreen(
             bookmarkedPosts =
                 curationState.bookmarkedPosts,
+            isLoading =
+                curationState.isBookmarksLoading,
             onBackClick = {
                 isBookmarkScreenVisible = false
             },
@@ -234,9 +241,7 @@ fun CurationBoardScreen(
                         modifier = Modifier
                             .fillMaxSize()
                             .clickable {
-                                isBookmarkScreenVisible =
-                                    true
-                                onBookmarkListClick()
+                                viewModel.openBookmarkList()
                             },
                     )
                 },

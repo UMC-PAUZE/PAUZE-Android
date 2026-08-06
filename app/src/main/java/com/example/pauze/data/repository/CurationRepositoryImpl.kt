@@ -6,6 +6,7 @@ import javax.inject.Inject
 import com.example.pauze.data.model.CurationPostDetailDto
 import com.example.pauze.data.model.CurationPostBookmarkResultDto
 import com.example.pauze.data.model.CurationPostLikeResultDto
+import com.example.pauze.data.model.MyBookmarkListResultDto
 
 class CurationRepositoryImpl @Inject constructor(
     private val curationService: CurationService,
@@ -85,6 +86,27 @@ class CurationRepositoryImpl @Inject constructor(
         return response.result
             ?: throw IllegalStateException(
                 "${response.code}: 북마크 응답 결과가 비어 있습니다.",
+            )
+    }
+
+    override suspend fun getMyBookmarks(
+        page: Int,
+        size: Int,
+    ): MyBookmarkListResultDto {
+        val response = curationService.getMyBookmarks(
+            page = page,
+            size = size,
+        )
+
+        if (!response.isSuccess) {
+            throw IllegalStateException(
+                "${response.code}: ${response.message}",
+            )
+        }
+
+        return response.result
+            ?: throw IllegalStateException(
+                "${response.code}: 북마크 목록 결과가 비어 있습니다.",
             )
     }
 }
