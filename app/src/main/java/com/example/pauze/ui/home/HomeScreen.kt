@@ -17,9 +17,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -33,6 +36,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
+import com.example.pauze.BottomNavDestination
 import com.example.pauze.ui.theme.AppTheme
 import com.example.pauze.R
 import com.example.pauze.data.model.Activity
@@ -44,10 +49,13 @@ import com.example.pauze.ui.component.Button
 import com.example.pauze.ui.component.SensitivityScoreBar
 import com.example.pauze.ui.component.Destination
 import com.example.pauze.ui.component.NavigationButton
+import com.example.pauze.ui.component.TopBar
+import com.example.pauze.ui.component.TopBarVariant
 import com.example.pauze.ui.pauze.PauzeStartActivity
 import com.example.pauze.ui.pauze.PauzeTodayConditionActivity
 import com.example.pauze.ui.theme.bodyTextLgBold
 import com.example.pauze.ui.theme.bodyTextLgRegular
+import com.example.pauze.ui.theme.bodyTextMdBold
 import com.example.pauze.ui.theme.bodyTextMdMedium
 import com.example.pauze.ui.theme.bodyTextMdRegular
 import com.example.pauze.ui.theme.bodyTextSmRegular
@@ -58,14 +66,13 @@ import com.example.pauze.ui.theme.headingSmBold
 @Composable
 fun HomeScreen(
     context: Context,
+    navController: NavController,
     viewModel: HomeViewModel = viewModel()
 ){
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    val width = context.resources.configuration.screenWidthDp
     val bgPadding = 24
     val conditionBoxPadding = 16
-    val conditionBarWidth = width - ((bgPadding + conditionBoxPadding) * 2)
 
     LaunchedEffect(viewModel.effect) {
         viewModel.effect.collect { effect ->
@@ -77,6 +84,13 @@ fun HomeScreen(
                     val intent = Intent(context, PauzeStartActivity::class.java)
                     intent.putExtra("Pauze Destination", "PauzeBreathing")
                     context.startActivity(intent)
+                }
+                is HomeEffect.MoveToReportScreen -> {
+                    navController.navigate(BottomNavDestination.Report){
+                        popUpTo(BottomNavDestination.Report)
+                        launchSingleTop = true
+                        restoreState = true
+                    }
                 }
             }
         }
@@ -95,18 +109,7 @@ fun HomeScreen(
             Text("오류가 발생했습니다\n다시 시도해주세요", style = bodyTextXlBold, color = AppTheme.palette.gray.getColor(2))
         }
         else {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(color = AppTheme.palette.gray.getColor(9))
-                    .padding(top = 40.dp, bottom = 16.dp),
-            ){
-                Row {
-                    Image(painter = painterResource(R.drawable.pauze_home), contentDescription = "pauze 로고")
-                    Spacer(modifier = Modifier.weight(1f))
-                    Image(painter = painterResource(R.drawable.ic_alarm), contentDescription = "알람 아이콘")
-                }
-            }
+            TopBar(variant = TopBarVariant.Home)
             Spacer(modifier = Modifier.height(17.dp))
             Text("000님", style = bodyTextLgRegular, color = AppTheme.palette.gray.getColor(2))
             Text(
@@ -114,31 +117,34 @@ fun HomeScreen(
                 else "숙면하셨나요?\n오늘의 컨디션을 작성해보세요",
                 style = headingMdMedium,
                 color = AppTheme.palette.gray.getColor(2))
-
+            Spacer(modifier = Modifier.height(16.dp))
             if(!uiState.data.isTodayConditionExists){
                 Column {
-                    Spacer(modifier = Modifier.height(16.dp))
                     Button(
                         "오늘의 컨디션 입력하기",
                         onClick = { viewModel.moveToTodayCondition() },
                         modifier = Modifier.fillMaxWidth(),
                         enabled = true
                     )
+                    Spacer(modifier = Modifier.height(48.dp))
                 }
             }
-            Spacer(modifier = Modifier.height(24.dp))
-            ConditionBox(condition = uiState.data.condition, boxPadding = conditionBoxPadding, barWidth = conditionBarWidth)
-            Spacer(modifier = Modifier.height(24.dp))
             NavigationButton(
                 toWhere = Destination.PauzeBreathing,
                 onClick = { viewModel.moveToBreathing() }
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            ConditionBox(
+                condition = uiState.data.condition,
+                boxPadding = conditionBoxPadding,
+                navigateToReport = { viewModel.moveToReportScreen() }
             )
         }
     }
 }
 
 @Composable
-fun ConditionBox(condition: Condition?, boxPadding: Int, barWidth: Int){
+fun ConditionBox(condition: Condition?, boxPadding: Int, navigateToReport: () -> Unit){
     if(condition != null){
         Box (
             modifier = Modifier
@@ -182,6 +188,26 @@ fun ConditionBox(condition: Condition?, boxPadding: Int, barWidth: Int){
                 SensitivityScoreBar(condition.score)
                 Spacer(modifier = Modifier.height(16.dp))
                 ConditionDetailBox(condition = condition)
+                Spacer(modifier = Modifier.height(16.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.End
+                ) {
+                    Text(
+                        "자세히 알아보기",
+                        modifier = Modifier.clickable(onClick = navigateToReport).padding(vertical = 8.dp),
+                        style = bodyTextMdBold,
+                        color = AppTheme.palette.gray.getColor(2)
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Icon(
+                        modifier = Modifier.clickable(onClick = navigateToReport),
+                        painter = painterResource(R.drawable.ic_forward),
+                        contentDescription = "자세히 알아보기",
+                        tint = AppTheme.palette.gray.getColor(2)
+                    )
+                }
             }
         }
     }
@@ -189,74 +215,60 @@ fun ConditionBox(condition: Condition?, boxPadding: Int, barWidth: Int){
 
 @Composable
 fun ConditionDetailBox(condition: Condition){
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        ConditionDetailBoxContainer(modifier = Modifier.weight(1f)) {
-            Column{
-                Text("수면", style = bodyTextMdMedium, color = AppTheme.palette.gray.getColor(4))
-                Spacer(modifier = Modifier.height(12.dp))
-                Text(
-                    condition.sleeping.label,
-                    style = headingSmBold,
-                    color = when(condition.sleeping){
-                        Sleeping.Low -> AppTheme.palette.secondary.getColor(3)
-                        Sleeping.Moderate -> AppTheme.palette.tertiary.getColor(3)
-                        Sleeping.High -> AppTheme.palette.primary.getColor(3)        // change later
-                    }
-                )
-            }
+    Column {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Start,
+        ) {
+            ConditionDetailBoxContainer(item = "과다")
+            Spacer(modifier = Modifier.width(8.dp))
+            ConditionDetailBoxContainer(item = "4시간 미만")
         }
-        Spacer(modifier = Modifier.width(8.dp))
-        ConditionDetailBoxContainer(modifier = Modifier.weight(1f)) {
-            Column{
-                Text("소음", style = bodyTextMdMedium, color = AppTheme.palette.gray.getColor(4))
-                Spacer(modifier = Modifier.height(12.dp))
-                Text(
-                    condition.noise.label,
-                    style = headingSmBold,
-                    color = when(condition.noise){
-                        Noise.Low -> AppTheme.palette.primary.getColor(3)        // change later
-                        Noise.Moderate -> AppTheme.palette.tertiary.getColor(3)
-                        Noise.High -> AppTheme.palette.secondary.getColor(3)
-                    }
-                )
-            }
-        }
-        Spacer(modifier = Modifier.width(8.dp))
-        ConditionDetailBoxContainer(modifier = Modifier.weight(1f)) {
-            Column{
-                Text("사회 활동", style = bodyTextMdMedium, color = AppTheme.palette.gray.getColor(4))
-                Spacer(modifier = Modifier.height(12.dp))
-                Text(
-                    condition.activity.label,
-                    style = headingSmBold,
-                    color = when(condition.activity){
-                        Activity.Low -> AppTheme.palette.primary.getColor(3)        // change later
-                        Activity.Moderate -> AppTheme.palette.tertiary.getColor(3)
-                        Activity.High -> AppTheme.palette.secondary.getColor(3)
-                    }
-                )
-            }
+        Spacer(modifier = Modifier.height(8.dp))
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            ConditionDetailBoxContainer(item = "보통")
+            Spacer(modifier = Modifier.width(8.dp))
+            ConditionDetailBoxContainer(item = "편안")
+            Spacer(modifier = Modifier.width(8.dp))
+            ConditionDetailBoxContainer(item = "적음")
         }
     }
 }
 
 @Composable
-fun ConditionDetailBoxContainer(modifier: Modifier, content: @Composable (BoxScope.() -> Unit)){
+fun ConditionDetailBoxContainer(item: String){
     Box(
-        modifier = modifier
+        modifier = Modifier
             .background(
-                shape = RoundedCornerShape(16.dp),
+                shape = RoundedCornerShape(100.dp),
                 color = AppTheme.palette.gray.getColor(8)
             )
             .border(
                 width = 1.dp,
                 color = AppTheme.palette.gray.getColor(7),
-                shape = RoundedCornerShape(16.dp),
+                shape = RoundedCornerShape(100.dp),
             )
-            .padding(12.dp),
-        content = content
-    )
+    ){
+        Row(
+            modifier = Modifier.padding(vertical = 8.dp, horizontal = 12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
+        ) {
+            Icon(
+                modifier = Modifier.size(16.dp),
+                painter = painterResource(R.drawable.ic_sound),
+                contentDescription = "소리",
+                tint = AppTheme.palette.secondary.getColor(3)
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                "과다",
+                style = bodyTextMdMedium,
+                color = AppTheme.palette.secondary.getColor(3)
+            )
+        }
+    }
 }

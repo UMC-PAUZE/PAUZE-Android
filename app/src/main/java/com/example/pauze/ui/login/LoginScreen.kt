@@ -113,10 +113,10 @@ fun LoginScreen(
                     startActivity(context, intent, null)
                 }
                 is LoginEffect.NavigateToSignUp -> {
-                    navController.navigate(LoginNavDestination.SignUp(isAgreed = false))
+                    navController.navigate(LoginNavDestination.SignUp(isAgreedToTerm = false, isAgreedToPolicy = false))
                 }
                 is LoginEffect.NavigateToAdditionalScreen -> {
-                    navController.navigate(LoginNavDestination.Kakao(isAgreed = false))
+                    navController.navigate(LoginNavDestination.Kakao(isAgreedToTerm = false, isAgreedToPolicy = false))
                 }
                 is LoginEffect.ShowDialog -> {
                     showDialog = true
