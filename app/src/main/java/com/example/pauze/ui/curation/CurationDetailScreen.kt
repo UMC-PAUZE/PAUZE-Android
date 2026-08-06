@@ -304,7 +304,7 @@ private fun CurationDetailActions(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun CurationShareBottomSheet(
+internal fun CurationShareBottomSheet(
     onDismissRequest: () -> Unit,
     onCopyLinkClick: () -> Unit,
     onShareClick: () -> Unit,
@@ -413,7 +413,7 @@ private fun CurationShareOption(
     }
 }
 
-private fun copyCurationLink(
+internal fun copyCurationLink(
     context: Context,
     shareUrl: String,
 ) {

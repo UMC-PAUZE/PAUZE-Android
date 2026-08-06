@@ -58,6 +58,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.pauze.R
 import com.example.pauze.data.dummies.curationCategories
 import com.example.pauze.data.model.CurationCategory
+import com.example.pauze.data.model.CurationPost
 import com.example.pauze.ui.component.TopBar
 import com.example.pauze.ui.curation.component.CurationLoginRequiredDialog
 import com.example.pauze.ui.curation.component.CurationPostCard
@@ -91,6 +92,10 @@ fun CurationBoardScreen(
 
     var isBookmarkScreenVisible by rememberSaveable {
         mutableStateOf(false)
+    }
+
+    var sharingPost by remember {
+        mutableStateOf<CurationPost?>(null)
     }
 
     var deepLinkUri by remember(activity) {
@@ -221,6 +226,34 @@ fun CurationBoardScreen(
         )
     }
 
+    sharingPost?.let { post ->
+        val shareUrl = createCurationShareUrl(post.postId)
+
+        CurationShareBottomSheet(
+            onDismissRequest = {
+                sharingPost = null
+            },
+            onCopyLinkClick = {
+                activity?.let { context ->
+                    copyCurationLink(
+                        context = context,
+                        shareUrl = shareUrl,
+                    )
+                }
+            },
+            onShareClick = {
+                sharingPost = null
+                activity?.let { context ->
+                    shareCurationPost(
+                        context = context,
+                        post = post,
+                        shareUrl = shareUrl,
+                    )
+                }
+            },
+        )
+    }
+
     if (selectedPost != null) {
         CurationDetailScreen(
             post = selectedPost,
@@ -252,15 +285,7 @@ fun CurationBoardScreen(
             onBookmarkClick =
                 viewModel::toggleBookmark,
             onShareClick = { post ->
-                activity?.let { context ->
-                    shareCurationPost(
-                        context = context,
-                        post = post,
-                        shareUrl = createCurationShareUrl(
-                            post.postId,
-                        ),
-                    )
-                }
+                sharingPost = post
             },
         )
         return
@@ -369,15 +394,7 @@ fun CurationBoardScreen(
                             onBookmarkClick =
                                 viewModel::toggleBookmark,
                             onShareClick = { post ->
-                                activity?.let { context ->
-                                    shareCurationPost(
-                                        context = context,
-                                        post = post,
-                                        shareUrl = createCurationShareUrl(
-                                            post.postId,
-                                        ),
-                                    )
-                                }
+                                sharingPost = post
                             },
                         )
 
