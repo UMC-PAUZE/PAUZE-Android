@@ -1,6 +1,7 @@
 package com.example.pauze.data.module
 
 import com.example.pauze.data.service.ReportService
+import com.example.pauze.data.service.TodayConditionService
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -55,4 +56,10 @@ object NetworkModule {
     @Singleton
     fun provideReportService(@PauzeBaseUrl retrofit: Retrofit) : ReportService = retrofit.create(
         ReportService::class.java)
+
+    @Provides
+    @Singleton
+    fun provideTodayConditionService(
+        @PauzeBaseUrl retrofit: Retrofit
+    ): TodayConditionService = retrofit.create(TodayConditionService::class.java)
 }
