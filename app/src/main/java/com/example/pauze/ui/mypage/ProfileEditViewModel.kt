@@ -98,8 +98,9 @@ class ProfileEditViewModel @Inject constructor(
     }
 
     private fun uriToFile(uri: Uri): File {
+        val extension = if (context.contentResolver.getType(uri) == "image/png") "png" else "jpg"
         val inputStream = context.contentResolver.openInputStream(uri)!!
-        val tempFile = File.createTempFile("profile_", ".jpg", context.cacheDir)
+        val tempFile = File.createTempFile("profile_", ".$extension", context.cacheDir)
         tempFile.outputStream().use { output -> inputStream.copyTo(output) }
         return tempFile
     }

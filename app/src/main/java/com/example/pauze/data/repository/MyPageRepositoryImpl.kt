@@ -6,6 +6,7 @@ import com.example.pauze.data.model.UserMeResultDto
 import com.example.pauze.data.model.UserProfileResultDto
 import com.example.pauze.data.model.UserProfileUpdateResultDto
 import com.example.pauze.data.model.WithdrawRequest
+import com.example.pauze.data.model.getOrThrow
 import com.example.pauze.data.service.MyPageService
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
@@ -18,13 +19,11 @@ class MyPageRepositoryImpl @Inject constructor(
     private val myPageService: MyPageService
 ): MyPageRepository {
     override suspend fun getMyPage(): UserMeResultDto {
-        val response = myPageService.getMyPage()
-        return response.result ?: throw IllegalStateException("[${response.code}] ${response.message}")
+        return myPageService.getMyPage().getOrThrow()
     }
 
     override suspend fun getProfile(): UserProfileResultDto {
-        val response = myPageService.getProfile()
-        return response.result ?: throw IllegalStateException("[${response.code}] ${response.message}")
+        return myPageService.getProfile().getOrThrow()
     }
 
     override suspend fun updateProfile(
@@ -36,24 +35,23 @@ class MyPageRepositoryImpl @Inject constructor(
     ): UserProfileUpdateResultDto {
         val textType = "text/plain".toMediaTypeOrNull()
         val imagePart = profileImage?.let {
+            val mediaType = if (it.extension == "png") "image/png" else "image/jpeg"
             MultipartBody.Part.createFormData(
-                "profileImage", it.name, it.asRequestBody("image/jpeg".toMediaTypeOrNull())
+                "profileImage", it.name, it.asRequestBody(mediaType.toMediaTypeOrNull())
             )
         }
 
-        val response = myPageService.updateProfile(
+        return myPageService.updateProfile(
             name = name?.toRequestBody(textType),
             nickname = nickname?.toRequestBody(textType),
             introduction = introduction?.toRequestBody(textType),
             profileImage = imagePart,
             removeProfileImage = removeProfileImage?.toString()?.toRequestBody(textType)
-        )
-        return response.result ?: throw IllegalStateException("[${response.code}] ${response.message}")
+        ).getOrThrow()
     }
 
     override suspend fun updateSettings(request: UpdateSettingsRequest): Settings {
-        val response = myPageService.updateSettings(request)
-        return response.result ?: throw IllegalStateException("[${response.code}] ${response.message}")
+        return myPageService.updateSettings(request).getOrThrow()
     }
 
     override suspend fun withdraw() {

@@ -21,10 +21,6 @@ class MyPageViewModel @Inject constructor(
 ) : BaseViewModel<MyPageEffect, MyPageState>(
     uiState = BaseUiState(data = MyPageState())
 ) {
-    init {
-        refresh()
-    }
-
     fun refresh() {
         launch {
             try {
@@ -38,7 +34,9 @@ class MyPageViewModel @Inject constructor(
             try {
                 val detail = myPageRepository.getProfile()
                 updateData { it.copy(stats = detail.stats) }
-            } catch (e: Exception) { }
+            } catch (e: Exception) {
+                updateData { it.copy(profileError = e.message ?: "통계를 불러오지 못했습니다") }
+            }
         }
     }
 

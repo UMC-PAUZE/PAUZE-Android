@@ -192,6 +192,14 @@ fun MainScreen(
         },
     ) {
         innerPadding ->
+        val goToLoginAndClearSession = {
+            TokenRepository.accessToken = null
+            context.startActivity(
+                Intent(context, LoginActivity::class.java).apply {
+                    flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+                }
+            )
+        }
         NavHost(
             modifier = Modifier.padding(innerPadding),
             navController = navController,
@@ -215,22 +223,8 @@ fun MainScreen(
             composable<MyPageNavDestination.AccountInfo> {
                 AccountInfoScreen(
                     onBackClick = { navController.popBackStack() },
-                    onLogoutClick = {
-                        TokenRepository.accessToken = null
-                        context.startActivity(
-                            Intent(context, LoginActivity::class.java).apply {
-                                flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
-                            }
-                        )
-                    },
-                    onWithdrawClick = {
-                        TokenRepository.accessToken = null
-                        context.startActivity(
-                            Intent(context, LoginActivity::class.java).apply {
-                                flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
-                            }
-                        )
-                    }
+                    onLogoutClick = goToLoginAndClearSession,
+                    onWithdrawClick = goToLoginAndClearSession
                 )
             }
         }

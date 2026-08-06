@@ -20,11 +20,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.pauze.ui.component.Dialog
 import com.example.pauze.ui.component.TopBar
 import com.example.pauze.ui.mypage.component.MySettings
-import com.example.pauze.ui.mypage.component.MySettingsVariant
 import com.example.pauze.ui.theme.AppTheme
 import com.example.pauze.ui.theme.PAUZEAndroidTheme
 import com.example.pauze.ui.theme.bodyTextMdMedium
@@ -96,7 +94,12 @@ fun AccountInfoScreen(
                     }
                 }
                 AccountInfoRow("이메일", uiState.data.email ?: "")
-                AccountInfoRow("가입일", uiState.data.joinedAt?.let { LocalDate.parse(it).format(dateFormat) } ?: "")
+                AccountInfoRow(
+                    "가입일",
+                    uiState.data.joinedAt?.let {
+                        runCatching { LocalDate.parse(it).format(dateFormat) }.getOrDefault(it)
+                    } ?: ""
+                )
 
             }
 
