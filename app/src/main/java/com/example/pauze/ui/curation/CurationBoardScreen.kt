@@ -79,7 +79,8 @@ fun CurationBoardScreen(
     onBookmarkListClick: () -> Unit = {},
     viewModel: CurationBoardViewModel = hiltViewModel(),
 ) {
-    val curationState by viewModel.curationState.collectAsState()
+    val uiState by viewModel.uiState.collectAsState()
+    val curationState = uiState.data
 
     val activity = LocalActivity.current as? ComponentActivity
 

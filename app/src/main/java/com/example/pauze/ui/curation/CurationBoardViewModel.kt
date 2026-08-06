@@ -8,9 +8,6 @@ import com.example.pauze.data.repository.CurationRepository
 import com.example.pauze.data.repository.TokenRepository
 import com.example.pauze.ui.BaseViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
 import javax.inject.Inject
 
 sealed interface CurationEffect {
@@ -21,14 +18,9 @@ sealed interface CurationEffect {
 @HiltViewModel
 class CurationBoardViewModel @Inject constructor(
     private val curationRepository: CurationRepository,
-) : BaseViewModel<CurationEffect, Unit>(
-    uiState = BaseUiState(data = Unit),
+) : BaseViewModel<CurationEffect, CurationBoardState>(
+    uiState = BaseUiState(data = CurationBoardState()),
 ) {
-    private val _curationState = MutableStateFlow(
-        CurationBoardState(),
-    )
-    val curationState = _curationState.asStateFlow()
-
     private var handledDeepLink: String? = null
     private var postsRequestVersion: Int = 0
     private var bookmarksRequestVersion: Int = 0
@@ -38,12 +30,12 @@ class CurationBoardViewModel @Inject constructor(
     }
 
     fun loadCurationPosts(
-        categoryId: Long? = _curationState.value.selectedCategoryId,
-        keyword: String? = _curationState.value.submittedKeyword,
+        categoryId: Long? = uiState.value.data.selectedCategoryId,
+        keyword: String? = uiState.value.data.submittedKeyword,
         page: Int = 1,
         size: Int = 10,
     ) {
-        val currentState = _curationState.value
+        val currentState = uiState.value.data
 
         if (
             page > 1 &&
@@ -61,7 +53,7 @@ class CurationBoardViewModel @Inject constructor(
             postsRequestVersion
         }
 
-        _curationState.update { state ->
+        updateData { state ->
             state.copy(
                 posts = if (page == 1) {
                     emptyList()
@@ -95,7 +87,7 @@ class CurationBoardViewModel @Inject constructor(
                     item.toCurationPost()
                 }
 
-                _curationState.update { state ->
+                updateData { state ->
                     val updatedPosts = if (page == 1) {
                         posts
                     } else {
@@ -112,7 +104,7 @@ class CurationBoardViewModel @Inject constructor(
                 }
             } finally {
                 if (requestVersion == postsRequestVersion) {
-                    _curationState.update { state ->
+                    updateData { state ->
                         state.copy(isPostsLoading = false)
                     }
                 }
@@ -121,7 +113,7 @@ class CurationBoardViewModel @Inject constructor(
     }
 
     fun loadNextCurationPosts() {
-        val state = _curationState.value
+        val state = uiState.value.data
 
         if (state.isPostsLoading || !state.hasNextPostsPage) {
             return
@@ -135,16 +127,16 @@ class CurationBoardViewModel @Inject constructor(
     }
 
     fun updateKeyword(keyword: String) {
-        _curationState.update { state ->
+        updateData { state ->
             state.copy(keyword = keyword)
         }
     }
 
     fun search() {
         val submittedKeyword =
-            _curationState.value.keyword.trim()
+            uiState.value.data.keyword.trim()
 
-        _curationState.update { state ->
+        updateData { state ->
             state.copy(
                 submittedKeyword = submittedKeyword,
             )
@@ -152,13 +144,13 @@ class CurationBoardViewModel @Inject constructor(
 
         loadCurationPosts(
             categoryId =
-                _curationState.value.selectedCategoryId,
+                uiState.value.data.selectedCategoryId,
             keyword = submittedKeyword,
         )
     }
 
     fun selectCategory(categoryId: Long?) {
-        _curationState.update { state ->
+        updateData { state ->
             state.copy(
                 selectedCategoryId = categoryId,
             )
@@ -167,12 +159,12 @@ class CurationBoardViewModel @Inject constructor(
         loadCurationPosts(
             categoryId = categoryId,
             keyword =
-                _curationState.value.submittedKeyword,
+                uiState.value.data.submittedKeyword,
         )
     }
 
     fun selectPost(postId: Long) {
-        _curationState.update { state ->
+        updateData { state ->
             state.copy(selectedPostId = postId)
         }
 
@@ -188,7 +180,7 @@ class CurationBoardViewModel @Inject constructor(
                     postId = postId,
                 )
 
-            _curationState.update { state ->
+            updateData { state ->
                 val existingPost = state.posts.firstOrNull {
                     post -> post.postId == postId
                 } ?: state.bookmarkedPosts.firstOrNull {
@@ -245,7 +237,7 @@ class CurationBoardViewModel @Inject constructor(
     fun clearSelectedPost() {
         handledDeepLink = null
 
-        _curationState.update { state ->
+        updateData { state ->
             state.copy(selectedPostId = null)
         }
     }
@@ -269,7 +261,7 @@ class CurationBoardViewModel @Inject constructor(
             return
         }
 
-        val currentState = _curationState.value
+        val currentState = uiState.value.data
 
         if (
             page > 1 &&
@@ -287,7 +279,7 @@ class CurationBoardViewModel @Inject constructor(
             bookmarksRequestVersion
         }
 
-        _curationState.update { state ->
+        updateData { state ->
             state.copy(
                 bookmarkedPosts = if (page == 1) {
                     emptyList()
@@ -319,7 +311,7 @@ class CurationBoardViewModel @Inject constructor(
                     return@launch
                 }
 
-                _curationState.update { state ->
+                updateData { state ->
                     val loadedBookmarks = result.content.map { item ->
                         val bookmarkedPost = item.toCurationPost()
                         val existingPost = state.posts.firstOrNull {
@@ -368,7 +360,7 @@ class CurationBoardViewModel @Inject constructor(
                 }
             } finally {
                 if (requestVersion == bookmarksRequestVersion) {
-                    _curationState.update { state ->
+                    updateData { state ->
                         state.copy(isBookmarksLoading = false)
                     }
                 }
@@ -377,7 +369,7 @@ class CurationBoardViewModel @Inject constructor(
     }
 
     fun loadNextMyBookmarks() {
-        val state = _curationState.value
+        val state = uiState.value.data
 
         if (
             state.isBookmarksLoading ||
@@ -403,7 +395,7 @@ class CurationBoardViewModel @Inject constructor(
                     postId = postId,
                 )
 
-            _curationState.update { state ->
+            updateData { state ->
                 val updatePost: (CurationPost) -> CurationPost = { post ->
                     if (post.postId == result.postId) {
                         val likeCountChange = when {
@@ -444,7 +436,7 @@ class CurationBoardViewModel @Inject constructor(
                     postId = postId,
                 )
 
-            _curationState.update { state ->
+            updateData { state ->
                 val currentPost = state.posts.firstOrNull {
                     it.postId == result.postId
                 } ?: state.bookmarkedPosts.firstOrNull {
