@@ -28,6 +28,7 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -155,6 +156,36 @@ fun CurationBoardScreen(
     val selectedPost = curationState.selectedPost
     val filteredPosts = curationState.filteredPosts
 
+    val shouldLoadMorePosts by remember {
+        derivedStateOf {
+            val layoutInfo = listState.layoutInfo
+            val lastVisibleItemIndex =
+                layoutInfo.visibleItemsInfo.lastOrNull()?.index
+                    ?: return@derivedStateOf false
+
+            layoutInfo.totalItemsCount > 0 &&
+                lastVisibleItemIndex >=
+                layoutInfo.totalItemsCount - 3
+        }
+    }
+
+    LaunchedEffect(
+        shouldLoadMorePosts,
+        curationState.postsPage,
+        curationState.postsTotalPages,
+        curationState.isPostsLoading,
+    ) {
+        if (
+            shouldLoadMorePosts &&
+            selectedPost == null &&
+            !isBookmarkScreenVisible &&
+            !curationState.isPostsLoading &&
+            curationState.hasNextPostsPage
+        ) {
+            viewModel.loadNextCurationPosts()
+        }
+    }
+
     BackHandler(
         enabled = selectedPost != null,
     ) {
@@ -204,6 +235,10 @@ fun CurationBoardScreen(
                 curationState.bookmarkedPosts,
             isLoading =
                 curationState.isBookmarksLoading,
+            hasNextPage =
+                curationState.hasNextBookmarksPage,
+            onLoadMore =
+                viewModel::loadNextMyBookmarks,
             onBackClick = {
                 isBookmarkScreenVisible = false
             },
@@ -263,7 +298,22 @@ fun CurationBoardScreen(
                 ),
             )
 
-            if (curationState.posts.isEmpty()) {
+            if (
+                curationState.isPostsLoading &&
+                curationState.posts.isEmpty()
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    CircularProgressIndicator(
+                        color =
+                            AppTheme.palette.primary.getColor(4),
+                    )
+                }
+            } else if (curationState.posts.isEmpty()) {
                 CurationEmptyBoard(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -308,6 +358,23 @@ fun CurationBoardScreen(
                             onBookmarkClick =
                                 viewModel::toggleBookmark,
                         )
+                    }
+
+                    if (curationState.isPostsLoading) {
+                        item(key = "curation_posts_loading") {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 16.dp),
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(28.dp),
+                                    color = AppTheme.palette.primary
+                                        .getColor(4),
+                                )
+                            }
+                        }
                     }
                 }
             }

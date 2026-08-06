@@ -22,7 +22,12 @@ data class CurationBoardState(
     val submittedKeyword: String = "",
     val selectedCategoryId: Long? = null,
     val posts: List<CurationPost> = emptyList(),
+    val postsPage: Int = 0,
+    val postsTotalPages: Int = 1,
+    val isPostsLoading: Boolean = false,
     val bookmarkedPosts: List<CurationPost> = emptyList(),
+    val bookmarksPage: Int = 0,
+    val bookmarksTotalPages: Int = 1,
     val isBookmarksLoading: Boolean = false,
     val selectedPostId: Long? = null,
 ) {
@@ -51,6 +56,12 @@ data class CurationBoardState(
             ?: bookmarkedPosts.firstOrNull {
                 it.postId == selectedPostId
             }
+
+    val hasNextPostsPage: Boolean
+        get() = postsPage < postsTotalPages
+
+    val hasNextBookmarksPage: Boolean
+        get() = bookmarksPage < bookmarksTotalPages
 }
 
 @HiltViewModel
@@ -65,6 +76,8 @@ class CurationBoardViewModel @Inject constructor(
     val curationState = _curationState.asStateFlow()
 
     private var handledDeepLink: String? = null
+    private var postsRequestVersion: Int = 0
+    private var bookmarksRequestVersion: Int = 0
 
     init {
         loadCurationPosts()
@@ -76,22 +89,95 @@ class CurationBoardViewModel @Inject constructor(
         page: Int = 1,
         size: Int = 10,
     ) {
-        launch {
-            val result = curationRepository.getCurationPosts(
-                categoryId = categoryId,
-                keyword = keyword.takeIf { !it.isNullOrBlank() },
-                page = page,
-                size = size,
+        val currentState = _curationState.value
+
+        if (
+            page > 1 &&
+            (
+                currentState.isPostsLoading ||
+                    page > currentState.postsTotalPages
+                )
+        ) {
+            return
+        }
+
+        val requestVersion = if (page == 1) {
+            ++postsRequestVersion
+        } else {
+            postsRequestVersion
+        }
+
+        _curationState.update { state ->
+            state.copy(
+                posts = if (page == 1) {
+                    emptyList()
+                } else {
+                    state.posts
+                },
+                postsPage = if (page == 1) 0 else state.postsPage,
+                postsTotalPages = if (page == 1) {
+                    1
+                } else {
+                    state.postsTotalPages
+                },
+                isPostsLoading = true,
             )
+        }
 
-            val posts = result.content.map { item ->
-                item.toCurationPost()
-            }
+        launch {
+            try {
+                val result = curationRepository.getCurationPosts(
+                    categoryId = categoryId,
+                    keyword = keyword.takeIf { !it.isNullOrBlank() },
+                    page = page,
+                    size = size,
+                )
 
-            _curationState.update { state ->
-                state.copy(posts = posts)
+                if (requestVersion != postsRequestVersion) {
+                    return@launch
+                }
+
+                val posts = result.content.map { item ->
+                    item.toCurationPost()
+                }
+
+                _curationState.update { state ->
+                    val updatedPosts = if (page == 1) {
+                        posts
+                    } else {
+                        (state.posts + posts).distinctBy {
+                            it.postId
+                        }
+                    }
+
+                    state.copy(
+                        posts = updatedPosts,
+                        postsPage = result.page,
+                        postsTotalPages = result.totalPages,
+                    )
+                }
+            } finally {
+                if (requestVersion == postsRequestVersion) {
+                    _curationState.update { state ->
+                        state.copy(isPostsLoading = false)
+                    }
+                }
             }
         }
+    }
+
+    fun loadNextCurationPosts() {
+        val state = _curationState.value
+
+        if (state.isPostsLoading || !state.hasNextPostsPage) {
+            return
+        }
+
+        loadCurationPosts(
+            categoryId = state.selectedCategoryId,
+            keyword = state.submittedKeyword,
+            page = state.postsPage + 1,
+        )
     }
 
     fun updateKeyword(keyword: String) {
@@ -229,8 +315,43 @@ class CurationBoardViewModel @Inject constructor(
             return
         }
 
+        val currentState = _curationState.value
+
+        if (
+            page > 1 &&
+            (
+                currentState.isBookmarksLoading ||
+                    page > currentState.bookmarksTotalPages
+                )
+        ) {
+            return
+        }
+
+        val requestVersion = if (page == 1) {
+            ++bookmarksRequestVersion
+        } else {
+            bookmarksRequestVersion
+        }
+
         _curationState.update { state ->
-            state.copy(isBookmarksLoading = true)
+            state.copy(
+                bookmarkedPosts = if (page == 1) {
+                    emptyList()
+                } else {
+                    state.bookmarkedPosts
+                },
+                bookmarksPage = if (page == 1) {
+                    0
+                } else {
+                    state.bookmarksPage
+                },
+                bookmarksTotalPages = if (page == 1) {
+                    1
+                } else {
+                    state.bookmarksTotalPages
+                },
+                isBookmarksLoading = true,
+            )
         }
 
         launch {
@@ -240,8 +361,12 @@ class CurationBoardViewModel @Inject constructor(
                     size = size,
                 )
 
+                if (requestVersion != bookmarksRequestVersion) {
+                    return@launch
+                }
+
                 _curationState.update { state ->
-                    val bookmarkedPosts = result.content.map { item ->
+                    val loadedBookmarks = result.content.map { item ->
                         val bookmarkedPost = item.toCurationPost()
                         val existingPost = state.posts.firstOrNull {
                             it.postId == bookmarkedPost.postId
@@ -255,6 +380,13 @@ class CurationBoardViewModel @Inject constructor(
                                 viewCount = existingPost.viewCount,
                             )
                         }
+                    }
+
+                    val bookmarkedPosts = if (page == 1) {
+                        loadedBookmarks
+                    } else {
+                        (state.bookmarkedPosts + loadedBookmarks)
+                            .distinctBy { it.postId }
                     }
 
                     val bookmarksByPostId = bookmarkedPosts.associateBy {
@@ -276,14 +408,33 @@ class CurationBoardViewModel @Inject constructor(
                             }
                         },
                         bookmarkedPosts = bookmarkedPosts,
+                        bookmarksPage = result.page,
+                        bookmarksTotalPages = result.totalPages,
                     )
                 }
             } finally {
-                _curationState.update { state ->
-                    state.copy(isBookmarksLoading = false)
+                if (requestVersion == bookmarksRequestVersion) {
+                    _curationState.update { state ->
+                        state.copy(isBookmarksLoading = false)
+                    }
                 }
             }
         }
+    }
+
+    fun loadNextMyBookmarks() {
+        val state = _curationState.value
+
+        if (
+            state.isBookmarksLoading ||
+            !state.hasNextBookmarksPage
+        ) {
+            return
+        }
+
+        loadMyBookmarks(
+            page = state.bookmarksPage + 1,
+        )
     }
 
     fun toggleLike(postId: Long) {

@@ -18,6 +18,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.Text
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -42,6 +43,8 @@ import kotlinx.coroutines.launch
 fun CurationBookmarkScreen(
     bookmarkedPosts: List<CurationPost>,
     isLoading: Boolean = false,
+    hasNextPage: Boolean = false,
+    onLoadMore: () -> Unit = {},
     onBackClick: () -> Unit = {},
     onPostClick: (Long) -> Unit = {},
     onLikeClick: (Long) -> Unit = {},
@@ -54,6 +57,30 @@ fun CurationBookmarkScreen(
         derivedStateOf {
             listState.firstVisibleItemIndex > 0 ||
                 listState.firstVisibleItemScrollOffset > 0
+        }
+    }
+
+    val shouldLoadMore by remember {
+        derivedStateOf {
+            val layoutInfo = listState.layoutInfo
+            val lastVisibleItemIndex =
+                layoutInfo.visibleItemsInfo.lastOrNull()?.index
+                    ?: return@derivedStateOf false
+
+            layoutInfo.totalItemsCount > 0 &&
+                lastVisibleItemIndex >=
+                layoutInfo.totalItemsCount - 3
+        }
+    }
+
+    LaunchedEffect(
+        shouldLoadMore,
+        bookmarkedPosts.size,
+        isLoading,
+        hasNextPage,
+    ) {
+        if (shouldLoadMore && !isLoading && hasNextPage) {
+            onLoadMore()
         }
     }
 
@@ -113,6 +140,23 @@ fun CurationBookmarkScreen(
                             onLikeClick = onLikeClick,
                             onBookmarkClick = onBookmarkClick,
                         )
+                    }
+
+                    if (isLoading) {
+                        item(key = "bookmarks_loading") {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 16.dp),
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(28.dp),
+                                    color = AppTheme.palette.primary
+                                        .getColor(4),
+                                )
+                            }
+                        }
                     }
                 }
             }
