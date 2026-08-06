@@ -456,7 +456,7 @@ private fun copyCurationLink(
     clipboardManager.setPrimaryClip(clipData)
 }
 
-private fun shareCurationPost(
+internal fun shareCurationPost(
     context: Context,
     post: CurationPost,
     shareUrl: String?,

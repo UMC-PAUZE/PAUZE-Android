@@ -49,6 +49,7 @@ fun CurationBookmarkScreen(
     onPostClick: (Long) -> Unit = {},
     onLikeClick: (Long) -> Unit = {},
     onBookmarkClick: (Long) -> Unit = {},
+    onShareClick: (CurationPost) -> Unit = {},
 ) {
     val listState = rememberLazyListState()
     val coroutineScope = rememberCoroutineScope()
@@ -139,6 +140,7 @@ fun CurationBookmarkScreen(
                             onPostClick = onPostClick,
                             onLikeClick = onLikeClick,
                             onBookmarkClick = onBookmarkClick,
+                            onShareClick = onShareClick,
                         )
                     }
 

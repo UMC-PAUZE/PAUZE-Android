@@ -250,6 +250,17 @@ fun CurationBoardScreen(
             onLikeClick = viewModel::toggleLike,
             onBookmarkClick =
                 viewModel::toggleBookmark,
+            onShareClick = { post ->
+                activity?.let { context ->
+                    shareCurationPost(
+                        context = context,
+                        post = post,
+                        shareUrl = createCurationShareUrl(
+                            post.postId,
+                        ),
+                    )
+                }
+            },
         )
         return
     }
@@ -358,6 +369,17 @@ fun CurationBoardScreen(
                                 viewModel::toggleLike,
                             onBookmarkClick =
                                 viewModel::toggleBookmark,
+                            onShareClick = { post ->
+                                activity?.let { context ->
+                                    shareCurationPost(
+                                        context = context,
+                                        post = post,
+                                        shareUrl = createCurationShareUrl(
+                                            post.postId,
+                                        ),
+                                    )
+                                }
+                            },
                         )
                     }
 
