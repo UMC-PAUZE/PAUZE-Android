@@ -1,6 +1,7 @@
 package com.example.pauze.ui.curation
 
 import com.example.pauze.data.model.BaseUiState
+import com.example.pauze.data.model.CurationBoardState
 import com.example.pauze.data.model.CurationPost
 import com.example.pauze.data.model.toCurationPost
 import com.example.pauze.data.repository.CurationRepository
@@ -15,53 +16,6 @@ import javax.inject.Inject
 sealed interface CurationEffect {
     object NavigateToLogin : CurationEffect
     object OpenBookmarkList : CurationEffect
-}
-
-data class CurationBoardState(
-    val keyword: String = "",
-    val submittedKeyword: String = "",
-    val selectedCategoryId: Long? = null,
-    val posts: List<CurationPost> = emptyList(),
-    val postsPage: Int = 0,
-    val postsTotalPages: Int = 1,
-    val isPostsLoading: Boolean = false,
-    val bookmarkedPosts: List<CurationPost> = emptyList(),
-    val bookmarksPage: Int = 0,
-    val bookmarksTotalPages: Int = 1,
-    val isBookmarksLoading: Boolean = false,
-    val selectedPostId: Long? = null,
-) {
-    val filteredPosts: List<CurationPost>
-        get() = posts.filter { post ->
-            val matchesCategory =
-                selectedCategoryId == null ||
-                        post.categoryId == selectedCategoryId
-
-            val matchesKeyword =
-                submittedKeyword.isBlank() ||
-                        post.title.contains(
-                            submittedKeyword,
-                            ignoreCase = true,
-                        ) ||
-                        post.summary.contains(
-                            submittedKeyword,
-                            ignoreCase = true,
-                        )
-
-            matchesCategory && matchesKeyword
-        }
-
-    val selectedPost: CurationPost?
-        get() = posts.firstOrNull { it.postId == selectedPostId }
-            ?: bookmarkedPosts.firstOrNull {
-                it.postId == selectedPostId
-            }
-
-    val hasNextPostsPage: Boolean
-        get() = postsPage < postsTotalPages
-
-    val hasNextBookmarksPage: Boolean
-        get() = bookmarksPage < bookmarksTotalPages
 }
 
 @HiltViewModel
