@@ -20,7 +20,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
@@ -29,6 +29,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -348,15 +349,13 @@ fun CurationBoardScreen(
                         end = 20.dp,
                         bottom = 88.dp,
                     ),
-                    verticalArrangement =
-                        Arrangement.spacedBy(12.dp),
                 ) {
-                    items(
+                    itemsIndexed(
                         items = filteredPosts,
-                        key = { post ->
+                        key = { _, post ->
                             post.postId
                         },
-                    ) { post ->
+                    ) { index, post ->
                         CurationPostCard(
                             post = post,
                             onPostClick = { postId ->
@@ -381,6 +380,14 @@ fun CurationBoardScreen(
                                 }
                             },
                         )
+
+                        if (index < filteredPosts.lastIndex) {
+                            HorizontalDivider(
+                                thickness = 1.dp,
+                                color = AppTheme.palette.gray
+                                    .getColor(8),
+                            )
+                        }
                     }
 
                     if (curationState.isPostsLoading) {

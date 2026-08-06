@@ -13,10 +13,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.Text
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
@@ -127,14 +128,13 @@ fun CurationBookmarkScreen(
                         end = 20.dp,
                         bottom = 88.dp,
                     ),
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
-                    items(
+                    itemsIndexed(
                         items = bookmarkedPosts,
-                        key = { post ->
+                        key = { _, post ->
                             post.postId
                         },
-                    ) { post ->
+                    ) { index, post ->
                         CurationPostCard(
                             post = post,
                             onPostClick = onPostClick,
@@ -142,6 +142,14 @@ fun CurationBookmarkScreen(
                             onBookmarkClick = onBookmarkClick,
                             onShareClick = onShareClick,
                         )
+
+                        if (index < bookmarkedPosts.lastIndex) {
+                            HorizontalDivider(
+                                thickness = 1.dp,
+                                color = AppTheme.palette.gray
+                                    .getColor(8),
+                            )
+                        }
                     }
 
                     if (isLoading) {
