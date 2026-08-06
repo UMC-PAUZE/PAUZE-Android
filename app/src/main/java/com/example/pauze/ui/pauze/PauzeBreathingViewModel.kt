@@ -15,6 +15,7 @@ import kotlinx.coroutines.launch
 
 sealed interface BreathingEffect {
     object NavigateToBack: BreathingEffect
+    object ShowExitDialog: BreathingEffect
 }
 
 class PauzeBreathingViewModel: BaseViewModel<BreathingEffect, Unit>(
@@ -96,5 +97,18 @@ class PauzeBreathingViewModel: BaseViewModel<BreathingEffect, Unit>(
         }
     }
 
-    fun onBackClick() = sendEffect(BreathingEffect.NavigateToBack)
+    fun onBackClick() {
+        if (breathState.phase == BreathPhase.READY) {
+            sendEffect(BreathingEffect.NavigateToBack)
+        } else {
+            isPlaying = false
+            sendEffect(BreathingEffect.ShowExitDialog)
+        }
+    }
+
+    fun onExitCancel() {
+        isPlaying = true
+    }
+
+    fun onExitConfirm() = sendEffect(BreathingEffect.NavigateToBack)
 }
