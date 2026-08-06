@@ -282,7 +282,7 @@ fun CurationBoardScreen(
                     Image(
                         painter = painterResource(
                             id = R.drawable
-                                .ic_bookmark_off_curation,
+                                .ic_curation_box,
                         ),
                         contentDescription = "북마크 목록",
                         modifier = Modifier
