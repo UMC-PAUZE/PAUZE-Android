@@ -8,6 +8,7 @@ import com.example.pauze.data.model.CurationPostDetailDto
 import retrofit2.http.Path
 import com.example.pauze.data.model.CurationPostBookmarkResultDto
 import com.example.pauze.data.model.CurationPostLikeResultDto
+import com.example.pauze.data.model.MyBookmarkListResultDto
 import retrofit2.http.PATCH
 
 interface CurationService {
@@ -34,4 +35,10 @@ interface CurationService {
     suspend fun toggleCurationPostBookmark(
         @Path("postId") postId: Long,
     ): BaseResponse<CurationPostBookmarkResultDto>
+
+    @GET("users/me/bookmarks")
+    suspend fun getMyBookmarks(
+        @Query("page") page: Int = 1,
+        @Query("size") size: Int = 10,
+    ): BaseResponse<MyBookmarkListResultDto>
 }
