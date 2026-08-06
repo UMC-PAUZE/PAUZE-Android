@@ -111,17 +111,10 @@ fun CurationPostCard(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            Box(
-                modifier = Modifier
-                    .size(54.dp)
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(
-                        AppTheme.palette.gray.getColor(7),
-                    ),
-                contentAlignment = Alignment.Center,
-            ) {
-                // TODO: 이미지 로더 추가 후 thumbnailUrl 표시
-            }
+            CurationThumbnail(
+                thumbnailUrl = post.thumbnailUrl,
+                modifier = Modifier.size(54.dp),
+            )
 
             Text(
                 text = post.title,
