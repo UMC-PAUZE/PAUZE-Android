@@ -23,20 +23,12 @@ class MyPageViewModel @Inject constructor(
 ) {
     fun refresh() {
         launch {
-            try {
-                val profile = myPageRepository.getMyPage()
-                updateData { it.copy(profile = profile, profileError = null) }
-            } catch (e: Exception) {
-                updateData { it.copy(profileError = e.message ?: "프로필을 불러오지 못했습니다") }
-            }
+            val profile = myPageRepository.getMyPage()
+            updateData { it.copy(profile = profile) }
         }
         launch {
-            try {
-                val detail = myPageRepository.getProfile()
-                updateData { it.copy(stats = detail.stats) }
-            } catch (e: Exception) {
-                updateData { it.copy(profileError = e.message ?: "통계를 불러오지 못했습니다") }
-            }
+            val detail = myPageRepository.getProfile()
+            updateData { it.copy(stats = detail.stats) }
         }
     }
 
@@ -50,7 +42,6 @@ class MyPageViewModel @Inject constructor(
         get() = uiState.value.data.profile?.settings?.stabilityContent?.stabilitySoundEnabled ?: true
     val offlineContent: Boolean
         get() = uiState.value.data.profile?.settings?.stabilityContent?.offlineContentEnabled ?: false
-
     fun onProfileClick() = sendEffect(MyPageEffect.NavigateToEdit)
     fun onAccountInfoClick() = sendEffect(MyPageEffect.NavigateToAccount)
 
@@ -71,13 +62,11 @@ class MyPageViewModel @Inject constructor(
     )
 
     private fun updateSettings(request: UpdateSettingsRequest) {
+        val currentProfile = uiState.value.data.profile ?: return
+        if (uiState.value.isLoading) return
         launch {
-            try {
-                val updated = myPageRepository.updateSettings(request)
-                updateData { it.copy(profile = it.profile?.copy(settings = updated)) }
-            } catch (e: Exception) {
-                updateData { it.copy(profileError = e.message ?: "설정 저장에 실패했습니다") }
-            }
+            val updated = myPageRepository.updateSettings(request)
+            updateData { it.copy(profile = currentProfile.copy(settings = updated)) }
         }
     }
 }

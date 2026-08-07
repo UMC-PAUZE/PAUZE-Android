@@ -23,17 +23,13 @@ class AccountInfoViewModel @Inject constructor(
 
     init {
         launch {
-            try{
-                val profile = myPageRepository.getProfile()
-                updateData {
-                    it.copy(
-                        email = profile.email,
-                        joinedAt = profile.joinedAt,
-                        socialTypes = profile.socialTypes
-                    )
-                }
-            }catch (e: Exception){
-                updateData { it.copy(loadError = e.message ?: "정보를 불러오지 못했습니다.") }
+            val profile = myPageRepository.getProfile()
+            updateData {
+                it.copy(
+                    email = profile.email,
+                    joinedAt = profile.joinedAt,
+                    socialTypes = profile.socialTypes
+                )
             }
         }
     }
@@ -43,12 +39,8 @@ class AccountInfoViewModel @Inject constructor(
     fun onWithdrawClick() = sendEffect(AccountInfoEffect.ShowWithdrawDialog)
     fun onWithdrawConfirm() {
         launch {
-            try {
-                myPageRepository.withdraw()
-                sendEffect(AccountInfoEffect.NavigateToWithdraw)
-            }catch (e: Exception){
-                updateData { it.copy(loadError = e.message ?: "탈퇴에 실패했습니다.") }
-            }
+            myPageRepository.withdraw()
+            sendEffect(AccountInfoEffect.NavigateToWithdraw)
         }
     }
 }

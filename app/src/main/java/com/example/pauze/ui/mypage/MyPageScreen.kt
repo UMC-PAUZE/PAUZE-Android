@@ -2,6 +2,7 @@ package com.example.pauze.ui.mypage
 
 import android.Manifest
 import android.content.Intent
+import android.net.Uri
 import android.os.Build
 import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -134,7 +135,7 @@ fun MyPageScreen(
                     StatCard(
                         label = "평균 민감지수",
                         value = uiState.data.stats?.averageSensitivity?.let {
-                            "${if (it % 1.0 == 0.0) it.toInt().toString() else "%.1f".format(it)}점"
+                            "${if (it % 1.0 == 0.0) it.toInt().toString() else "%.1f".format(java.util.Locale.KOREA, it)}점"
                         } ?: "-",
                         valueColor = AppTheme.palette.tertiary.getColor(3),
                         modifier = Modifier.weight(1f)
@@ -232,11 +233,16 @@ fun MyPageScreen(
             onDismissRequest = { showNotificationSettingsDialog = false },
             onContinue = {
                 showNotificationSettingsDialog = false
-                context.startActivity(
+                val intent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                     Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).apply {
                         putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
                     }
-                )
+                } else {
+                    Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                        data = Uri.fromParts("package", context.packageName, null)
+                    }
+                }
+                context.startActivity(intent)
             }
         )
     }
