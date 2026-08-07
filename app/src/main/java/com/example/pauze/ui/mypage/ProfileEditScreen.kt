@@ -19,10 +19,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -31,7 +27,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
@@ -40,7 +36,6 @@ import com.example.pauze.ui.component.Button
 import com.example.pauze.ui.component.ModeBasedTextField
 import com.example.pauze.ui.component.TextFieldMode
 import com.example.pauze.ui.component.TopBar
-import com.example.pauze.ui.component.BirthdayBottomSheet
 import com.example.pauze.ui.component.SetBirthday
 import com.example.pauze.ui.theme.AppTheme
 import com.example.pauze.ui.theme.PAUZEAndroidTheme
@@ -51,7 +46,7 @@ import kotlinx.datetime.format.char
 @Composable
 fun ProfileEditScreen(
     navController: NavController,
-    viewModel: ProfileEditViewModel = viewModel()
+    viewModel: ProfileEditViewModel = hiltViewModel()
 ) {
     LaunchedEffect(viewModel.effect) {
         viewModel.effect.collect { effect ->
@@ -61,9 +56,6 @@ fun ProfileEditScreen(
         }
     }
 
-    var tempDay by remember { mutableStateOf(viewModel.birthday) }
-    var showBottomSheet by remember { mutableStateOf(false) }
-
     val dateFormat = LocalDate.Format {
         year(); char('.'); char(' ')
         monthNumber(); char('.'); char(' ')
@@ -72,7 +64,7 @@ fun ProfileEditScreen(
 
     val pickImageLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickVisualMedia()
-    ) { uri -> uri?.let { viewModel.profileImageUri = it } }
+    ) { uri -> uri?.let { viewModel.onImagePicked(it) } }
 
     Column(
         modifier = Modifier
@@ -98,9 +90,10 @@ fun ProfileEditScreen(
                             ),
                         contentAlignment = Alignment.Center
                     ) {
-                        if (viewModel.profileImageUri != null) {
+                        val imageModel = viewModel.newProfileImageUri ?: viewModel.profileImageUrl
+                        if (imageModel != null) {
                             AsyncImage(
-                                model = viewModel.profileImageUri,
+                                model = imageModel,
                                 contentDescription = "프로필 이미지",
                                 modifier = Modifier
                                     .size(88.dp)
@@ -153,7 +146,9 @@ fun ProfileEditScreen(
                     mode = TextFieldMode.Nickname,
                     value = viewModel.nickname,
                     onValueChanged = { viewModel.nickname = it },
-                    imeAction = ImeAction.Next
+                    imeAction = ImeAction.Next,
+                    commentText = viewModel.loadError,
+                    isError = viewModel.loadError != null
                 )
 
                 ModeBasedTextField(
@@ -166,17 +161,10 @@ fun ProfileEditScreen(
 
                 SetBirthday(
                     birthday = viewModel.birthday?.format(dateFormat) ?: "생년월일을 입력해주세요",
-                    onClick = { showBottomSheet = true }
+                    onClick = {  },
+                    showDropdownIcon = false
                 )
             }
-        }
-
-        if (showBottomSheet) {
-            BirthdayBottomSheet(
-                onDismissRequest = { showBottomSheet = false },
-                onDateChanged = { tempDay = it },
-                onClick = { viewModel.birthday = tempDay; showBottomSheet = false }
-            )
         }
 
         Button(

@@ -58,7 +58,7 @@ import com.example.pauze.R
 import com.example.pauze.data.dummies.curationCategories
 import com.example.pauze.data.model.CurationCategory
 import com.example.pauze.ui.component.TopBar
-import com.example.pauze.ui.curation.component.CurationLoginRequiredDialog
+import com.example.pauze.ui.component.LoginRequiredDialog
 import com.example.pauze.ui.curation.component.CurationPostCard
 import com.example.pauze.ui.curation.component.CurationScrollToTopButton
 import com.example.pauze.ui.login.LoginActivity
@@ -203,7 +203,7 @@ fun CurationBoardScreen(
     }
 
     if (isLoginRequiredDialogVisible) {
-        CurationLoginRequiredDialog(
+        LoginRequiredDialog(
             onLoginClick = {
                 isLoginRequiredDialogVisible = false
 

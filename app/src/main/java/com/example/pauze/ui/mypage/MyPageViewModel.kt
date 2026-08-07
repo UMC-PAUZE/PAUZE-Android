@@ -1,46 +1,72 @@
 package com.example.pauze.ui.mypage
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import com.example.pauze.data.model.BaseUiState
+import com.example.pauze.data.model.MyPageState
+import com.example.pauze.data.model.NotificationsUpdate
+import com.example.pauze.data.model.StabilityContentUpdate
+import com.example.pauze.data.model.UpdateSettingsRequest
+import com.example.pauze.data.repository.MyPageRepository
 import com.example.pauze.ui.BaseViewModel
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 
 sealed interface MyPageEffect {
     object NavigateToEdit: MyPageEffect
     object NavigateToAccount: MyPageEffect
 }
 
-class MyPageViewModel: BaseViewModel<MyPageEffect, Unit>(
-    uiState = BaseUiState(data = Unit)
+@HiltViewModel
+class MyPageViewModel @Inject constructor(
+    private val myPageRepository: MyPageRepository
+) : BaseViewModel<MyPageEffect, MyPageState>(
+    uiState = BaseUiState(data = MyPageState())
 ) {
-    var dailyReminder by mutableStateOf(true)
-        private set
-    var riskAlert by mutableStateOf(true)
-        private set
-    var breathingGuide by mutableStateOf(true)
-        private set
-    var stabilitySound by mutableStateOf(true)
-        private set
-    var offlineContent by mutableStateOf(false)
-        private set
+    fun refresh() {
+        launch {
+            val profile = myPageRepository.getMyPage()
+            updateData { it.copy(profile = profile) }
+        }
+        launch {
+            val detail = myPageRepository.getProfile()
+            updateData { it.copy(stats = detail.stats) }
+        }
+    }
 
+    val dailyReminder: Boolean
+        get() = uiState.value.data.profile?.settings?.notifications?.reminderAlarmActive ?: true
+    val riskAlert: Boolean
+        get() = uiState.value.data.profile?.settings?.notifications?.sensitiveAlarmActive ?: true
+    val breathingGuide: Boolean
+        get() = uiState.value.data.profile?.settings?.stabilityContent?.breathingGuideEnabled ?: true
+    val stabilitySound: Boolean
+        get() = uiState.value.data.profile?.settings?.stabilityContent?.stabilitySoundEnabled ?: true
+    val offlineContent: Boolean
+        get() = uiState.value.data.profile?.settings?.stabilityContent?.offlineContentEnabled ?: false
     fun onProfileClick() = sendEffect(MyPageEffect.NavigateToEdit)
     fun onAccountInfoClick() = sendEffect(MyPageEffect.NavigateToAccount)
 
-    fun toggleDailyReminder() {
-        dailyReminder = !dailyReminder
-    }
-    fun toggleRiskAlert() {
-        riskAlert = !riskAlert
-    }
-    fun toggleBreathingGuide() {
-        breathingGuide = !breathingGuide
-    }
-    fun toggleStabilitySound() {
-        stabilitySound = !stabilitySound
-    }
-    fun toggleOfflineContent() {
-        offlineContent = !offlineContent
+    fun toggleDailyReminder() = updateSettings(
+        UpdateSettingsRequest(notifications = NotificationsUpdate(reminderAlarmActive = !dailyReminder))
+    )
+    fun toggleRiskAlert() = updateSettings(
+        UpdateSettingsRequest(notifications = NotificationsUpdate(sensitiveAlarmActive = !riskAlert))
+    )
+    fun toggleBreathingGuide() = updateSettings(
+        UpdateSettingsRequest(stabilityContent = StabilityContentUpdate(breathingGuideEnabled = !breathingGuide))
+    )
+    fun toggleStabilitySound() = updateSettings(
+        UpdateSettingsRequest(stabilityContent = StabilityContentUpdate(stabilitySoundEnabled = !stabilitySound))
+    )
+    fun toggleOfflineContent() = updateSettings(
+        UpdateSettingsRequest(stabilityContent = StabilityContentUpdate(offlineContentEnabled = !offlineContent))
+    )
+
+    private fun updateSettings(request: UpdateSettingsRequest) {
+        val currentProfile = uiState.value.data.profile ?: return
+        if (uiState.value.isLoading) return
+        launch {
+            val updated = myPageRepository.updateSettings(request)
+            updateData { it.copy(profile = currentProfile.copy(settings = updated)) }
+        }
     }
 }
