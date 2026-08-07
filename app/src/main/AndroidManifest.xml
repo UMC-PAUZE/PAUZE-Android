@@ -60,6 +60,20 @@
             android:exported="false"/>
         <activity android:name=".ui.pauze.PauzeTodayConditionActivity"
             android:exported="false"/>
+        <!--카카오 로그인용 액티비티-->
+        <activity
+            android:name="com.kakao.sdk.auth.AuthCodeHandlerActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <!-- 리다이렉트 URI: "kakao${NATIVE_APP_KEY}://oauth" -->
+                <data android:host="oauth"
+                    android:scheme="kakao${KAKAO_KEY}" />
+            </intent-filter>
+        </activity>
     </application>
 
 </manifest>

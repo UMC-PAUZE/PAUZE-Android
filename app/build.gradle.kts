@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -19,6 +21,11 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        val properties = Properties()
+        properties.load(project.rootProject.file("local.properties").inputStream())
+        buildConfigField("String", "KAKAO_KEY","\"${properties.getProperty("KAKAO_KEY")}\"" )
+        manifestPlaceholders["KAKAO_KEY"] = "${properties.getProperty("KAKAO_KEY")}"
     }
 
     buildTypes {
@@ -38,6 +45,12 @@ android {
     buildFeatures {
         compose = true
         buildConfig = true
+    }
+
+    sourceSets {
+        getByName("main") {
+            java.srcDir(layout.buildDirectory.dir("generated/source/buildConfig/main"))
+        }
     }
 }
 
@@ -77,6 +90,7 @@ dependencies {
     implementation(libs.hilt.navigation.compose)
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.11.0")
     implementation("com.jakewharton.retrofit:retrofit2-kotlinx-serialization-converter:1.0.0")
+    implementation("com.kakao.sdk:v2-user:2.11.0")
 }
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {

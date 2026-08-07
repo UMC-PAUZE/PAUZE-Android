@@ -1,9 +1,9 @@
 package com.example.pauze.data.model
 
-import kotlinx.serialization.Serializable
-import com.example.pauze.data.LoginResultSerializer
+import com.example.pauze.data.LocalLoginResultSerializer
+import com.example.pauze.data.KakaoLoginResultSerializer
 import kotlinx.serialization.SerialName
-import java.io.Serial
+import kotlinx.serialization.Serializable
 
 @Serializable
 data class LocalSignUpRequest (
@@ -65,7 +65,7 @@ data class LocalLoginRequest(
     val email: String,
     val password: String
 )
-@Serializable(with = LoginResultSerializer::class)
+@Serializable(with = LocalLoginResultSerializer::class)
 sealed interface LocalLoginResult{
     @Serializable
     data class Success(
@@ -83,6 +83,39 @@ sealed interface LocalLoginResult{
     data class Failure (
         val result: String?
     ): LocalLoginResult
+}
+
+@Serializable
+data class KakaoLoginRequest(
+    val kakaoAccessToken: String
+)
+@Serializable(with = KakaoLoginResultSerializer::class)
+sealed interface KakaoLoginResult{
+    @Serializable
+    data class Success(
+        val accessToken: String,
+        val refreshToken: String,
+        val user: User,
+    ): KakaoLoginResult
+
+    @Serializable
+    data class SignUp(
+        val email: String,
+        val nickname: String,
+        val nextStep: String,
+    ): KakaoLoginResult
+
+    @Serializable
+    data class HasLocalAccount(
+        val existingSocialType: String,
+        val email: String,
+        val nextStep: String,
+    ): KakaoLoginResult
+
+    @Serializable
+    data class Failure (
+        val result: String?
+    ): KakaoLoginResult
 }
 
 @Serializable

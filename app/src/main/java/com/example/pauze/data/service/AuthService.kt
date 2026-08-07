@@ -1,6 +1,8 @@
 package com.example.pauze.data.service
 
 import com.example.pauze.data.model.BaseResponse
+import com.example.pauze.data.model.KakaoLoginRequest
+import com.example.pauze.data.model.KakaoLoginResult
 import com.example.pauze.data.model.LocalLoginRequest
 import com.example.pauze.data.model.LocalLoginResult
 import com.example.pauze.data.model.LocalSignUpRequest
@@ -24,6 +26,9 @@ interface AuthService {
 
     @POST("auth/login")
     suspend fun localLogin(@Body request: LocalLoginRequest): BaseResponse<LocalLoginResult>
+
+    @POST("auth/kakao")
+    suspend fun kakaoLogin(@Body request: KakaoLoginRequest): BaseResponse<KakaoLoginResult>
 
     @POST("auth/logout")
     suspend fun logout(@Body refreshToken: String?): BaseResponse<Unit>

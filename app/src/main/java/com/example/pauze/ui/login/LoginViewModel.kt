@@ -24,7 +24,7 @@ class LoginViewModel @Inject constructor(
 ) {
         fun loginWithKakao(){
         launch {
-           // todo: 카카오 로그인 구현
+           val result = repository.kakaoLogin()
         }
     }
 
