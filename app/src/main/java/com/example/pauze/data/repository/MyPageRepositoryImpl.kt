@@ -35,7 +35,7 @@ class MyPageRepositoryImpl @Inject constructor(
     ): UserProfileUpdateResultDto {
         val textType = "text/plain".toMediaTypeOrNull()
         val imagePart = profileImage?.let {
-            val mediaType = if (it.extension == "png") "image/png" else "image/jpeg"
+            val mediaType = if (it.extension.lowercase() == "png") "image/png" else "image/jpeg"
             MultipartBody.Part.createFormData(
                 "profileImage", it.name, it.asRequestBody(mediaType.toMediaTypeOrNull())
             )

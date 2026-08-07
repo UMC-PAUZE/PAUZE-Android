@@ -57,7 +57,7 @@ fun MyPageScreen(
 ){
     val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    var showGuestDialog by remember { mutableStateOf(isGuest) }
+    var showGuestDialog by remember(isGuest) { mutableStateOf(isGuest) }
     // 알림 설정 권한
     var showNotificationSettingsDialog by remember { mutableStateOf(false) }
     var pendingToggle by remember { mutableStateOf<(() -> Unit)?>(null) }
@@ -84,7 +84,7 @@ fun MyPageScreen(
         if (isOn) toggle() else requireNotificationPermission(toggle)
     }
 
-    LifecycleResumeEffect(Unit) {
+    LifecycleResumeEffect(isGuest) {
         if (!isGuest) viewModel.refresh()
         onPauseOrDispose { }
     }
