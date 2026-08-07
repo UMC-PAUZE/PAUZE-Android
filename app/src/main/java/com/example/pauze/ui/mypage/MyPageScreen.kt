@@ -36,6 +36,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.pauze.BottomNavDestination
 import com.example.pauze.R
 import com.example.pauze.ui.component.Dialog
+import com.example.pauze.ui.component.LoginRequiredDialog
 import com.example.pauze.ui.component.TopBar
 import com.example.pauze.ui.login.LoginActivity
 import com.example.pauze.ui.mypage.component.MySettings
@@ -82,7 +83,6 @@ fun MyPageScreen(
     fun onNotificationToggle(isOn: Boolean, toggle: () -> Unit) {
         if (isOn) toggle() else requireNotificationPermission(toggle)
     }
-
 
     LifecycleResumeEffect(Unit) {
         if (!isGuest) viewModel.refresh()
@@ -206,18 +206,14 @@ fun MyPageScreen(
     }
 
     if (showGuestDialog){
-        Dialog(
-            title = "로그인하고 더 많은 컨텐츠를 즐겨보세요",
-            content = "좋아요, 저장 기능은 로그인 후 이용할 수 있어요",
-            btnCancel = "나중에 할게요",
-            btnContinue = "로그인·회원가입",
+        LoginRequiredDialog(
             onDismissRequest = {
                 showGuestDialog = false
                 navController.navigate(BottomNavDestination.Home){
                     popUpTo(BottomNavDestination.Home)
                 }
             },
-            onContinue = {
+            onLoginClick = {
                 showGuestDialog = false
                 context.startActivity(Intent(context, LoginActivity::class.java))
             }
@@ -253,6 +249,6 @@ fun MyPageScreen(
 @Composable
 private fun MyPagePreview(){
     PAUZEAndroidTheme(darkTheme = true, dynamicColor = false){
-        MyPageScreen(navController = rememberNavController())
+        MyPageScreen(navController = rememberNavController(), true)
     }
 }

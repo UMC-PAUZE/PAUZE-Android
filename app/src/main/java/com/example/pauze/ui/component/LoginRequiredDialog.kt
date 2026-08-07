@@ -1,4 +1,4 @@
-package com.example.pauze.ui.curation.component
+package com.example.pauze.ui.component
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -20,14 +20,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.example.pauze.R
-import com.example.pauze.ui.component.Button
 import com.example.pauze.ui.theme.AppTheme
 import com.example.pauze.ui.theme.bodyTextLgBold
 import com.example.pauze.ui.theme.bodyTextLgRegular
 import com.example.pauze.ui.theme.headingMdBold
 
 @Composable
-fun CurationLoginRequiredDialog(
+fun LoginRequiredDialog(
     onLoginClick: () -> Unit,
     onDismissRequest: () -> Unit,
 ) {
@@ -40,62 +39,62 @@ fun CurationLoginRequiredDialog(
         ),
     ) {
         Surface(
-            modifier = Modifier
+            modifier = Modifier.Companion
                 .fillMaxWidth()
                 .padding(horizontal = 28.dp),
             shape = RoundedCornerShape(28.dp),
             color = AppTheme.palette.gray.getColor(9),
         ) {
             Column(
-                modifier = Modifier.padding(
+                modifier = Modifier.Companion.padding(
                     start = 24.dp,
                     top = 48.dp,
                     end = 24.dp,
                     bottom = 32.dp,
                 ),
-                horizontalAlignment = Alignment.CenterHorizontally,
+                horizontalAlignment = Alignment.Companion.CenterHorizontally,
             ) {
                 Image(
                     painter = painterResource(
                         R.drawable.ic_login_required_curation,
                     ),
                     contentDescription = null,
-                    modifier = Modifier.size(112.dp),
+                    modifier = Modifier.Companion.size(112.dp),
                 )
 
-                Spacer(modifier = Modifier.height(36.dp))
+                Spacer(modifier = Modifier.Companion.height(36.dp))
 
                 Text(
                     text = "로그인하고 더 많은\n컨텐츠를 즐겨보세요",
                     style = headingMdBold,
                     color = AppTheme.palette.gray.getColor(2),
-                    textAlign = TextAlign.Center,
+                    textAlign = TextAlign.Companion.Center,
                 )
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.Companion.height(16.dp))
 
                 Text(
                     text = "좋아요, 저장 기능은 로그인 후 이용할 수 있어요",
                     style = bodyTextLgRegular,
                     color = AppTheme.palette.gray.getColor(4),
-                    textAlign = TextAlign.Center,
+                    textAlign = TextAlign.Companion.Center,
                 )
 
-                Spacer(modifier = Modifier.height(36.dp))
+                Spacer(modifier = Modifier.Companion.height(36.dp))
 
                 Button(
                     label = "로그인하고 시작하기",
                     onClick = onLoginClick,
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.Companion.fillMaxWidth(),
                 )
 
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.Companion.height(24.dp))
 
                 Text(
                     text = "나중에 할게요",
                     style = bodyTextLgBold,
                     color = AppTheme.palette.gray.getColor(2),
-                    modifier = Modifier
+                    modifier = Modifier.Companion
                         .clickable(onClick = onDismissRequest)
                         .padding(
                             horizontal = 16.dp,
