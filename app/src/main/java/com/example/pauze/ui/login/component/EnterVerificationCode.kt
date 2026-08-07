@@ -38,33 +38,33 @@ fun EnterVerificationCode(
     Column {
         isFocused = ModeBasedTextField(
             mode = TextFieldMode.Verif,
-            value = if(kakaoSignUp) (viewModel as KakaoSignUpViewModel).verifCode else (viewModel as SignUpViewModel).verifCode,
+            value = if(kakaoSignUp) (viewModel as KakaoSignUpViewModel).verifCode else (viewModel as SignUpViewModel).code,
             onValueChanged = {
                 if(kakaoSignUp){
                     (viewModel as KakaoSignUpViewModel).verifCode = it
                 } else {
-                    (viewModel as SignUpViewModel).verifCode = it
+                    (viewModel as SignUpViewModel).code = it
                 } },
             imeAction = ImeAction.Done,
             onCheckClick = {
                 if(kakaoSignUp)
                     (viewModel as KakaoSignUpViewModel).checkVerifCodeRight()
                 else
-                    (viewModel as SignUpViewModel).checkVerifCodeRight() },
+                    (viewModel as SignUpViewModel).verifyEmail() },
             checkClickValue = {
                 if(kakaoSignUp)
                     (viewModel as KakaoSignUpViewModel).checkVerifCodeRight()
                 else
-                    (viewModel as SignUpViewModel).checkVerifCodeRight() }
+                    (viewModel as SignUpViewModel).isVerified }
         )
-        if(!isFocused && ((kakaoSignUp && (viewModel as KakaoSignUpViewModel).verifCode != "") || (!kakaoSignUp && (viewModel as SignUpViewModel).verifCode != ""))){
+        if(!isFocused && ((kakaoSignUp && (viewModel as KakaoSignUpViewModel).verifCode != "") || (!kakaoSignUp && (viewModel as SignUpViewModel).code != ""))){
             Text(
                 if((kakaoSignUp && (viewModel as KakaoSignUpViewModel).checkVerifCodeRight())
-                        || (!kakaoSignUp && (viewModel as SignUpViewModel).checkVerifCodeRight())) "인증에 성공했습니다"
+                        || (!kakaoSignUp && (viewModel as SignUpViewModel).isVerified)) "인증에 성공했습니다"
                     else "인증에 실패했습니다",
                 style = bodyTextSmRegular,
                 color = if((kakaoSignUp && (viewModel as KakaoSignUpViewModel).checkVerifCodeRight())
-                            || (!kakaoSignUp && (viewModel as SignUpViewModel).checkVerifCodeRight())) AppTheme.palette.primary.getColor(4)
+                            || (!kakaoSignUp && (viewModel as SignUpViewModel).isVerified)) AppTheme.palette.primary.getColor(4)
                     else AppTheme.palette.secondary.getColor(4)
             )
         }
@@ -94,5 +94,5 @@ fun EnterVerificationCode(
             )
         }
     }
-    return !isFocused && ((kakaoSignUp && (viewModel as KakaoSignUpViewModel).checkVerifCodeRight()) || (!kakaoSignUp && (viewModel as SignUpViewModel).checkVerifCodeRight()))
+    return !isFocused && ((kakaoSignUp && (viewModel as KakaoSignUpViewModel).checkVerifCodeRight()) || (!kakaoSignUp && (viewModel as SignUpViewModel).isVerified))
 }

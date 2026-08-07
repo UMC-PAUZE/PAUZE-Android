@@ -8,11 +8,16 @@ import androidx.navigation.toRoute
 import com.example.pauze.ui.BaseViewModel
 import kotlinx.datetime.LocalDate
 import android.os.CountDownTimer
-import android.os.Handler
-import android.os.Looper
 import androidx.compose.runtime.mutableIntStateOf
 import com.example.pauze.data.model.BaseUiState
+import com.example.pauze.data.model.LocalSignUpRequest
+import com.example.pauze.data.model.LocalSignUpResult
+import com.example.pauze.data.model.SignUpState
+import com.example.pauze.data.model.TermsAgreement
+import com.example.pauze.data.repository.AuthRepository
 import com.example.pauze.ui.login.LoginNavDestination
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 
 sealed interface SignUpEffect {
     object RestartVerifTimer: SignUpEffect
@@ -22,10 +27,12 @@ sealed interface SignUpEffect {
     object ShowBirthdayPicker: SignUpEffect
 }
 
-class SignUpViewModel(
-    savedStateHandle: SavedStateHandle
-): BaseViewModel<SignUpEffect, Unit>(
-    uiState = BaseUiState(data = Unit)
+@HiltViewModel
+class SignUpViewModel @Inject constructor(
+    savedStateHandle: SavedStateHandle,
+    private val repository: AuthRepository
+): BaseViewModel<SignUpEffect, SignUpState>(
+    uiState = BaseUiState(data = SignUpState())
 ){
     private val isInitiallyAgreedToTerm = savedStateHandle.toRoute<LoginNavDestination.SignUp>().isAgreedToTerm
     var isAgreedToTerm by mutableStateOf(isInitiallyAgreedToTerm)
@@ -42,7 +49,8 @@ class SignUpViewModel(
     var password by mutableStateOf("")
     var pwdCheck by mutableStateOf("")
     var showBirthdayPicker by mutableStateOf(false)
-    var verifCode by mutableStateOf("")
+    var code by mutableStateOf("")
+    var isVerified by mutableStateOf(false)
     var time by mutableStateOf("00:00")
     private var countDownTimer: CountDownTimer? = null
 
@@ -52,8 +60,44 @@ class SignUpViewModel(
     fun toggleEmailExist(){
         isEmailNoExisted = !isEmailNoExisted
     }
-    fun checkVerifCodeRight(): Boolean = verifCode == "643590"
+    fun checkVerifCodeRight(): Boolean = code == "643590"
+    fun signUp(){
+        launch {
+            val result = repository.localSignUp(
+                LocalSignUpRequest(
+                    name = name,
+                    nickname = nickname,
+                    birth = birthday.toString().replace("-", ""),
+                    email = email,
+                    password = password,
+                    termAgreement = listOf<TermsAgreement>(
+                        TermsAgreement(0, isAgreedToTerm),
+                        TermsAgreement(1, isAgreedToPolicy)
+                    )
+                )
+            )
+            if(result != null){
+                when(result){
+                    is LocalSignUpResult.Success -> {
+                        verifyEmail()
+                        if(isVerified){
+                            sendEffect(SignUpEffect.NavigateToCompleted)
+                        }
+                    }
+                    is LocalSignUpResult.KakaoExists -> {
+                        // todo: 이후 구현
+                    }
+                }
+            }
+        }
+    }
 
+    fun verifyEmail(){
+        launch {
+            val result = repository.verifyEmail(email, code)
+            isVerified = result != null
+        }
+    }
     fun updateIsAgreedToTerm(isAgreed: Boolean){
         isAgreedToTerm = isAgreed
     }
@@ -89,10 +133,6 @@ class SignUpViewModel(
     }
     fun backStack(){
         sendEffect(SignUpEffect.BackStack)
-    }
-
-    fun signUp(){
-        sendEffect(SignUpEffect.NavigateToCompleted)
     }
 
     fun checkPolicy(isTermOfUse: Boolean){
