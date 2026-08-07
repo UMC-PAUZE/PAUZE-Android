@@ -29,7 +29,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -46,6 +45,7 @@ import com.example.pauze.R
 import com.example.pauze.data.dummies.dummyCurationPosts
 import com.example.pauze.data.model.CurationPost
 import com.example.pauze.ui.component.TopBar
+import com.example.pauze.ui.curation.component.CurationThumbnail
 import com.example.pauze.ui.theme.AppTheme
 import com.example.pauze.ui.theme.PAUZEAndroidTheme
 import com.example.pauze.ui.theme.bodyTextLgBold
@@ -72,24 +72,13 @@ fun CurationDetailScreen(
         shareUrl ?: createCurationShareUrl(post.postId)
     }
 
-    var isLiked by rememberSaveable(post.postId, post.isLiked) {
-        mutableStateOf(post.isLiked)
-    }
-    var isBookmarked by rememberSaveable(
-        post.postId,
-        post.isBookmarked,
-    ) {
-        mutableStateOf(post.isBookmarked)
-    }
-    var likeCount by rememberSaveable(post.postId, post.likeCount) {
-        mutableIntStateOf(post.likeCount)
-    }
+
     var showShareBottomSheet by rememberSaveable {
         mutableStateOf(false)
     }
 
-    val paragraphs = remember(post.summary) {
-        post.summary
+    val paragraphs = remember(post.content) {
+        post.content
             .split(paragraphSeparatorPattern)
             .map(String::trim)
             .filter(String::isNotEmpty)
@@ -151,19 +140,13 @@ fun CurationDetailScreen(
                 Spacer(modifier = Modifier.height(28.dp))
 
                 CurationDetailActions(
-                    likeCount = likeCount,
-                    isLiked = isLiked,
-                    isBookmarked = isBookmarked,
+                    likeCount = post.likeCount,
+                    isLiked = post.isLiked,
+                    isBookmarked = post.isBookmarked,
                     onLikeClick = {
-                        val willBeLiked = !isLiked
-                        isLiked = willBeLiked
-                        likeCount = (
-                            likeCount + if (willBeLiked) 1 else -1
-                            ).coerceAtLeast(0)
                         onLikeClick(post.postId)
                     },
                     onBookmarkClick = {
-                        isBookmarked = !isBookmarked
                         onBookmarkClick(post.postId)
                     },
                     onShareClick = {
@@ -240,15 +223,10 @@ private fun CurationDetailHeader(
             horizontalArrangement = Arrangement.spacedBy(12.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Box(
-                modifier = Modifier
-                    .size(56.dp)
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(AppTheme.palette.gray.getColor(7)),
-                contentAlignment = Alignment.Center,
-            ) {
-                // TODO: 이미지 로더 추가 후 thumbnailUrl 표시
-            }
+            CurationThumbnail(
+                thumbnailUrl = post.thumbnailUrl,
+                modifier = Modifier.size(56.dp),
+            )
 
             Column(
                 modifier = Modifier.weight(1f),

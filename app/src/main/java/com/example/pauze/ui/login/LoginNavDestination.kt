@@ -6,11 +6,11 @@ sealed interface LoginNavDestination {
     @Serializable
     object Login: LoginNavDestination
     @Serializable
-    data class SignUp(val isAgreed: Boolean) : LoginNavDestination
+    data class SignUp(val isAgreedToTerm: Boolean, val isAgreedToPolicy: Boolean) : LoginNavDestination
     @Serializable
-    object Policy: LoginNavDestination
+    data class Policy(val isTermOfUse: Boolean): LoginNavDestination
     @Serializable
     data class Completed(val name: String): LoginNavDestination
     @Serializable
-    data class Kakao(val isAgreed: Boolean): LoginNavDestination
+    data class Kakao(val isAgreedToTerm: Boolean, val isAgreedToPolicy: Boolean): LoginNavDestination
 }

@@ -5,18 +5,23 @@ import androidx.collection.objectListOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.SavedStateHandle
+import androidx.navigation.toRoute
 import com.example.pauze.data.model.BaseUiState
 import com.example.pauze.ui.BaseViewModel
+import com.example.pauze.ui.login.LoginNavDestination
 
 sealed interface TermsAndPolicyEffect {
     object BackStack: TermsAndPolicyEffect
     data class NavigateToSignUp(val isAgreed: Boolean?): TermsAndPolicyEffect
 }
 
-class TermsAndPolicyViewModel: BaseViewModel<TermsAndPolicyEffect, Unit>(
+class TermsAndPolicyViewModel(
+    savedStateHandle: SavedStateHandle
+): BaseViewModel<TermsAndPolicyEffect, Unit>(
     uiState = BaseUiState(data = Unit)
 ){
-    var tab by mutableIntStateOf(0)
+    val isTermOfUse = savedStateHandle.toRoute<LoginNavDestination.Policy>().isTermOfUse
     val termsOfUse = objectListOf(
         Pair(
             "제1장 총칙",
@@ -319,10 +324,6 @@ class TermsAndPolicyViewModel: BaseViewModel<TermsAndPolicyEffect, Unit>(
                     "방침 시작 : 2026년 7월 20일."
         ),
     )
-
-    fun changeTabIndex(index: Int){
-        tab = index
-    }
     fun backStack(){
         sendEffect(TermsAndPolicyEffect.BackStack)
     }

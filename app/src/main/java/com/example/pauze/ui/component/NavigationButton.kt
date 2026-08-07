@@ -52,7 +52,7 @@ fun NavigationButton(toWhere: Destination, onClick: () -> Unit){
             Spacer(modifier = Modifier.width(12.dp))
             Column{
                 Text(
-                    if(toWhere == Destination.PauzeBreathing) "즉각 안정 시작하기"
+                    if(toWhere == Destination.PauzeBreathing) "바로 안정하기"
                             else "HSP 이해하러 가기",
                     style = bodyTextXlBold,
                     color = if(toWhere == Destination.PauzeBreathing) AppTheme.palette.tertiary.getColor(9)

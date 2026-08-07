@@ -41,24 +41,29 @@ fun KakaoSignUpScreen(
 
     LaunchedEffect(viewModel.effect) {
         val savedStateHandle = currentBackStackEntry?.savedStateHandle
-        val agreedFromPolicy = savedStateHandle?.get<Boolean>("isAgreed")
-        if(agreedFromPolicy != null){
-            viewModel.updateIsAgreed(agreedFromPolicy)
-            savedStateHandle.remove<Boolean>("isAgreed")
+        val isAgreedToTerm = savedStateHandle?.get<Boolean>("isAgreedToTerm")
+        val isAgreedToPolicy = savedStateHandle?.get<Boolean>("isAgreedToPolicy")
+        if(isAgreedToTerm != null){
+            viewModel.updateIsAgreedToTerm(isAgreedToTerm)
+            savedStateHandle.remove<Boolean>("isAgreedToTerm")
+        }
+        if(isAgreedToPolicy != null){
+            viewModel.updateIsAgreedToPolicy(isAgreedToPolicy)
+            savedStateHandle.remove<Boolean>("isAgreedToPolicy")
         }
 
         viewModel.effect.collect { effect ->
             when(effect){
-                KakaoSignUpEffect.RestartVerifTimer -> {
+                is KakaoSignUpEffect.RestartVerifTimer -> {
                     viewModel.startTimer()
                 }
-                KakaoSignUpEffect.BackStack -> {
+                is KakaoSignUpEffect.BackStack -> {
                     navController.popBackStack()
                 }
-                KakaoSignUpEffect.NavigateToPolicy -> {
-                    navController.navigate(LoginNavDestination.Policy)
+                is KakaoSignUpEffect.NavigateToPolicy -> {
+                    navController.navigate(LoginNavDestination.Policy(effect.isTermOfUse))
                 }
-                KakaoSignUpEffect.NavigateToCompleted -> {
+                is KakaoSignUpEffect.NavigateToCompleted -> {
                     navController.navigate(LoginNavDestination.Completed(viewModel.name))
                 }
             }
@@ -94,13 +99,15 @@ fun KakaoSignUpScreen(
             } else {
                 isCompleted = EnterVerificationCode(viewModel, true)
                 Spacer(modifier = Modifier.height(24.dp))
-                AgreementCheckbox(viewModel, viewModel.isAgreed, focusManager, true)
+                AgreementCheckbox(viewModel, viewModel.isAgreedToTerm, true, focusManager, true)
+                Spacer(modifier = Modifier.height(12.dp))
+                AgreementCheckbox(viewModel, viewModel.isAgreedToPolicy, false, focusManager, true)
                 Spacer(modifier = Modifier.weight(1f))
                 Button(
                     if(isCompleted) "시작하기" else "다음",
                     modifier = Modifier.fillMaxWidth(),
                     onClick = { viewModel.signUp() },
-                    enabled = isCompleted && viewModel.isAgreed,
+                    enabled = isCompleted && viewModel.isAgreedToTerm && viewModel.isAgreedToPolicy,
                 )
                 Spacer(modifier = Modifier.height(40.dp))
             }

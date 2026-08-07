@@ -206,7 +206,7 @@ fun MainScreen(
             startDestination = BottomNavDestination.Home
         ){
             composable<BottomNavDestination.Home>{
-                HomeScreen(context = context)
+                HomeScreen(context = context, navController = navController)
             }
             composable<BottomNavDestination.Report>{
                 ReportScreen(context = context, isGuest = TokenRepository.accessToken == null)
