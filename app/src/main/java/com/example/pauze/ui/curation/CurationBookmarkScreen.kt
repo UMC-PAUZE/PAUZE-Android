@@ -13,10 +13,13 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.Text
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -40,10 +43,14 @@ import kotlinx.coroutines.launch
 @Composable
 fun CurationBookmarkScreen(
     bookmarkedPosts: List<CurationPost>,
+    isLoading: Boolean = false,
+    hasNextPage: Boolean = false,
+    onLoadMore: () -> Unit = {},
     onBackClick: () -> Unit = {},
     onPostClick: (Long) -> Unit = {},
     onLikeClick: (Long) -> Unit = {},
     onBookmarkClick: (Long) -> Unit = {},
+    onShareClick: (CurationPost) -> Unit = {},
 ) {
     val listState = rememberLazyListState()
     val coroutineScope = rememberCoroutineScope()
@@ -52,6 +59,30 @@ fun CurationBookmarkScreen(
         derivedStateOf {
             listState.firstVisibleItemIndex > 0 ||
                 listState.firstVisibleItemScrollOffset > 0
+        }
+    }
+
+    val shouldLoadMore by remember {
+        derivedStateOf {
+            val layoutInfo = listState.layoutInfo
+            val lastVisibleItemIndex =
+                layoutInfo.visibleItemsInfo.lastOrNull()?.index
+                    ?: return@derivedStateOf false
+
+            layoutInfo.totalItemsCount > 0 &&
+                lastVisibleItemIndex >=
+                layoutInfo.totalItemsCount - 3
+        }
+    }
+
+    LaunchedEffect(
+        shouldLoadMore,
+        bookmarkedPosts.size,
+        isLoading,
+        hasNextPage,
+    ) {
+        if (shouldLoadMore && !isLoading && hasNextPage) {
+            onLoadMore()
         }
     }
 
@@ -68,7 +99,18 @@ fun CurationBookmarkScreen(
                 onBackClick = onBackClick,
             )
 
-            if (bookmarkedPosts.isEmpty()) {
+            if (isLoading && bookmarkedPosts.isEmpty()) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    CircularProgressIndicator(
+                        color = AppTheme.palette.primary.getColor(4),
+                    )
+                }
+            } else if (bookmarkedPosts.isEmpty()) {
                 CurationBookmarkEmptyContent(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -86,20 +128,45 @@ fun CurationBookmarkScreen(
                         end = 20.dp,
                         bottom = 88.dp,
                     ),
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
-                    items(
+                    itemsIndexed(
                         items = bookmarkedPosts,
-                        key = { post ->
+                        key = { _, post ->
                             post.postId
                         },
-                    ) { post ->
+                    ) { index, post ->
                         CurationPostCard(
                             post = post,
                             onPostClick = onPostClick,
                             onLikeClick = onLikeClick,
                             onBookmarkClick = onBookmarkClick,
+                            onShareClick = onShareClick,
                         )
+
+                        if (index < bookmarkedPosts.lastIndex) {
+                            HorizontalDivider(
+                                thickness = 1.dp,
+                                color = AppTheme.palette.gray
+                                    .getColor(8),
+                            )
+                        }
+                    }
+
+                    if (isLoading) {
+                        item(key = "bookmarks_loading") {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 16.dp),
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(28.dp),
+                                    color = AppTheme.palette.primary
+                                        .getColor(4),
+                                )
+                            }
+                        }
                     }
                 }
             }

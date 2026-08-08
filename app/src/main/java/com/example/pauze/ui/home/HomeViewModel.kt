@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.asStateFlow
 sealed interface HomeEffect {
     object MoveToTodayCondition: HomeEffect
     object MoveToBreathingBtn: HomeEffect
+    object MoveToReportScreen: HomeEffect
 }
 class HomeViewModel: BaseViewModel<HomeEffect, HomeState>(
     uiState = BaseUiState(data = HomeState())
@@ -35,5 +36,9 @@ class HomeViewModel: BaseViewModel<HomeEffect, HomeState>(
     }
     fun moveToBreathing(){
         sendEffect(HomeEffect.MoveToBreathingBtn)
+    }
+
+    fun moveToReportScreen(){
+        sendEffect(HomeEffect.MoveToReportScreen)
     }
 }

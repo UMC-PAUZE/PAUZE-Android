@@ -41,6 +41,7 @@ import kotlinx.datetime.LocalDate
 fun SetBirthday(
     birthday: String,
     onClick: () -> Unit,
+    showDropdownIcon: Boolean = true,
 ){
     Column(
         modifier = Modifier
@@ -69,11 +70,13 @@ fun SetBirthday(
                 color = if (birthday == "생년월일을 입력해주세요") AppTheme.palette.gray.getColor(5)
                     else AppTheme.palette.gray.getColor(2)
             )
-            Image(
-                modifier = Modifier,
-                painter = painterResource(R.drawable.ic_dropdown),
-                contentDescription = "dropdown button"
-            )
+            if (showDropdownIcon) {
+                Image(
+                    modifier = Modifier,
+                    painter = painterResource(R.drawable.ic_dropdown),
+                    contentDescription = "dropdown button"
+                )
+            }
         }
     }
 }

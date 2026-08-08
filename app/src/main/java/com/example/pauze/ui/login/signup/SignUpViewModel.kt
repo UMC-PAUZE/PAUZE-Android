@@ -17,7 +17,7 @@ import com.example.pauze.ui.login.LoginNavDestination
 sealed interface SignUpEffect {
     object RestartVerifTimer: SignUpEffect
     object BackStack: SignUpEffect
-    object NavigateToPolicy: SignUpEffect
+    data class NavigateToPolicy(val isTermOfUse: Boolean): SignUpEffect
     object NavigateToCompleted: SignUpEffect
     object ShowBirthdayPicker: SignUpEffect
 }
@@ -27,8 +27,11 @@ class SignUpViewModel(
 ): BaseViewModel<SignUpEffect, Unit>(
     uiState = BaseUiState(data = Unit)
 ){
-    val initialAgreed = savedStateHandle.toRoute<LoginNavDestination.SignUp>().isAgreed
-    var isAgreed by mutableStateOf(initialAgreed)
+    private val isInitiallyAgreedToTerm = savedStateHandle.toRoute<LoginNavDestination.SignUp>().isAgreedToTerm
+    var isAgreedToTerm by mutableStateOf(isInitiallyAgreedToTerm)
+        private set
+    private val isInitiallyAgreedToPolicy = savedStateHandle.toRoute<LoginNavDestination.SignUp>().isAgreedToPolicy
+    var isAgreedToPolicy by mutableStateOf(isInitiallyAgreedToPolicy)
         private set
 
     var phase by mutableIntStateOf(0)
@@ -51,8 +54,12 @@ class SignUpViewModel(
     }
     fun checkVerifCodeRight(): Boolean = verifCode == "643590"
 
-    fun updateIsAgreed(isAgreed: Boolean){
-        this.isAgreed = isAgreed
+    fun updateIsAgreedToTerm(isAgreed: Boolean){
+        isAgreedToTerm = isAgreed
+    }
+
+    fun updateIsAgreedToPolicy(isAgreed: Boolean){
+        isAgreedToPolicy = isAgreed
     }
 
     fun updatePhase(){
@@ -88,8 +95,8 @@ class SignUpViewModel(
         sendEffect(SignUpEffect.NavigateToCompleted)
     }
 
-    fun checkPolicy(){
-        sendEffect(SignUpEffect.NavigateToPolicy)
+    fun checkPolicy(isTermOfUse: Boolean){
+        sendEffect(SignUpEffect.NavigateToPolicy(isTermOfUse))
     }
     fun showBirthdayPicker(){
         sendEffect(SignUpEffect.ShowBirthdayPicker)

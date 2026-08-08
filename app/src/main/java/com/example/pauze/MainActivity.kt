@@ -32,6 +32,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.example.pauze.data.repository.TokenRepository
 import com.example.pauze.ui.curation.CurationBoardScreen
 import com.example.pauze.ui.home.HomeScreen
 import com.example.pauze.ui.login.LoginActivity
@@ -191,23 +192,30 @@ fun MainScreen(
         },
     ) {
         innerPadding ->
+        val goToLoginAndClearSession = {
+            TokenRepository.accessToken = null
+            context.startActivity(
+                Intent(context, LoginActivity::class.java).apply {
+                    flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+                }
+            )
+        }
         NavHost(
             modifier = Modifier.padding(innerPadding),
             navController = navController,
             startDestination = BottomNavDestination.Home
         ){
             composable<BottomNavDestination.Home>{
-                HomeScreen(context = context)
+                HomeScreen(context = context, navController = navController)
             }
             composable<BottomNavDestination.Report>{
-                // todo: 나중에 isGuest쪽 수정 현재-게스트모드 x
-                ReportScreen(context = context, isGuest = false)
+                ReportScreen(context = context, isGuest = TokenRepository.accessToken == null)
             }
             composable<BottomNavDestination.Find>{
                 CurationBoardScreen()
             }
             composable<BottomNavDestination.MyPage> {
-                MyPageScreen(navController = navController)
+                MyPageScreen(navController = navController, isGuest = TokenRepository.accessToken == null)
             }
             composable<MyPageNavDestination.ProfileEdit> {
                 ProfileEditScreen(navController = navController)
@@ -215,20 +223,8 @@ fun MainScreen(
             composable<MyPageNavDestination.AccountInfo> {
                 AccountInfoScreen(
                     onBackClick = { navController.popBackStack() },
-                    onLogoutClick = {
-                        context.startActivity(
-                            Intent(context, LoginActivity::class.java).apply {
-                                flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
-                            }
-                        )
-                    },
-                    onWithdrawClick = {
-                        context.startActivity(
-                            Intent(context, LoginActivity::class.java).apply {
-                                flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
-                            }
-                        )
-                    }
+                    onLogoutClick = goToLoginAndClearSession,
+                    onWithdrawClick = goToLoginAndClearSession
                 )
             }
         }

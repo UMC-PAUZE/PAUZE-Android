@@ -44,27 +44,32 @@ fun SignUpScreen(
 
     LaunchedEffect(viewModel.effect) {
         val savedStateHandle = currentBackStackEntry?.savedStateHandle
-        val agreedFromPolicy = savedStateHandle?.get<Boolean>("isAgreed")
-        if(agreedFromPolicy != null){
-            viewModel.updateIsAgreed(agreedFromPolicy)
-            savedStateHandle.remove<Boolean>("isAgreed")
+        val isAgreedToTerm = savedStateHandle?.get<Boolean>("isAgreedToTerm")
+        val isAgreedToPolicy = savedStateHandle?.get<Boolean>("isAgreedToPolicy")
+        if(isAgreedToTerm != null){
+            viewModel.updateIsAgreedToTerm(isAgreedToTerm)
+            savedStateHandle.remove<Boolean>("isAgreedToTerm")
+        }
+        if(isAgreedToPolicy != null){
+            viewModel.updateIsAgreedToPolicy(isAgreedToPolicy)
+            savedStateHandle.remove<Boolean>("isAgreedToPolicy")
         }
 
         viewModel.effect.collect { effect ->
             when(effect){
-                SignUpEffect.RestartVerifTimer -> {
+                is SignUpEffect.RestartVerifTimer -> {
                     viewModel.startTimer()
                 }
-                SignUpEffect.BackStack -> {
+                is SignUpEffect.BackStack -> {
                     navController.popBackStack()
                 }
-                SignUpEffect.NavigateToPolicy -> {
-                    navController.navigate(LoginNavDestination.Policy)
+                is SignUpEffect.NavigateToPolicy -> {
+                    navController.navigate(LoginNavDestination.Policy(effect.isTermOfUse))
                 }
-                SignUpEffect.NavigateToCompleted -> {
+                is SignUpEffect.NavigateToCompleted -> {
                     navController.navigate(LoginNavDestination.Completed(viewModel.name))
                 }
-                SignUpEffect.ShowBirthdayPicker -> {
+                is SignUpEffect.ShowBirthdayPicker -> {
                     viewModel.showBirthdayPicker = true
                 }
             }

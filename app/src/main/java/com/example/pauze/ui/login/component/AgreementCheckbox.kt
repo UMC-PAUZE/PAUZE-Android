@@ -26,6 +26,7 @@ import com.example.pauze.ui.theme.bodyTextSmRegular
 fun AgreementCheckbox(
     viewModel: ViewModel,
     isAgreed : Boolean,
+    isTermsOfUse: Boolean,
     focusManager: FocusManager,
     kakaoSignup: Boolean
 ){
@@ -34,8 +35,15 @@ fun AgreementCheckbox(
     ) {
         Image(
             modifier = Modifier.clickable{
-                if(kakaoSignup) (viewModel as KakaoSignUpViewModel).updateIsAgreed(!isAgreed)
-                else (viewModel as SignUpViewModel).updateIsAgreed(!isAgreed)
+                if(kakaoSignup && isTermsOfUse){
+                    (viewModel as KakaoSignUpViewModel).updateIsAgreedToTerm(!isAgreed)
+                } else if(kakaoSignup){
+                    (viewModel as KakaoSignUpViewModel).updateIsAgreedToPolicy(!isAgreed)
+                } else if(isTermsOfUse){
+                    (viewModel as SignUpViewModel).updateIsAgreedToTerm(!isAgreed)
+                } else {
+                    (viewModel as SignUpViewModel).updateIsAgreedToPolicy(!isAgreed)
+                }
                 focusManager.clearFocus()
             },
             painter = painterResource(if(isAgreed) R.drawable.ic_checkbox_checked
@@ -48,21 +56,24 @@ fun AgreementCheckbox(
             modifier = Modifier.weight(1f)
         ) {
             Text(
-                "개인정보 처리방침에 동의합니다 (필수)",
+                if(isTermsOfUse) "이용약관에 동의합니다 (필수)"
+                    else "개인정보 처리방침에 동의합니다 (필수)",
                 style = bodyTextMdMedium,
                 color = AppTheme.palette.gray.getColor(2)
             )
-            Text(
-                "수집한 정보는 서비스 제공 및 예민함 분석에만 사용됩니다.",
-                style = bodyTextSmRegular,
-                color = AppTheme.palette.gray.getColor(4)
-            )
+            if(!isTermsOfUse){
+                Text(
+                    "수집한 정보는 서비스 제공 및 예민함 분석에만 사용됩니다.",
+                    style = bodyTextSmRegular,
+                    color = AppTheme.palette.gray.getColor(4)
+                )
+            }
         }
         Spacer(modifier = Modifier.width(12.dp))
         Image(
             modifier = Modifier.clickable{
-                if(kakaoSignup) (viewModel as KakaoSignUpViewModel).checkPolicy()
-                else (viewModel as SignUpViewModel).checkPolicy()
+                if(kakaoSignup) (viewModel as KakaoSignUpViewModel).checkPolicy(isTermsOfUse)
+                else (viewModel as SignUpViewModel).checkPolicy(isTermsOfUse)
             },
             painter = painterResource(R.drawable.ic_arrow_forward),
             contentDescription = "Navigate to privacy policy screen",
