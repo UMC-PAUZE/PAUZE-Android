@@ -42,7 +42,8 @@ class PauzeSoundViewModel(
 ) {
     private val _state = MutableStateFlow(PauzeSoundState())
     val state = _state.asStateFlow()
-    private var loadSoundsJob: Job? = null
+    private var allSoundsJob: Job? = null
+    private var categorySoundsJob: Job? = null
 
     init {
         loadSounds(SoundCategory.ALL)
@@ -55,7 +56,18 @@ class PauzeSoundViewModel(
     fun selectCategory(category: SoundCategory) {
         if (_state.value.selectedCategory == category) return
 
-        _state.update { it.copy(selectedCategory = category, errorMessage = null) }
+        if (category == SoundCategory.ALL) {
+            categorySoundsJob?.cancel()
+        }
+
+        _state.update {
+            it.copy(
+                selectedCategory = category,
+                categorySounds = if (category == SoundCategory.ALL) null else emptyList(),
+                isLoading = true,
+                errorMessage = null
+            )
+        }
         loadSounds(category)
     }
 
@@ -124,9 +136,21 @@ class PauzeSoundViewModel(
     }
 
     private fun loadSounds(category: SoundCategory) {
-        loadSoundsJob?.cancel()
-        loadSoundsJob = viewModelScope.launch {
-            _state.update { it.copy(isLoading = true, errorMessage = null) }
+        if (category == SoundCategory.ALL && allSoundsJob?.isActive == true) {
+            return
+        }
+        if (category != SoundCategory.ALL) {
+            categorySoundsJob?.cancel()
+        }
+
+        val job = viewModelScope.launch {
+            _state.update { currentState ->
+                if (currentState.selectedCategory == category) {
+                    currentState.copy(isLoading = true, errorMessage = null)
+                } else {
+                    currentState
+                }
+            }
 
             try {
                 val remoteSounds = if (category == SoundCategory.ALL) {
@@ -142,24 +166,58 @@ class PauzeSoundViewModel(
                     if (category == SoundCategory.ALL) {
                         currentState.copy(
                             sounds = mergedSounds,
-                            categorySounds = null,
-                            isLoading = false
+                            categorySounds = if (
+                                currentState.selectedCategory == SoundCategory.ALL
+                            ) {
+                                null
+                            } else {
+                                currentState.categorySounds
+                            },
+                            isLoading = if (
+                                currentState.selectedCategory == SoundCategory.ALL
+                            ) {
+                                false
+                            } else {
+                                currentState.isLoading
+                            }
                         )
                     } else {
+                        val isCurrentCategory = currentState.selectedCategory == category
                         currentState.copy(
                             sounds = mergeIntoAll(currentState.sounds, mergedSounds),
-                            categorySounds = mergedSounds,
-                            isLoading = false
+                            categorySounds = if (isCurrentCategory) {
+                                mergedSounds
+                            } else {
+                                currentState.categorySounds
+                            },
+                            isLoading = if (isCurrentCategory) {
+                                false
+                            } else {
+                                currentState.isLoading
+                            }
                         )
                     }
                 }
             } catch (error: CancellationException) {
                 throw error
             } catch (error: Throwable) {
-                _state.update {
-                    it.copy(isLoading = false, errorMessage = error.toUserMessage())
+                _state.update { currentState ->
+                    if (currentState.selectedCategory == category) {
+                        currentState.copy(
+                            isLoading = false,
+                            errorMessage = error.toUserMessage()
+                        )
+                    } else {
+                        currentState
+                    }
                 }
             }
+        }
+
+        if (category == SoundCategory.ALL) {
+            allSoundsJob = job
+        } else {
+            categorySoundsJob = job
         }
     }
 
@@ -195,6 +253,7 @@ private fun mergeRemoteWithLocal(
     return remoteSounds.map { remote ->
         val local = localById[remote.id]
         remote.copy(
+            isLiked = local?.isLiked ?: remote.isLiked,
             isBookmarked = local?.isBookmarked ?: remote.isBookmarked,
             audioUrl = remote.audioUrl.ifBlank { local?.audioUrl.orEmpty() }
         )
