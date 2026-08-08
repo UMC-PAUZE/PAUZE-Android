@@ -6,8 +6,8 @@ import com.example.pauze.data.model.SoundItem
 import com.example.pauze.data.remote.ApiSuccessResponse
 import com.example.pauze.data.remote.PauzeApiClient
 import com.example.pauze.data.remote.PauzeAuthSession
-import com.example.pauze.data.remote.audio.AudioGuideApi
 import com.example.pauze.data.remote.audio.AudioGuideDto
+import com.example.pauze.data.service.AudioGuideService
 
 data class SoundLikeResult(
     val soundId: String,
@@ -28,24 +28,24 @@ interface PauzeSoundRepository {
 }
 
 class DefaultPauzeSoundRepository(
-    private val api: AudioGuideApi = PauzeApiClient.audioGuideApi
+    private val service: AudioGuideService = PauzeApiClient.audioGuideService
 ) : PauzeSoundRepository {
     override suspend fun getAllSounds(): List<SoundItem> =
-        api.getAllGuides(PauzeAuthSession.optionalBearerToken())
+        service.getAllGuides(PauzeAuthSession.optionalBearerToken())
             .requireResult()
             .map(AudioGuideDto::toSoundItem)
 
     override suspend fun getSoundsByCategory(category: SoundCategory): List<SoundItem> {
         require(category != SoundCategory.ALL) { "전체 카테고리는 전체 조회 API를 사용해야 합니다." }
 
-        return api.getGuidesByCategory(
+        return service.getGuidesByCategory(
             categoryCode = category.name,
             authorization = PauzeAuthSession.optionalBearerToken()
         ).requireResult().map(AudioGuideDto::toSoundItem)
     }
 
     override suspend fun toggleLike(soundId: String): SoundLikeResult {
-        val result = api.toggleLike(
+        val result = service.toggleLike(
             audioId = soundId,
             authorization = PauzeAuthSession.requireBearerToken()
         ).requireResult()
@@ -57,7 +57,7 @@ class DefaultPauzeSoundRepository(
     }
 
     override suspend fun saveSound(soundId: String): SoundSaveResult {
-        val result = api.saveGuide(
+        val result = service.saveGuide(
             audioId = soundId,
             authorization = PauzeAuthSession.requireBearerToken()
         ).requireResult()

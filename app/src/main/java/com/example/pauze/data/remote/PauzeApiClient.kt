@@ -1,6 +1,6 @@
 package com.example.pauze.data.remote
 
-import com.example.pauze.data.remote.audio.AudioGuideApi
+import com.example.pauze.data.service.AudioGuideService
 import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType
 import retrofit2.Retrofit
@@ -21,7 +21,7 @@ object PauzeApiClient {
             .build()
     }
 
-    val audioGuideApi: AudioGuideApi by lazy {
-        retrofit.create(AudioGuideApi::class.java)
+    val audioGuideService: AudioGuideService by lazy {
+        retrofit.create(AudioGuideService::class.java)
     }
 }

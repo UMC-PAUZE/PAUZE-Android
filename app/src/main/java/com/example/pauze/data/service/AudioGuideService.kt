@@ -1,6 +1,9 @@
-package com.example.pauze.data.remote.audio
+package com.example.pauze.data.service
 
 import com.example.pauze.data.remote.ApiSuccessResponse
+import com.example.pauze.data.remote.audio.AudioGuideDto
+import com.example.pauze.data.remote.audio.AudioLikeToggleResultDto
+import com.example.pauze.data.remote.audio.AudioSaveResultDto
 import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.PATCH
@@ -8,7 +11,7 @@ import retrofit2.http.POST
 import retrofit2.http.Path
 import retrofit2.http.Query
 
-interface AudioGuideApi {
+interface AudioGuideService {
     @GET("audio-guides")
     suspend fun getAllGuides(
         @Header("Authorization") authorization: String?
