@@ -26,20 +26,25 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.pauze.MainActivity
 import com.example.pauze.R
+import com.example.pauze.data.model.CreateTodayConditionRequest
+import com.example.pauze.data.model.CreateTodayConditionResult
+import com.example.pauze.data.model.SensitivityLevel
+import com.example.pauze.data.repository.TodayConditionRepository
 import com.example.pauze.ui.component.CondtionAnswer
 import com.example.pauze.ui.component.Dialog
 import com.example.pauze.ui.component.PhaseBar
@@ -50,10 +55,12 @@ import com.example.pauze.ui.theme.MainPaletteTheme
 import com.example.pauze.ui.theme.bodyTextLgBold
 import com.example.pauze.ui.theme.bodyTextLgRegular
 import com.example.pauze.ui.theme.bodyTextMdBold
-import com.example.pauze.ui.theme.bodyTextXlBold
 import com.example.pauze.ui.theme.bodyTextMdRegular
+import com.example.pauze.ui.theme.bodyTextXlBold
 import com.example.pauze.ui.theme.headingMdBold
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class PauzeTodayConditionActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -70,7 +77,7 @@ class PauzeTodayConditionActivity : ComponentActivity() {
 fun PauzeTodayCondition(
     modifier: Modifier = Modifier,
     onExitClick: () -> Unit = {},
-    viewModel: PauzeTodayConditionViewModel = viewModel<PauzeTodayConditionViewModel>()
+    viewModel: PauzeTodayConditionViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
     val conditionState by viewModel.state.collectAsState()
@@ -101,6 +108,8 @@ fun PauzeTodayCondition(
     if (conditionState.showResult) {
         PauzeTodayConditionResult(
             score = conditionState.sensitivityScore,
+            sensitivityLevel = conditionState.sensitivityLevel
+                ?: conditionState.sensitivityScore.toSensitivityLevel(),
             onHomeClick = viewModel::navigateToMainActivity,
             onDetailClick = viewModel::navigateToMainActivity,
             onPauzeStartClick = viewModel::navigateToPauzeStartActivity
@@ -167,6 +176,18 @@ fun PauzeTodayCondition(
 
         Spacer(modifier = Modifier.weight(1f))
 
+        conditionState.submissionError?.let { message ->
+            Text(
+                text = message,
+                style = bodyTextMdRegular,
+                color = AppTheme.palette.secondary.getColor(3),
+                textAlign = TextAlign.Center,
+                modifier = Modifier
+                    .width(312.dp)
+                    .padding(bottom = 12.dp)
+            )
+        }
+
         Row(
             modifier = Modifier
                 .width(312.dp)
@@ -180,7 +201,14 @@ fun PauzeTodayCondition(
                 onClick = viewModel::moveToPreviousQuestion
             )
             ConditionNavigationButton(
-                text = "다음",
+                text = if (
+                    conditionState.isSubmitting &&
+                    conditionState.currentQuestionIndex == conditionQuestions.lastIndex
+                ) {
+                    "저장 중..."
+                } else {
+                    "다음"
+                },
                 enabled = conditionState.isNextEnabled,
                 modifier = Modifier.weight(1f),
                 onClick = viewModel::moveToNextQuestion
@@ -206,20 +234,17 @@ fun PauzeTodayCondition(
 @Composable
 private fun PauzeTodayConditionResult(
     score: Int,
+    sensitivityLevel: SensitivityLevel,
     onHomeClick: () -> Unit,
     onDetailClick: () -> Unit,
     onPauzeStartClick: () -> Unit
 ) {
     val normalizedScore = score.coerceIn(0, 100)
-    val sensitivityLevel = when (normalizedScore) {
-        in 0..39 -> "낮음"
-        in 40..69 -> "보통"
-        else -> "높음"
-    }
-    val sensitivityLevelColor = when (normalizedScore) {
-        in 0..39 -> AppTheme.palette.primary.getColor(3)
-        in 40..69 -> AppTheme.palette.tertiary.getColor(3)
-        else -> AppTheme.palette.secondary.getColor(3)
+    val sensitivityLevelText = sensitivityLevel.label
+    val sensitivityLevelColor = when (sensitivityLevel) {
+        SensitivityLevel.LOW -> AppTheme.palette.primary.getColor(3)
+        SensitivityLevel.NORMAL -> AppTheme.palette.tertiary.getColor(3)
+        SensitivityLevel.HIGH -> AppTheme.palette.secondary.getColor(3)
     }
 
     Column(
@@ -269,7 +294,7 @@ private fun PauzeTodayConditionResult(
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = sensitivityLevel,
+                    text = sensitivityLevelText,
                     style = bodyTextLgBold,
                     color = sensitivityLevelColor
                 )
@@ -376,9 +401,30 @@ private fun ResultActionButton(
 @Preview(showBackground = true, device = "spec:width=360dp,height=800dp,dpi=441")
 @Composable
 private fun PauzeTodayConditionPreview() {
-    MainPaletteTheme {
-        PauzeTodayCondition()
+    val previewViewModel = remember {
+        PauzeTodayConditionViewModel(PreviewTodayConditionRepository)
     }
+
+    MainPaletteTheme {
+        PauzeTodayCondition(viewModel = previewViewModel)
+    }
+}
+
+private object PreviewTodayConditionRepository : TodayConditionRepository {
+    override suspend fun createTodayCondition(
+        request: CreateTodayConditionRequest
+    ): CreateTodayConditionResult = CreateTodayConditionResult(
+        conditionId = 1,
+        sensitivityScore = 53,
+        sensitivityLevel = SensitivityLevel.NORMAL,
+        triggerCodes = emptyList()
+    )
+}
+
+private fun Int.toSensitivityLevel(): SensitivityLevel = when (coerceIn(0, 100)) {
+    in 0..39 -> SensitivityLevel.LOW
+    in 40..69 -> SensitivityLevel.NORMAL
+    else -> SensitivityLevel.HIGH
 }
 
 @Composable

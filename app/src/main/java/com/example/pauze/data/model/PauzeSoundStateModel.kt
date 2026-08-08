@@ -1,24 +1,23 @@
 package com.example.pauze.data.model
 
-import com.example.pauze.data.dummies.Sounds
-
 enum class SoundStashTab {
     LIKED,
     SAVED
 }
 
 data class PauzeSoundState(
-    val sounds: List<SoundItem> = Sounds.items,
+    val sounds: List<SoundItem> = emptyList(),
+    val categorySounds: List<SoundItem>? = null,
     val searchQuery: String = "",
-    val selectedCategory: String = "전체",
+    val selectedCategory: SoundCategory = SoundCategory.ALL,
     val stashSearchQuery: String = "",
-    val selectedStashTab: SoundStashTab = SoundStashTab.LIKED
+    val selectedStashTab: SoundStashTab = SoundStashTab.LIKED,
+    val isLoading: Boolean = false,
+    val errorMessage: String? = null
 ) {
     val filteredSounds: List<SoundItem>
-        get() = sounds.filter { sound ->
-            val matchesCategory = selectedCategory == "전체" || sound.category == selectedCategory
-            val matchesSearch = sound.title.contains(searchQuery, ignoreCase = true)
-            matchesCategory && matchesSearch
+        get() = (categorySounds ?: sounds).filter { sound ->
+            sound.title.contains(searchQuery, ignoreCase = true)
         }
 
     val filteredStashSounds: List<SoundItem>
