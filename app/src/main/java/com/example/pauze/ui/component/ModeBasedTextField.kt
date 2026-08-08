@@ -54,6 +54,7 @@ fun ModeBasedTextField(
     onValueChanged: (String) -> Unit,
     imeAction: ImeAction,
     commentText: String? = null,
+    isError: Boolean = false,
     checkPasswordSame: () -> Boolean = { true },
     onCheckClick: () -> Unit = {},
     checkClickValue: () -> Boolean = { false }
@@ -75,6 +76,7 @@ fun ModeBasedTextField(
             .fillMaxWidth().border(
                 width = 1.dp,
                 color = when {
+                    isError -> AppTheme.palette.secondary.getColor(4)
                     value == "" -> AppTheme.palette.gray.getColor(6)
                     mode == TextFieldMode.Verif && isFocused -> AppTheme.palette.primary.getColor(3)
                     (mode == TextFieldMode.UserName && (value.length == 1
@@ -218,7 +220,7 @@ fun ModeBasedTextField(
         Spacer(modifier = Modifier.height(4.dp))
         Text(
             commentText,
-            color = AppTheme.palette.gray.getColor(5),
+            color = if (isError) AppTheme.palette.secondary.getColor(4) else AppTheme.palette.gray.getColor(5),
             style = bodyTextSmRegular
         )
     }

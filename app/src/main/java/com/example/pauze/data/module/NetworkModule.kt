@@ -1,6 +1,10 @@
 package com.example.pauze.data.module
 
+import com.example.pauze.BuildConfig
+import com.example.pauze.data.service.CurationService
+import com.example.pauze.data.service.MyPageService
 import com.example.pauze.data.service.ReportService
+import com.example.pauze.data.service.TodayConditionService
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -25,7 +29,9 @@ object NetworkModule {
     @Provides
     @Singleton
     fun provideLoggingInterceptor(): HttpLoggingInterceptor =
-        HttpLoggingInterceptor().apply { level = HttpLoggingInterceptor.Level.BODY }
+        HttpLoggingInterceptor().apply {
+            level = if (BuildConfig.DEBUG) HttpLoggingInterceptor.Level.BODY else HttpLoggingInterceptor.Level.NONE
+        }
 
     @Provides
     @Singleton
@@ -55,4 +61,24 @@ object NetworkModule {
     @Singleton
     fun provideReportService(@PauzeBaseUrl retrofit: Retrofit) : ReportService = retrofit.create(
         ReportService::class.java)
+
+    //마이페이지
+    @Provides
+    @Singleton
+    fun provideMyPageService(@PauzeBaseUrl retrofit: Retrofit) : MyPageService = retrofit.create(
+        MyPageService::class.java)
+
+    // 큐레이션
+    @Provides
+    @Singleton
+    fun provideCurationService(
+        @PauzeBaseUrl retrofit: Retrofit
+    ): CurationService = retrofit.create(CurationService::class.java)
+
+    // 오늘의 컨디션
+    @Provides
+    @Singleton
+    fun provideTodayConditionService(
+        @PauzeBaseUrl retrofit: Retrofit
+    ): TodayConditionService = retrofit.create(TodayConditionService::class.java)
 }

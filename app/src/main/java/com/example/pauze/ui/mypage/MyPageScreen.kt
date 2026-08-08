@@ -1,53 +1,94 @@
 package com.example.pauze.ui.mypage
 
+import android.Manifest
+import android.content.Intent
+import android.net.Uri
+import android.os.Build
+import android.provider.Settings
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.core.app.NotificationManagerCompat
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.LifecycleResumeEffect
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.example.pauze.BottomNavDestination
 import com.example.pauze.R
-import com.example.pauze.data.repository.UserProfileRepository
+import com.example.pauze.ui.component.Dialog
+import com.example.pauze.ui.component.LoginRequiredDialog
 import com.example.pauze.ui.component.TopBar
+import com.example.pauze.ui.login.LoginActivity
 import com.example.pauze.ui.mypage.component.MySettings
 import com.example.pauze.ui.mypage.component.MySettingsVariant
+import com.example.pauze.ui.mypage.component.ProfileCard
+import com.example.pauze.ui.mypage.component.SettingsSection
+import com.example.pauze.ui.mypage.component.StatCard
 import com.example.pauze.ui.theme.AppTheme
 import com.example.pauze.ui.theme.PAUZEAndroidTheme
 import com.example.pauze.ui.theme.bodyTextLgMedium
-import com.example.pauze.ui.theme.bodyTextMdRegular
-import com.example.pauze.ui.theme.bodyTextSmMedium
-import com.example.pauze.ui.theme.bodyTextXlMedium
-import com.example.pauze.ui.theme.headingSmBold
 
 
 @Composable
 fun MyPageScreen(
     navController: NavController,
-    viewModel: MyPageViewModel = viewModel()
+    isGuest: Boolean = true,
+    viewModel: MyPageViewModel = hiltViewModel()
 ){
+    val context = LocalContext.current
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    var showGuestDialog by remember(isGuest) { mutableStateOf(isGuest) }
+    // 알림 설정 권한
+    var showNotificationSettingsDialog by remember { mutableStateOf(false) }
+    var pendingToggle by remember { mutableStateOf<(() -> Unit)?>(null) }
+
+    val notificationPermissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        if (granted) pendingToggle?.invoke() else showNotificationSettingsDialog = true
+        pendingToggle = null
+    }
+
+    fun requireNotificationPermission(onGranted: () -> Unit) {
+        if (NotificationManagerCompat.from(context).areNotificationsEnabled()) {
+            onGranted()
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            pendingToggle = onGranted
+            notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+        } else {
+            showNotificationSettingsDialog = true
+        }
+    }
+
+    fun onNotificationToggle(isOn: Boolean, toggle: () -> Unit) {
+        if (isOn) toggle() else requireNotificationPermission(toggle)
+    }
+
+    LifecycleResumeEffect(isGuest) {
+        if (!isGuest) viewModel.refresh()
+        onPauseOrDispose { }
+    }
+
     LaunchedEffect(viewModel.effect) {
         viewModel.effect.collect { effect ->
             when (effect) {
@@ -72,8 +113,9 @@ fun MyPageScreen(
             verticalArrangement = Arrangement.spacedBy(48.dp)
         ) {
             ProfileCard(
-                nickname = UserProfileRepository.nickname,
-                loginProvider = "카카오 계정 연동",
+                nickname = uiState.data.profile?.nickname ?:"",
+                profileImageUrl = uiState.data.profile?.profileImageUrl,
+                loginProvider = if ("KAKAO" in (uiState.data.profile?.socialTypes ?: emptyList())) "카카오 계정 연동" else null,
                 onClick = viewModel::onProfileClick
             )
 
@@ -88,11 +130,13 @@ fun MyPageScreen(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    StatCard(label = "총 측정", value = "24회", modifier = Modifier.weight(1f))
-                    StatCard(label = "연속 측정", value = "5일", modifier = Modifier.weight(1f))
+                    StatCard(label = "총 측정", value = "${uiState.data.stats?.totalMeasurements ?: 0}회", modifier = Modifier.weight(1f))
+                    StatCard(label = "연속 측정", value = "${uiState.data.stats?.consecutiveDays ?: 0}일", modifier = Modifier.weight(1f))
                     StatCard(
                         label = "평균 민감지수",
-                        value = "58점",
+                        value = uiState.data.stats?.averageSensitivity?.let {
+                            "${if (it % 1.0 == 0.0) it.toInt().toString() else "%.1f".format(java.util.Locale.KOREA, it)}점"
+                        } ?: "-",
                         valueColor = AppTheme.palette.tertiary.getColor(3),
                         modifier = Modifier.weight(1f)
                     )
@@ -105,14 +149,14 @@ fun MyPageScreen(
                     caption = "매일 컨디션 입력 알림",
                     variant = MySettingsVariant.Toggle,
                     toggleSelected = viewModel.dailyReminder,
-                    onClick = viewModel::toggleDailyReminder
+                    onClick = { onNotificationToggle(viewModel.dailyReminder, viewModel::toggleDailyReminder) }
                 )
                 MySettings(
                     title = "예민함 위험 알림",
                     caption = "수치가 높을 때 즉시 알림",
                     variant = MySettingsVariant.Toggle,
                     toggleSelected = viewModel.riskAlert,
-                    onClick = viewModel::toggleRiskAlert
+                    onClick = { onNotificationToggle(viewModel.riskAlert, viewModel::toggleRiskAlert) }
                 )
             }
 
@@ -161,93 +205,50 @@ fun MyPageScreen(
         }
     }
 
-}
-
-@Composable
-private fun ProfileCard(
-    nickname: String,
-    loginProvider: String,
-    onClick: () -> Unit
-){
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(78.dp)
-            .background(color = AppTheme.palette.gray.getColor(8), shape = RoundedCornerShape(16.dp))
-            .clickable(onClick = onClick)
-            .padding(12.dp),
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ){
-        Box(
-            modifier = Modifier
-                .size(50.dp)
-                .background(color = AppTheme.palette.gray.getColor(7), shape = CircleShape),
-            contentAlignment = Alignment.Center
-        ){
-            Icon(
-                painter = painterResource(R.drawable.ic_person),
-                contentDescription = "프로필 이미지",
-                tint = AppTheme.palette.gray.getColor(8),
-                modifier = Modifier.size(width = 33.dp, height = 42.dp)
-            )
-        }
-
-        Column(
-            modifier = Modifier.weight(1f),
-            verticalArrangement = Arrangement.spacedBy(4.dp)
-        ) {
-            Text(text = nickname,  style = bodyTextXlMedium, color = AppTheme.palette.gray.getColor(2))
-            Text(text = loginProvider, style= bodyTextMdRegular, color = AppTheme.palette.gray.getColor(5))
-        }
-        Icon(
-            painter = painterResource(R.drawable.ic_arrow_forward),
-            contentDescription = "이동하기 >",
-            tint = AppTheme.palette.gray.getColor(5)
+    if (showGuestDialog){
+        LoginRequiredDialog(
+            onDismissRequest = {
+                showGuestDialog = false
+                navController.navigate(BottomNavDestination.Home){
+                    popUpTo(BottomNavDestination.Home)
+                }
+            },
+            onLoginClick = {
+                showGuestDialog = false
+                context.startActivity(Intent(context, LoginActivity::class.java))
+            }
         )
     }
-}
 
-@Composable
-private fun StatCard(
-    label: String,
-    value: String,
-    modifier: Modifier = Modifier,
-    valueColor: Color = AppTheme.palette.gray.getColor(2),
-){
-    Column(
-        modifier = modifier
-            .height(78.dp)
-            .background(color = AppTheme.palette.gray.getColor(8), shape = RoundedCornerShape(16.dp))
-            .border(width = 1.dp, color = AppTheme.palette.gray.getColor(7), shape = RoundedCornerShape(16.dp))
-            .padding(horizontal = 12.dp, vertical = 8.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp, alignment = Alignment.CenterVertically)
-    ) {
-        Text(text = label, style = bodyTextSmMedium, color = AppTheme.palette.gray.getColor(4))
-        Text(text = value, style = headingSmBold, color = valueColor)
-    }
-}
-
-@Composable
-private fun SettingsSection(
-    title: String,
-    content: @Composable ColumnScope.() -> Unit
-){
-    Column {
-        Text(
-            text = title,
-            style = bodyTextLgMedium,
-            color = AppTheme.palette.gray.getColor(4),
-            modifier = Modifier.padding(vertical = 12.dp)
+    if (showNotificationSettingsDialog) {
+        Dialog(
+            title = "알림 권한이 필요해요",
+            content = "설정에서 알림을 허용해주세요",
+            btnCancel = "취소",
+            btnContinue = "설정으로 이동",
+            onDismissRequest = { showNotificationSettingsDialog = false },
+            onContinue = {
+                showNotificationSettingsDialog = false
+                val intent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).apply {
+                        putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
+                    }
+                } else {
+                    Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                        data = Uri.fromParts("package", context.packageName, null)
+                    }
+                }
+                context.startActivity(intent)
+            }
         )
-        content()
     }
+
 }
 
 @Preview(showBackground = true, widthDp = 360, heightDp = 800)
 @Composable
 private fun MyPagePreview(){
     PAUZEAndroidTheme(darkTheme = true, dynamicColor = false){
-        MyPageScreen(navController = rememberNavController())
+        MyPageScreen(navController = rememberNavController(), true)
     }
 }

@@ -1,7 +1,11 @@
 package com.example.pauze.ui.mypage
 
+import com.example.pauze.data.model.AccountInfoState
 import com.example.pauze.data.model.BaseUiState
+import com.example.pauze.data.repository.MyPageRepository
 import com.example.pauze.ui.BaseViewModel
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 
 sealed interface AccountInfoEffect {
     object NavigateToBack : AccountInfoEffect
@@ -10,11 +14,33 @@ sealed interface AccountInfoEffect {
     object NavigateToWithdraw : AccountInfoEffect
 }
 
-class AccountInfoViewModel : BaseViewModel<AccountInfoEffect, Unit>(
-    uiState = BaseUiState(data = Unit)
+@HiltViewModel
+class AccountInfoViewModel @Inject constructor(
+    private val myPageRepository: MyPageRepository
+) : BaseViewModel<AccountInfoEffect, AccountInfoState>(
+    uiState = BaseUiState(data = AccountInfoState())
 ) {
+
+    init {
+        launch {
+            val profile = myPageRepository.getProfile()
+            updateData {
+                it.copy(
+                    email = profile.email,
+                    joinedAt = profile.joinedAt,
+                    socialTypes = profile.socialTypes
+                )
+            }
+        }
+    }
+
     fun onBackClick() = sendEffect(AccountInfoEffect.NavigateToBack)
     fun onLogoutClick() = sendEffect(AccountInfoEffect.NavigateToLogout)
     fun onWithdrawClick() = sendEffect(AccountInfoEffect.ShowWithdrawDialog)
-    fun onWithdrawConfirm() = sendEffect(AccountInfoEffect.NavigateToWithdraw)
+    fun onWithdrawConfirm() {
+        launch {
+            myPageRepository.withdraw()
+            sendEffect(AccountInfoEffect.NavigateToWithdraw)
+        }
+    }
 }

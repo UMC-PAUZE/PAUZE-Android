@@ -102,7 +102,9 @@ fun PauzeSoundStashScreen(
 @Preview(showBackground = true, device = "spec:width=360dp,height=800dp,dpi=441")
 @Composable
 private fun PauzeSoundStashScreenPreview() {
-    val previewViewModel = remember { PauzeSoundViewModel() }
+    val previewViewModel = remember {
+        PauzeSoundViewModel(repository = PreviewPauzeSoundRepository)
+    }
 
     MainPaletteTheme {
         PauzeSoundStashScreen(viewModel = previewViewModel)
