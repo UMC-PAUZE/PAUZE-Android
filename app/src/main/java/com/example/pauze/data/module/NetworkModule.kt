@@ -1,6 +1,7 @@
 package com.example.pauze.data.module
 
 import com.example.pauze.BuildConfig
+import com.example.pauze.data.service.AudioGuideService
 import com.example.pauze.data.service.CurationService
 import com.example.pauze.data.service.MyPageService
 import com.example.pauze.data.service.ReportService
@@ -81,4 +82,11 @@ object NetworkModule {
     fun provideTodayConditionService(
         @PauzeBaseUrl retrofit: Retrofit
     ): TodayConditionService = retrofit.create(TodayConditionService::class.java)
+
+    // 청각 안정
+    @Provides
+    @Singleton
+    fun provideAudioGuideService(
+        @PauzeBaseUrl retrofit: Retrofit
+    ): AudioGuideService = retrofit.create(AudioGuideService::class.java)
 }

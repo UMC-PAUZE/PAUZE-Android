@@ -1,5 +1,7 @@
 package com.example.pauze.data.model
 
+import kotlinx.serialization.Serializable
+
 data class SoundItem(
     val id: String,
     val title: String,
@@ -16,3 +18,26 @@ enum class SoundCategory(val displayName: String) {
     ASMR("ASMR"),
     NOISE("노이즈")
 }
+
+@Serializable
+data class AudioGuideDto(
+    val audioId: Long,
+    val audioTitle: String,
+    val categoryId: Double,
+    val categoryName: String,
+    val fileUrl: String,
+    val isLiked: Boolean = false
+)
+
+@Serializable
+data class AudioSaveResultDto(
+    val audioId: Long,
+    val isSaved: Boolean,
+    val audioUrl: String
+)
+
+@Serializable
+data class AudioLikeToggleResultDto(
+    val audioId: Long,
+    val isLiked: Boolean
+)

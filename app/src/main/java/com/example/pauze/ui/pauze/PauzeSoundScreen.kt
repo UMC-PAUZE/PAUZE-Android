@@ -1,8 +1,6 @@
 package com.example.pauze.ui.pauze
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -17,7 +15,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -30,19 +27,19 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.pauze.R
 import com.example.pauze.data.dummies.Sounds
+import com.example.pauze.data.model.AudioGuideDto
+import com.example.pauze.data.model.AudioLikeToggleResultDto
+import com.example.pauze.data.model.AudioSaveResultDto
 import com.example.pauze.data.model.SoundCategory
 import com.example.pauze.data.model.SoundItem
 import com.example.pauze.data.repository.PauzeSoundRepository
-import com.example.pauze.data.repository.SoundLikeResult
-import com.example.pauze.data.repository.SoundSaveResult
+import com.example.pauze.ui.component.Chips
 import com.example.pauze.ui.component.SearchBar
 import com.example.pauze.ui.component.SoundItem
 import com.example.pauze.ui.component.TopBar
@@ -54,14 +51,12 @@ import com.example.pauze.ui.theme.bodyTextMdMedium
 fun PauzeSoundScreen(
     modifier: Modifier = Modifier,
     onBackClick: () -> Unit = {},
-    viewModel: PauzeSoundViewModel = viewModel<PauzeSoundViewModel>()
+    viewModel: PauzeSoundViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
     var currentDestination by remember { mutableStateOf(SoundDestination.LIST) }
     var detailOrigin by remember { mutableStateOf(SoundDestination.LIST) }
     var selectedSoundId by remember { mutableStateOf<String?>(null) }
-    val categories = SoundCategory.entries
-
     LaunchedEffect(viewModel.effect) {
         viewModel.effect.collect { effect ->
             when (effect) {
@@ -131,38 +126,20 @@ fun PauzeSoundScreen(
                         .padding(top = 12.dp),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    categories.forEach { category ->
-                        val isSelected = state.selectedCategory == category
-                        val buttonWidth = when (category) {
+                    SoundCategory.entries.forEach { category ->
+                        val chipWidth = when (category) {
                             SoundCategory.ALL -> 50.dp
                             SoundCategory.NATURE_SOUND -> 75.dp
                             SoundCategory.ASMR -> 62.dp
                             SoundCategory.NOISE -> 63.dp
                         }
-                        Box(
-                            modifier = Modifier
-                                .size(buttonWidth, 34.dp)
-                                .clip(RoundedCornerShape(20.dp))
-                                .background(
-                                    if (isSelected) AppTheme.palette.primary.getColor(3)
-                                    else Color.Transparent
-                                )
-                                .border(
-                                    if (isSelected) BorderStroke(0.dp, Color.Transparent)
-                                    else BorderStroke(1.dp, AppTheme.palette.gray.getColor(7)),
-                                    RoundedCornerShape(20.dp)
-                                )
-                                .clickable { viewModel.selectCategory(category) }
-                                .padding(horizontal = 8.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = category.displayName,
-                                style = bodyTextMdMedium,
-                                color = if (isSelected) AppTheme.palette.base.getColor(0)
-                                else AppTheme.palette.gray.getColor(4)
-                            )
-                        }
+
+                        Chips(
+                            text = category.displayName,
+                            isSelected = state.selectedCategory == category,
+                            onClick = { viewModel.selectCategory(category) },
+                            modifier = Modifier.size(width = chipWidth, height = 34.dp)
+                        )
                     }
                 }
 
@@ -305,14 +282,33 @@ private fun PauzeSoundScreenPreview() {
 }
 
 internal object PreviewPauzeSoundRepository : PauzeSoundRepository {
-    override suspend fun getAllSounds(): List<SoundItem> = Sounds.items
+    override suspend fun getAllSounds(): List<AudioGuideDto> =
+        Sounds.items.map(SoundItem::toAudioGuideDto)
 
-    override suspend fun getSoundsByCategory(category: SoundCategory): List<SoundItem> =
-        Sounds.items.filter { it.category == category.displayName }
+    override suspend fun getSoundsByCategory(category: SoundCategory): List<AudioGuideDto> =
+        Sounds.items
+            .filter { it.category == category.displayName }
+            .map(SoundItem::toAudioGuideDto)
 
-    override suspend fun toggleLike(soundId: String): SoundLikeResult =
-        SoundLikeResult(soundId = soundId, isLiked = true)
+    override suspend fun toggleLike(soundId: String): AudioLikeToggleResultDto =
+        AudioLikeToggleResultDto(
+            audioId = soundId.toLongOrNull() ?: 0L,
+            isLiked = true
+        )
 
-    override suspend fun saveSound(soundId: String): SoundSaveResult =
-        SoundSaveResult(soundId = soundId, isSaved = true, audioUrl = "")
+    override suspend fun saveSound(soundId: String): AudioSaveResultDto =
+        AudioSaveResultDto(
+            audioId = soundId.toLongOrNull() ?: 0L,
+            isSaved = true,
+            audioUrl = ""
+        )
 }
+
+private fun SoundItem.toAudioGuideDto(): AudioGuideDto = AudioGuideDto(
+    audioId = id.toLongOrNull() ?: 0L,
+    audioTitle = title,
+    categoryId = 0.0,
+    categoryName = category,
+    fileUrl = audioUrl,
+    isLiked = isLiked
+)
