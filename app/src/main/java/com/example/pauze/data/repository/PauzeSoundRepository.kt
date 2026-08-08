@@ -5,9 +5,9 @@ import com.example.pauze.data.model.AudioGuideDto
 import com.example.pauze.data.model.SoundCategory
 import com.example.pauze.data.model.SoundItem
 import com.example.pauze.data.model.getOrThrow
-import com.example.pauze.data.remote.PauzeApiClient
 import com.example.pauze.data.remote.PauzeAuthSession
 import com.example.pauze.data.service.AudioGuideService
+import javax.inject.Inject
 
 data class SoundLikeResult(
     val soundId: String,
@@ -27,8 +27,8 @@ interface PauzeSoundRepository {
     suspend fun saveSound(soundId: String): SoundSaveResult
 }
 
-class DefaultPauzeSoundRepository(
-    private val service: AudioGuideService = PauzeApiClient.audioGuideService
+class DefaultPauzeSoundRepository @Inject constructor(
+    private val service: AudioGuideService
 ) : PauzeSoundRepository {
     override suspend fun getAllSounds(): List<SoundItem> =
         service.getAllGuides(PauzeAuthSession.optionalBearerToken())

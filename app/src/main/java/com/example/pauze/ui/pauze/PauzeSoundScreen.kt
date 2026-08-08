@@ -35,7 +35,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.pauze.R
 import com.example.pauze.data.dummies.Sounds
 import com.example.pauze.data.model.SoundCategory
@@ -54,7 +54,7 @@ import com.example.pauze.ui.theme.bodyTextMdMedium
 fun PauzeSoundScreen(
     modifier: Modifier = Modifier,
     onBackClick: () -> Unit = {},
-    viewModel: PauzeSoundViewModel = viewModel<PauzeSoundViewModel>()
+    viewModel: PauzeSoundViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
     var currentDestination by remember { mutableStateOf(SoundDestination.LIST) }

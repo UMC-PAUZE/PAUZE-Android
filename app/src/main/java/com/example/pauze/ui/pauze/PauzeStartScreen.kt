@@ -49,8 +49,10 @@ import com.example.pauze.ui.theme.bodyTextMdRegular
 import com.example.pauze.ui.theme.bodyTextSmRegular
 import com.example.pauze.ui.theme.bodyTextXlBold
 import com.example.pauze.ui.theme.headingMdBold
+import dagger.hilt.android.AndroidEntryPoint
 
 
+@AndroidEntryPoint
 class PauzeStartActivity: ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

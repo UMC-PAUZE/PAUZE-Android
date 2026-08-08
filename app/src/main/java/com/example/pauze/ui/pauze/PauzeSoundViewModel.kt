@@ -7,10 +7,11 @@ import com.example.pauze.data.model.SoundCategory
 import com.example.pauze.data.model.SoundItem
 import com.example.pauze.data.model.SoundStashTab
 import com.example.pauze.data.remote.AuthenticationRequiredException
-import com.example.pauze.data.repository.DefaultPauzeSoundRepository
 import com.example.pauze.data.repository.PauzeSoundRepository
 import com.example.pauze.ui.BaseViewModel
+import dagger.hilt.android.lifecycle.HiltViewModel
 import java.io.IOException
+import javax.inject.Inject
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -35,8 +36,9 @@ sealed interface PauzeSoundEffect {
     data class NavigateTo(val destination: SoundDestination) : PauzeSoundEffect
 }
 
-class PauzeSoundViewModel(
-    private val repository: PauzeSoundRepository = DefaultPauzeSoundRepository()
+@HiltViewModel
+class PauzeSoundViewModel @Inject constructor(
+    private val repository: PauzeSoundRepository
 ) : BaseViewModel<PauzeSoundEffect, Unit>(
     uiState = BaseUiState(data = Unit)
 ) {
