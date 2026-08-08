@@ -1,12 +1,12 @@
 package com.example.pauze.data.repository
 
 import com.example.pauze.R
+import com.example.pauze.data.model.AudioGuideDto
 import com.example.pauze.data.model.SoundCategory
 import com.example.pauze.data.model.SoundItem
 import com.example.pauze.data.remote.ApiSuccessResponse
 import com.example.pauze.data.remote.PauzeApiClient
 import com.example.pauze.data.remote.PauzeAuthSession
-import com.example.pauze.data.remote.audio.AudioGuideDto
 import com.example.pauze.data.service.AudioGuideService
 
 data class SoundLikeResult(

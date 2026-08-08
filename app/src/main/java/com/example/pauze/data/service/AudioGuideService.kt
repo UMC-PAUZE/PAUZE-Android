@@ -1,9 +1,9 @@
 package com.example.pauze.data.service
 
 import com.example.pauze.data.remote.ApiSuccessResponse
-import com.example.pauze.data.remote.audio.AudioGuideDto
-import com.example.pauze.data.remote.audio.AudioLikeToggleResultDto
-import com.example.pauze.data.remote.audio.AudioSaveResultDto
+import com.example.pauze.data.model.AudioGuideDto
+import com.example.pauze.data.model.AudioLikeToggleResultDto
+import com.example.pauze.data.model.AudioSaveResultDto
 import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.PATCH
