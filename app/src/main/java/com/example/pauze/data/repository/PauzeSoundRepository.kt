@@ -4,7 +4,7 @@ import com.example.pauze.R
 import com.example.pauze.data.model.AudioGuideDto
 import com.example.pauze.data.model.SoundCategory
 import com.example.pauze.data.model.SoundItem
-import com.example.pauze.data.remote.ApiSuccessResponse
+import com.example.pauze.data.model.getOrThrow
 import com.example.pauze.data.remote.PauzeApiClient
 import com.example.pauze.data.remote.PauzeAuthSession
 import com.example.pauze.data.service.AudioGuideService
@@ -32,7 +32,7 @@ class DefaultPauzeSoundRepository(
 ) : PauzeSoundRepository {
     override suspend fun getAllSounds(): List<SoundItem> =
         service.getAllGuides(PauzeAuthSession.optionalBearerToken())
-            .requireResult()
+            .getOrThrow()
             .map(AudioGuideDto::toSoundItem)
 
     override suspend fun getSoundsByCategory(category: SoundCategory): List<SoundItem> {
@@ -41,14 +41,14 @@ class DefaultPauzeSoundRepository(
         return service.getGuidesByCategory(
             categoryCode = category.name,
             authorization = PauzeAuthSession.optionalBearerToken()
-        ).requireResult().map(AudioGuideDto::toSoundItem)
+        ).getOrThrow().map(AudioGuideDto::toSoundItem)
     }
 
     override suspend fun toggleLike(soundId: String): SoundLikeResult {
         val result = service.toggleLike(
             audioId = soundId,
             authorization = PauzeAuthSession.requireBearerToken()
-        ).requireResult()
+        ).getOrThrow()
 
         return SoundLikeResult(
             soundId = result.audioId.toSoundId(),
@@ -60,7 +60,7 @@ class DefaultPauzeSoundRepository(
         val result = service.saveGuide(
             audioId = soundId,
             authorization = PauzeAuthSession.requireBearerToken()
-        ).requireResult()
+        ).getOrThrow()
 
         return SoundSaveResult(
             soundId = result.audioId.toSoundId(),
@@ -86,13 +86,3 @@ private fun AudioGuideDto.toSoundItem(): SoundItem = SoundItem(
 
 private fun Double.toSoundId(): String =
     if (this % 1.0 == 0.0) toLong().toString() else toString()
-
-private fun <T> ApiSuccessResponse<T>.requireResult(): T {
-    if (!isSuccess) throw PauzeApiException(code = code, message = message)
-    return result
-}
-
-class PauzeApiException(
-    val code: String,
-    override val message: String
-) : IllegalStateException(message)

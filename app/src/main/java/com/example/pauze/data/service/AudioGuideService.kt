@@ -1,9 +1,9 @@
 package com.example.pauze.data.service
 
-import com.example.pauze.data.remote.ApiSuccessResponse
 import com.example.pauze.data.model.AudioGuideDto
 import com.example.pauze.data.model.AudioLikeToggleResultDto
 import com.example.pauze.data.model.AudioSaveResultDto
+import com.example.pauze.data.model.BaseResponse
 import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.PATCH
@@ -15,23 +15,23 @@ interface AudioGuideService {
     @GET("audio-guides")
     suspend fun getAllGuides(
         @Header("Authorization") authorization: String?
-    ): ApiSuccessResponse<List<AudioGuideDto>>
+    ): BaseResponse<List<AudioGuideDto>>
 
     @GET("audio-guides/categories")
     suspend fun getGuidesByCategory(
         @Query("categoryCode") categoryCode: String,
         @Header("Authorization") authorization: String?
-    ): ApiSuccessResponse<List<AudioGuideDto>>
+    ): BaseResponse<List<AudioGuideDto>>
 
     @POST("audio-guides/{audioId}/saves")
     suspend fun saveGuide(
         @Path("audioId") audioId: String,
         @Header("Authorization") authorization: String
-    ): ApiSuccessResponse<AudioSaveResultDto>
+    ): BaseResponse<AudioSaveResultDto>
 
     @PATCH("audio-guides/{audioId}/likes")
     suspend fun toggleLike(
         @Path("audioId") audioId: String,
         @Header("Authorization") authorization: String
-    ): ApiSuccessResponse<AudioLikeToggleResultDto>
+    ): BaseResponse<AudioLikeToggleResultDto>
 }
