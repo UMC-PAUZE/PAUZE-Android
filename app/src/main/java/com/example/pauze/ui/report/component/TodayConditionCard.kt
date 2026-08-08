@@ -15,7 +15,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.pauze.data.model.Condition
-import com.example.pauze.data.model.OverallIndex
+import com.example.pauze.data.model.SensitivityLevel
 import com.example.pauze.ui.component.Button
 import com.example.pauze.ui.component.ButtonSize
 import com.example.pauze.ui.component.SensitivityScoreBar
@@ -41,9 +41,9 @@ fun TodayConditionCard(
                     color = AppTheme.palette.gray.getColor(2)
                 )
                 Text(
-                    text = condition.index.label,
+                    text = condition.sensitivity.label,
                     style = bodyTextLgBold,
-                    color = condition.index.toColor()
+                    color = condition.sensitivity.toColor()
                 )
             }
         } else {
@@ -83,8 +83,8 @@ fun TodayConditionCard(
 }
 
 @Composable
-private fun OverallIndex.toColor(): Color = when (this) {
-    OverallIndex.Low -> AppTheme.palette.primary.getColor(4)
-    OverallIndex.Moderate -> AppTheme.palette.tertiary.getColor(3)
-    OverallIndex.High -> AppTheme.palette.secondary.getColor(3)
+private fun SensitivityLevel.toColor(): Color = when (this) {
+    SensitivityLevel.LOW -> AppTheme.palette.primary.getColor(4)
+    SensitivityLevel.NORMAL -> AppTheme.palette.tertiary.getColor(3)
+    SensitivityLevel.HIGH -> AppTheme.palette.secondary.getColor(3)
 }

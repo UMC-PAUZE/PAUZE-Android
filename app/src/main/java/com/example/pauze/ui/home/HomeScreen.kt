@@ -40,11 +40,8 @@ import androidx.navigation.NavController
 import com.example.pauze.BottomNavDestination
 import com.example.pauze.ui.theme.AppTheme
 import com.example.pauze.R
-import com.example.pauze.data.model.Activity
 import com.example.pauze.data.model.Condition
-import com.example.pauze.data.model.Noise
-import com.example.pauze.data.model.OverallIndex
-import com.example.pauze.data.model.Sleeping
+import com.example.pauze.data.model.SensitivityLevel
 import com.example.pauze.ui.component.Button
 import com.example.pauze.ui.component.SensitivityScoreBar
 import com.example.pauze.ui.component.Destination
@@ -167,12 +164,12 @@ fun ConditionBox(condition: Condition?, boxPadding: Int, navigateToReport: () ->
                     Text("어제 민감 지수", style = bodyTextLgRegular, color = AppTheme.palette.gray.getColor(2))
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        condition.index.label,
+                        condition.sensitivity.label,
                         style = bodyTextLgBold,
-                        color = when(condition.index){
-                            OverallIndex.Low -> AppTheme.palette.primary.getColor(3)        // change later
-                            OverallIndex.Moderate -> AppTheme.palette.tertiary.getColor(3)  // change later
-                            OverallIndex.High -> AppTheme.palette.secondary.getColor(3)     // change later
+                        color = when(condition.sensitivity){
+                            SensitivityLevel.LOW -> AppTheme.palette.primary.getColor(3)        // change later
+                            SensitivityLevel.NORMAL -> AppTheme.palette.tertiary.getColor(3)  // change later
+                            SensitivityLevel.HIGH -> AppTheme.palette.secondary.getColor(3)     // change later
                         }
                     )
                 }
