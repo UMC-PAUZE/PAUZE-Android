@@ -3,17 +3,16 @@ package com.example.pauze.ui.curation.component
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -38,17 +37,15 @@ fun CurationPostCard(
     onPostClick: (Long) -> Unit = {},
     onLikeClick: (Long) -> Unit = {},
     onBookmarkClick: (Long) -> Unit = {},
+    onShareClick: (CurationPost) -> Unit = {},
 ) {
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(16.dp))
-            .background(AppTheme.palette.gray.getColor(8))
             .clickable {
                 onPostClick(post.postId)
             }
-            .padding(20.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
+            .padding(vertical = 16.dp),
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -72,7 +69,7 @@ fun CurationPostCard(
                 )
             }
 
-            Spacer(modifier = Modifier.width(12.dp))
+            Spacer(modifier = Modifier.width(8.dp))
 
             Text(
                 text = "${post.readingTimeMinutes}분 읽기",
@@ -82,56 +79,42 @@ fun CurationPostCard(
 
             Spacer(modifier = Modifier.weight(1f))
 
-            IconButton(
-                onClick = {
-                    onBookmarkClick(post.postId)
-                },
-                modifier = Modifier.size(32.dp),
-            ) {
-                Image(
-                    painter = painterResource(
-                        id = if (post.isBookmarked) {
-                            R.drawable.ic_bookmark_on_curation
-                        } else {
-                            R.drawable.ic_bookmark_off_curation
-                        },
-                    ),
-                    contentDescription = if (post.isBookmarked) {
-                        "북마크 취소"
+            Image(
+                painter = painterResource(
+                    id = if (post.isBookmarked) {
+                        R.drawable.ic_bookmark_on_curation
                     } else {
-                        "북마크 추가"
+                        R.drawable.ic_bookmark_off_curation
                     },
-                    modifier = Modifier.size(20.dp),
-                )
-            }
-        }
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
-        ) {
-            CurationThumbnail(
-                thumbnailUrl = post.thumbnailUrl,
-                modifier = Modifier.size(54.dp),
-            )
-
-            Text(
-                text = post.title,
-                modifier = Modifier.weight(1f),
-                style = bodyTextLgBold,
-                color = AppTheme.palette.gray.getColor(2),
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis,
+                ),
+                contentDescription = if (post.isBookmarked) {
+                    "북마크 취소"
+                } else {
+                    "북마크 추가"
+                },
+                modifier = Modifier
+                    .size(20.dp)
+                    .clickable {
+                        onBookmarkClick(post.postId)
+                    },
             )
         }
+
+        Spacer(modifier = Modifier.height(16.dp))
 
         Text(
-            text = if (post.summary.length > 35) {
-                "${post.summary.take(35)}..."
-            } else {
-                post.summary
-            },
+            text = post.title,
+            modifier = Modifier.fillMaxWidth(),
+            style = bodyTextLgBold,
+            color = AppTheme.palette.gray.getColor(2),
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Text(
+            text = post.summary,
             modifier = Modifier.fillMaxWidth(),
             style = bodyTextMdRegular,
             color = AppTheme.palette.gray.getColor(4),
@@ -139,32 +122,31 @@ fun CurationPostCard(
             overflow = TextOverflow.Ellipsis,
         )
 
+        Spacer(modifier = Modifier.height(16.dp))
+
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            IconButton(
-                onClick = {
-                    onLikeClick(post.postId)
-                },
-                modifier = Modifier.size(32.dp),
-            ) {
-                Image(
-                    painter = painterResource(
-                        id = if (post.isLiked) {
-                            R.drawable.ic_heart_on_curation
-                        } else {
-                            R.drawable.ic_heart_off_curation
-                        },
-                    ),
-                    contentDescription = if (post.isLiked) {
-                        "좋아요 취소"
+            Image(
+                painter = painterResource(
+                    id = if (post.isLiked) {
+                        R.drawable.ic_heart_on_curation
                     } else {
-                        "좋아요 추가"
+                        R.drawable.ic_heart_off_curation
                     },
-                    modifier = Modifier.size(20.dp),
-                )
-            }
+                ),
+                contentDescription = if (post.isLiked) {
+                    "좋아요 취소"
+                } else {
+                    "좋아요 추가"
+                },
+                modifier = Modifier
+                    .size(20.dp)
+                    .clickable {
+                        onLikeClick(post.postId)
+                    },
+            )
 
             Spacer(modifier = Modifier.width(4.dp))
 
@@ -175,6 +157,20 @@ fun CurationPostCard(
             )
 
             Spacer(modifier = Modifier.width(12.dp))
+
+            Image(
+                painter = painterResource(
+                    id = R.drawable.ic_share_curation,
+                ),
+                contentDescription = "게시글 공유",
+                modifier = Modifier
+                    .size(20.dp)
+                    .clickable {
+                        onShareClick(post)
+                    },
+            )
+
+            Spacer(modifier = Modifier.weight(1f))
 
             Text(
                 text = formatRelativeTime(post.createdAt),

@@ -20,7 +20,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
@@ -29,6 +29,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -57,6 +58,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.pauze.R
 import com.example.pauze.data.dummies.curationCategories
 import com.example.pauze.data.model.CurationCategory
+import com.example.pauze.data.model.CurationPost
 import com.example.pauze.ui.component.TopBar
 import com.example.pauze.ui.component.LoginRequiredDialog
 import com.example.pauze.ui.curation.component.CurationPostCard
@@ -90,6 +92,10 @@ fun CurationBoardScreen(
 
     var isBookmarkScreenVisible by rememberSaveable {
         mutableStateOf(false)
+    }
+
+    var sharingPost by remember {
+        mutableStateOf<CurationPost?>(null)
     }
 
     var deepLinkUri by remember(activity) {
@@ -220,6 +226,34 @@ fun CurationBoardScreen(
         )
     }
 
+    sharingPost?.let { post ->
+        val shareUrl = createCurationShareUrl(post.postId)
+
+        CurationShareBottomSheet(
+            onDismissRequest = {
+                sharingPost = null
+            },
+            onCopyLinkClick = {
+                activity?.let { context ->
+                    copyCurationLink(
+                        context = context,
+                        shareUrl = shareUrl,
+                    )
+                }
+            },
+            onShareClick = {
+                sharingPost = null
+                activity?.let { context ->
+                    shareCurationPost(
+                        context = context,
+                        post = post,
+                        shareUrl = shareUrl,
+                    )
+                }
+            },
+        )
+    }
+
     if (selectedPost != null) {
         CurationDetailScreen(
             post = selectedPost,
@@ -250,6 +284,9 @@ fun CurationBoardScreen(
             onLikeClick = viewModel::toggleLike,
             onBookmarkClick =
                 viewModel::toggleBookmark,
+            onShareClick = { post ->
+                sharingPost = post
+            },
         )
         return
     }
@@ -271,7 +308,7 @@ fun CurationBoardScreen(
                     Image(
                         painter = painterResource(
                             id = R.drawable
-                                .ic_bookmark_off_curation,
+                                .ic_curation_box,
                         ),
                         contentDescription = "북마크 목록",
                         modifier = Modifier
@@ -337,15 +374,13 @@ fun CurationBoardScreen(
                         end = 20.dp,
                         bottom = 88.dp,
                     ),
-                    verticalArrangement =
-                        Arrangement.spacedBy(12.dp),
                 ) {
-                    items(
+                    itemsIndexed(
                         items = filteredPosts,
-                        key = { post ->
+                        key = { _, post ->
                             post.postId
                         },
-                    ) { post ->
+                    ) { index, post ->
                         CurationPostCard(
                             post = post,
                             onPostClick = { postId ->
@@ -358,7 +393,18 @@ fun CurationBoardScreen(
                                 viewModel::toggleLike,
                             onBookmarkClick =
                                 viewModel::toggleBookmark,
+                            onShareClick = { post ->
+                                sharingPost = post
+                            },
                         )
+
+                        if (index < filteredPosts.lastIndex) {
+                            HorizontalDivider(
+                                thickness = 1.dp,
+                                color = AppTheme.palette.gray
+                                    .getColor(8),
+                            )
+                        }
                     }
 
                     if (curationState.isPostsLoading) {
