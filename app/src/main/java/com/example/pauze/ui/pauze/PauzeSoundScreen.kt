@@ -38,11 +38,12 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.pauze.R
 import com.example.pauze.data.dummies.Sounds
+import com.example.pauze.data.model.AudioGuideDto
+import com.example.pauze.data.model.AudioLikeToggleResultDto
+import com.example.pauze.data.model.AudioSaveResultDto
 import com.example.pauze.data.model.SoundCategory
 import com.example.pauze.data.model.SoundItem
 import com.example.pauze.data.repository.PauzeSoundRepository
-import com.example.pauze.data.repository.SoundLikeResult
-import com.example.pauze.data.repository.SoundSaveResult
 import com.example.pauze.ui.component.SearchBar
 import com.example.pauze.ui.component.SoundItem
 import com.example.pauze.ui.component.TopBar
@@ -305,14 +306,33 @@ private fun PauzeSoundScreenPreview() {
 }
 
 internal object PreviewPauzeSoundRepository : PauzeSoundRepository {
-    override suspend fun getAllSounds(): List<SoundItem> = Sounds.items
+    override suspend fun getAllSounds(): List<AudioGuideDto> =
+        Sounds.items.map(SoundItem::toAudioGuideDto)
 
-    override suspend fun getSoundsByCategory(category: SoundCategory): List<SoundItem> =
-        Sounds.items.filter { it.category == category.displayName }
+    override suspend fun getSoundsByCategory(category: SoundCategory): List<AudioGuideDto> =
+        Sounds.items
+            .filter { it.category == category.displayName }
+            .map(SoundItem::toAudioGuideDto)
 
-    override suspend fun toggleLike(soundId: String): SoundLikeResult =
-        SoundLikeResult(soundId = soundId, isLiked = true)
+    override suspend fun toggleLike(soundId: String): AudioLikeToggleResultDto =
+        AudioLikeToggleResultDto(
+            audioId = soundId.toLongOrNull() ?: 0L,
+            isLiked = true
+        )
 
-    override suspend fun saveSound(soundId: String): SoundSaveResult =
-        SoundSaveResult(soundId = soundId, isSaved = true, audioUrl = "")
+    override suspend fun saveSound(soundId: String): AudioSaveResultDto =
+        AudioSaveResultDto(
+            audioId = soundId.toLongOrNull() ?: 0L,
+            isSaved = true,
+            audioUrl = ""
+        )
 }
+
+private fun SoundItem.toAudioGuideDto(): AudioGuideDto = AudioGuideDto(
+    audioId = id.toLongOrNull() ?: 0L,
+    audioTitle = title,
+    categoryId = 0.0,
+    categoryName = category,
+    fileUrl = audioUrl,
+    isLiked = isLiked
+)

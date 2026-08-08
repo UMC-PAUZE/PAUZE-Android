@@ -21,7 +21,7 @@ enum class SoundCategory(val displayName: String) {
 
 @Serializable
 data class AudioGuideDto(
-    val audioId: Double,
+    val audioId: Long,
     val audioTitle: String,
     val categoryId: Double,
     val categoryName: String,
@@ -31,13 +31,13 @@ data class AudioGuideDto(
 
 @Serializable
 data class AudioSaveResultDto(
-    val audioId: Double,
+    val audioId: Long,
     val isSaved: Boolean,
     val audioUrl: String
 )
 
 @Serializable
 data class AudioLikeToggleResultDto(
-    val audioId: Double,
+    val audioId: Long,
     val isLiked: Boolean
 )

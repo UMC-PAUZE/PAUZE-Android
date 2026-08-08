@@ -1,6 +1,8 @@
 package com.example.pauze.ui.pauze
 
 import androidx.lifecycle.viewModelScope
+import com.example.pauze.R
+import com.example.pauze.data.model.AudioGuideDto
 import com.example.pauze.data.model.BaseUiState
 import com.example.pauze.data.model.PauzeSoundState
 import com.example.pauze.data.model.SoundCategory
@@ -85,7 +87,7 @@ class PauzeSoundViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 val result = repository.toggleLike(soundId)
-                updateSound(result.soundId) { sound ->
+                updateSound(soundId) { sound ->
                     sound.copy(isLiked = result.isLiked)
                 }
             } catch (error: CancellationException) {
@@ -103,7 +105,7 @@ class PauzeSoundViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 val result = repository.saveSound(soundId)
-                updateSound(result.soundId) { currentSound ->
+                updateSound(soundId) { currentSound ->
                     currentSound.copy(
                         isBookmarked = result.isSaved,
                         audioUrl = result.audioUrl.ifBlank { currentSound.audioUrl }
@@ -159,7 +161,7 @@ class PauzeSoundViewModel @Inject constructor(
                     repository.getAllSounds()
                 } else {
                     repository.getSoundsByCategory(category)
-                }
+                }.map(AudioGuideDto::toSoundItem)
 
                 _state.update { currentState ->
                     val localSounds = currentState.sounds + currentState.categorySounds.orEmpty()
@@ -261,6 +263,20 @@ private fun mergeRemoteWithLocal(
         )
     }
 }
+
+private fun AudioGuideDto.toSoundItem(): SoundItem = SoundItem(
+    id = audioId.toString(),
+    title = audioTitle,
+    category = categoryName,
+    isLiked = isLiked,
+    isBookmarked = false,
+    imageResId = if (audioTitle.contains("비", ignoreCase = true)) {
+        R.drawable.ic_rain
+    } else {
+        R.drawable.ic_empty_image
+    },
+    audioUrl = fileUrl
+)
 
 private fun mergeIntoAll(
     currentSounds: List<SoundItem>,
