@@ -240,11 +240,7 @@ private fun PauzeTodayConditionResult(
     onPauzeStartClick: () -> Unit
 ) {
     val normalizedScore = score.coerceIn(0, 100)
-    val sensitivityLevelText = when (sensitivityLevel) {
-        SensitivityLevel.LOW -> "낮음"
-        SensitivityLevel.NORMAL -> "보통"
-        SensitivityLevel.HIGH -> "높음"
-    }
+    val sensitivityLevelText = sensitivityLevel.label
     val sensitivityLevelColor = when (sensitivityLevel) {
         SensitivityLevel.LOW -> AppTheme.palette.primary.getColor(3)
         SensitivityLevel.NORMAL -> AppTheme.palette.tertiary.getColor(3)
