@@ -5,7 +5,6 @@ import com.example.pauze.data.model.AudioGuideDto
 import com.example.pauze.data.model.SoundCategory
 import com.example.pauze.data.model.SoundItem
 import com.example.pauze.data.model.getOrThrow
-import com.example.pauze.data.remote.PauzeAuthSession
 import com.example.pauze.data.service.AudioGuideService
 import javax.inject.Inject
 
@@ -31,24 +30,21 @@ class DefaultPauzeSoundRepository @Inject constructor(
     private val service: AudioGuideService
 ) : PauzeSoundRepository {
     override suspend fun getAllSounds(): List<SoundItem> =
-        service.getAllGuides(PauzeAuthSession.optionalBearerToken())
+        service.getAllGuides()
             .getOrThrow()
             .map(AudioGuideDto::toSoundItem)
 
     override suspend fun getSoundsByCategory(category: SoundCategory): List<SoundItem> {
         require(category != SoundCategory.ALL) { "전체 카테고리는 전체 조회 API를 사용해야 합니다." }
 
-        return service.getGuidesByCategory(
-            categoryCode = category.name,
-            authorization = PauzeAuthSession.optionalBearerToken()
-        ).getOrThrow().map(AudioGuideDto::toSoundItem)
+        return service.getGuidesByCategory(categoryCode = category.name)
+            .getOrThrow()
+            .map(AudioGuideDto::toSoundItem)
     }
 
     override suspend fun toggleLike(soundId: String): SoundLikeResult {
-        val result = service.toggleLike(
-            audioId = soundId,
-            authorization = PauzeAuthSession.requireBearerToken()
-        ).getOrThrow()
+        requireAuthentication()
+        val result = service.toggleLike(audioId = soundId).getOrThrow()
 
         return SoundLikeResult(
             soundId = result.audioId.toSoundId(),
@@ -57,10 +53,8 @@ class DefaultPauzeSoundRepository @Inject constructor(
     }
 
     override suspend fun saveSound(soundId: String): SoundSaveResult {
-        val result = service.saveGuide(
-            audioId = soundId,
-            authorization = PauzeAuthSession.requireBearerToken()
-        ).getOrThrow()
+        requireAuthentication()
+        val result = service.saveGuide(audioId = soundId).getOrThrow()
 
         return SoundSaveResult(
             soundId = result.audioId.toSoundId(),
@@ -86,3 +80,12 @@ private fun AudioGuideDto.toSoundItem(): SoundItem = SoundItem(
 
 private fun Double.toSoundId(): String =
     if (this % 1.0 == 0.0) toLong().toString() else toString()
+
+private fun requireAuthentication() {
+    if (TokenRepository.accessToken.isNullOrBlank()) {
+        throw AuthenticationRequiredException()
+    }
+}
+
+class AuthenticationRequiredException :
+    IllegalStateException("로그인이 필요한 기능입니다.")

@@ -6,7 +6,7 @@ import com.example.pauze.data.model.PauzeSoundState
 import com.example.pauze.data.model.SoundCategory
 import com.example.pauze.data.model.SoundItem
 import com.example.pauze.data.model.SoundStashTab
-import com.example.pauze.data.remote.AuthenticationRequiredException
+import com.example.pauze.data.repository.AuthenticationRequiredException
 import com.example.pauze.data.repository.PauzeSoundRepository
 import com.example.pauze.ui.BaseViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
