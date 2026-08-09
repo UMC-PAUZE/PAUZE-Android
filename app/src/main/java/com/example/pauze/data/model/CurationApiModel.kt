@@ -148,3 +148,20 @@ fun MyBookmarkListItemDto.toCurationPost(): CurationPost {
         createdAt = createdAt,
     )
 }
+
+fun MyLikeListItemDto.toCurationPost(): CurationPost {
+    return CurationPost(
+        postId = postId,
+        categoryId = categoryId,
+        categoryName = categoryName,
+        title = title,
+        summary = summary,
+        thumbnailUrl = null,
+        viewCount = 0,
+        likeCount = likeCount,
+        readingTimeMinutes = estimatedReadTime,
+        isLiked = true,
+        isBookmarked = isBookmarked,
+        createdAt = createdAt,
+    )
+}
