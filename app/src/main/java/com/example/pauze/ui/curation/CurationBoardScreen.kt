@@ -4,7 +4,6 @@ import android.content.Intent
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.LocalActivity
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -30,7 +29,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -46,7 +44,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
@@ -59,6 +56,7 @@ import com.example.pauze.R
 import com.example.pauze.data.dummies.curationCategories
 import com.example.pauze.data.model.CurationCategory
 import com.example.pauze.data.model.CurationPost
+import com.example.pauze.ui.component.Chips
 import com.example.pauze.ui.component.TopBar
 import com.example.pauze.ui.component.LoginRequiredDialog
 import com.example.pauze.ui.curation.component.CurationPostCard
@@ -627,61 +625,32 @@ private fun CurationSearchFilter(
                     Alignment.CenterVertically,
             ) {
                 categories.forEach { category ->
-                    CurationCategoryChip(
-                        category = category,
+                    val chipWidth =
+                        if (category.categoryName.length <= 2) {
+                            50.dp
+                        } else {
+                            64.dp
+                        }
+
+                    Chips(
+                        text = category.categoryName,
                         isSelected = (
                                 selectedCategoryId ==
                                         category.categoryId
                                 ),
-                        onClick = onCategorySelected,
+                        onClick = {
+                            onCategorySelected(
+                                category.categoryId,
+                            )
+                        },
+                        modifier = Modifier.size(
+                            width = chipWidth,
+                            height = 34.dp,
+                        ),
                     )
                 }
             }
         }
-    }
-}
-
-@Composable
-private fun CurationCategoryChip(
-    category: CurationCategory,
-    isSelected: Boolean,
-    onClick: (Long?) -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    Surface(
-        onClick = {
-            onClick(category.categoryId)
-        },
-        modifier = modifier,
-        shape = RoundedCornerShape(50.dp),
-        color = if (isSelected) {
-            AppTheme.palette.primary.getColor(4)
-        } else {
-            Color.Transparent
-        },
-        border = if (isSelected) {
-            null
-        } else {
-            BorderStroke(
-                width = 1.5.dp,
-                color =
-                    AppTheme.palette.gray.getColor(7),
-            )
-        },
-    ) {
-        Text(
-            text = category.categoryName,
-            modifier = Modifier.padding(
-                horizontal = 12.dp,
-                vertical = 6.dp,
-            ),
-            style = bodyTextMdMedium,
-            color = if (isSelected) {
-                AppTheme.palette.gray.getColor(9)
-            } else {
-                AppTheme.palette.gray.getColor(4)
-            },
-        )
     }
 }
 
