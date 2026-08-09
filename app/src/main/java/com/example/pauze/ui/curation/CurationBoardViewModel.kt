@@ -12,7 +12,7 @@ import javax.inject.Inject
 
 sealed interface CurationEffect {
     object NavigateToLogin : CurationEffect
-    object OpenBookmarkList : CurationEffect
+    object OpenArchive : CurationEffect
 }
 
 @HiltViewModel
@@ -253,13 +253,13 @@ class CurationBoardViewModel @Inject constructor(
         }
     }
 
-    fun openBookmarkList() {
+    fun openArchive() {
         if (TokenRepository.accessToken.isNullOrBlank()) {
             sendEffect(CurationEffect.NavigateToLogin)
             return
         }
 
-        sendEffect(CurationEffect.OpenBookmarkList)
+        sendEffect(CurationEffect.OpenArchive)
         loadMyLikes()
         loadMyBookmarks()
     }
