@@ -38,15 +38,43 @@ abstract class BaseViewModel<EFFECT, DATA: Any?>(
         }
     }
 
-    // 로딩 및 예외 처리를 자동화한 공통 코루틴 launch 함수
+    // 로딩 및 예외 처리를 자동화한 공통 코루틴 launch 함수(GET)
     protected fun launch(
         onFailure: ((Exception) -> Unit)? = null,
-        block: suspend CoroutineScope.() -> Unit
+        block: suspend CoroutineScope.() -> DATA,
     ) {
         viewModelScope.launch {
             try {
-                updateState { it.copy(isLoading = true, error = null) }
-                block()
+                updateState { it.copy(isLoading = true) }
+                val result = block()
+                updateData { result }
+            } catch (e: CancellationException){
+                println("작업이 사용자에 의해 취소되었습니다, ${e.message}")
+                throw e
+            }
+            catch (e: Exception) {
+                updateState { it.copy(isLoading = false, error = e) }
+                println("예외 발생: ${e.message}")
+                e.printStackTrace()
+
+                onFailure?.invoke(e)
+            } finally {
+                updateState { it.copy(isLoading = false) }
+            }
+        }
+    }
+
+    // 로딩 및 예외 처리를 자동화한 공통 코루틴 launch 함수(POST, PUT, DELETE)
+    protected fun <RESULT> launch(
+        onSuccess: ((RESULT) -> Unit)? = null,
+        onFailure: ((Exception) -> Unit)? = null,
+        block: suspend CoroutineScope.() -> RESULT
+    ) {
+        viewModelScope.launch {
+            try {
+                updateState { it.copy(isLoading = true) }
+                val result = block()
+                onSuccess?.invoke(result)
             } catch (e: CancellationException){
                 println("작업이 사용자에 의해 취소되었습니다, ${e.message}")
                 throw e
