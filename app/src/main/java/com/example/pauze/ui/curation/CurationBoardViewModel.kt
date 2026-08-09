@@ -23,6 +23,7 @@ class CurationBoardViewModel @Inject constructor(
 ) {
     private var handledDeepLink: String? = null
     private var postsRequestVersion: Int = 0
+    private var likesRequestVersion: Int = 0
     private var bookmarksRequestVersion: Int = 0
 
     init {
@@ -183,6 +184,8 @@ class CurationBoardViewModel @Inject constructor(
             updateData { state ->
                 val existingPost = state.posts.firstOrNull {
                     post -> post.postId == postId
+                } ?: state.likedPosts.firstOrNull {
+                    post -> post.postId == postId
                 } ?: state.bookmarkedPosts.firstOrNull {
                     post -> post.postId == postId
                 }
@@ -210,6 +213,14 @@ class CurationBoardViewModel @Inject constructor(
 
                 state.copy(
                     posts = updatedPosts,
+                    likedPosts =
+                        state.likedPosts.map { post ->
+                            if (post.postId == postId) {
+                                detailPost
+                            } else {
+                                post
+                            }
+                        },
                     bookmarkedPosts =
                         state.bookmarkedPosts.map { post ->
                             if (post.postId == postId) {
@@ -249,7 +260,156 @@ class CurationBoardViewModel @Inject constructor(
         }
 
         sendEffect(CurationEffect.OpenBookmarkList)
+        loadMyLikes()
         loadMyBookmarks()
+    }
+
+    fun loadMyLikes(
+        page: Int = 1,
+        size: Int = 10,
+    ) {
+        if (TokenRepository.accessToken.isNullOrBlank()) {
+            sendEffect(CurationEffect.NavigateToLogin)
+            return
+        }
+
+        val currentState = uiState.value.data
+
+        if (
+            page > 1 &&
+            (
+                currentState.isLikesLoading ||
+                    page > currentState.likesTotalPages
+                )
+        ) {
+            return
+        }
+
+        val requestVersion = if (page == 1) {
+            ++likesRequestVersion
+        } else {
+            likesRequestVersion
+        }
+
+        updateData { state ->
+            state.copy(
+                likedPosts = if (page == 1) {
+                    emptyList()
+                } else {
+                    state.likedPosts
+                },
+                likesPage = if (page == 1) {
+                    0
+                } else {
+                    state.likesPage
+                },
+                likesTotalPages = if (page == 1) {
+                    1
+                } else {
+                    state.likesTotalPages
+                },
+                isLikesLoading = true,
+            )
+        }
+
+        launch {
+            try {
+                val result = curationRepository.getMyLikes(
+                    page = page,
+                    size = size,
+                )
+
+                if (requestVersion != likesRequestVersion) {
+                    return@launch
+                }
+
+                updateData { state ->
+                    val loadedLikes = result.content.map { item ->
+                        val likedPost = item.toCurationPost()
+                        val existingPost = state.posts.firstOrNull {
+                            it.postId == likedPost.postId
+                        } ?: state.bookmarkedPosts.firstOrNull {
+                            it.postId == likedPost.postId
+                        }
+
+                        if (existingPost == null) {
+                            likedPost
+                        } else {
+                            likedPost.copy(
+                                content = existingPost.content,
+                                thumbnailUrl = existingPost.thumbnailUrl,
+                                viewCount = existingPost.viewCount,
+                            )
+                        }
+                    }
+
+                    val likedPosts = if (page == 1) {
+                        loadedLikes
+                    } else {
+                        (state.likedPosts + loadedLikes)
+                            .distinctBy { it.postId }
+                    }
+
+                    val likesByPostId = likedPosts.associateBy {
+                        it.postId
+                    }
+
+                    state.copy(
+                        posts = state.posts.map { post ->
+                            val likedPost = likesByPostId[post.postId]
+
+                            if (likedPost == null) {
+                                post
+                            } else {
+                                post.copy(
+                                    likeCount = likedPost.likeCount,
+                                    isLiked = true,
+                                    isBookmarked = likedPost.isBookmarked,
+                                )
+                            }
+                        },
+                        likedPosts = likedPosts,
+                        bookmarkedPosts =
+                            state.bookmarkedPosts.map { post ->
+                                val likedPost =
+                                    likesByPostId[post.postId]
+
+                                if (likedPost == null) {
+                                    post
+                                } else {
+                                    post.copy(
+                                        likeCount = likedPost.likeCount,
+                                        isLiked = true,
+                                    )
+                                }
+                            },
+                        likesPage = result.page,
+                        likesTotalPages = result.totalPages,
+                    )
+                }
+            } finally {
+                if (requestVersion == likesRequestVersion) {
+                    updateData { state ->
+                        state.copy(isLikesLoading = false)
+                    }
+                }
+            }
+        }
+    }
+
+    fun loadNextMyLikes() {
+        val state = uiState.value.data
+
+        if (
+            state.isLikesLoading ||
+            !state.hasNextLikesPage
+        ) {
+            return
+        }
+
+        loadMyLikes(
+            page = state.likesPage + 1,
+        )
     }
 
     fun loadMyBookmarks(
@@ -316,6 +476,8 @@ class CurationBoardViewModel @Inject constructor(
                         val bookmarkedPost = item.toCurationPost()
                         val existingPost = state.posts.firstOrNull {
                             it.postId == bookmarkedPost.postId
+                        } ?: state.likedPosts.firstOrNull {
+                            it.postId == bookmarkedPost.postId
                         }
 
                         if (existingPost == null) {
@@ -342,6 +504,20 @@ class CurationBoardViewModel @Inject constructor(
                     state.copy(
                         posts = state.posts.map { post ->
                             val bookmarkPost = bookmarksByPostId[post.postId]
+
+                            if (bookmarkPost == null) {
+                                post
+                            } else {
+                                post.copy(
+                                    likeCount = bookmarkPost.likeCount,
+                                    isLiked = bookmarkPost.isLiked,
+                                    isBookmarked = true,
+                                )
+                            }
+                        },
+                        likedPosts = state.likedPosts.map { post ->
+                            val bookmarkPost =
+                                bookmarksByPostId[post.postId]
 
                             if (bookmarkPost == null) {
                                 post
@@ -396,6 +572,14 @@ class CurationBoardViewModel @Inject constructor(
                 )
 
             updateData { state ->
+                val currentPost = state.posts.firstOrNull {
+                    it.postId == result.postId
+                } ?: state.likedPosts.firstOrNull {
+                    it.postId == result.postId
+                } ?: state.bookmarkedPosts.firstOrNull {
+                    it.postId == result.postId
+                }
+
                 val updatePost: (CurationPost) -> CurationPost = { post ->
                     if (post.postId == result.postId) {
                         val likeCountChange = when {
@@ -415,8 +599,26 @@ class CurationBoardViewModel @Inject constructor(
                     }
                 }
 
+                val updatedLikedPosts = if (result.liked) {
+                    if (state.likedPosts.any {
+                            it.postId == result.postId
+                        }
+                    ) {
+                        state.likedPosts.map(updatePost)
+                    } else {
+                        currentPost?.let { post ->
+                            listOf(updatePost(post)) + state.likedPosts
+                        } ?: state.likedPosts
+                    }
+                } else {
+                    state.likedPosts.filterNot { post ->
+                        post.postId == result.postId
+                    }
+                }
+
                 state.copy(
                     posts = state.posts.map(updatePost),
+                    likedPosts = updatedLikedPosts,
                     bookmarkedPosts =
                         state.bookmarkedPosts.map(updatePost),
                 )
@@ -438,6 +640,8 @@ class CurationBoardViewModel @Inject constructor(
 
             updateData { state ->
                 val currentPost = state.posts.firstOrNull {
+                    it.postId == result.postId
+                } ?: state.likedPosts.firstOrNull {
                     it.postId == result.postId
                 } ?: state.bookmarkedPosts.firstOrNull {
                     it.postId == result.postId
@@ -469,6 +673,15 @@ class CurationBoardViewModel @Inject constructor(
 
                 state.copy(
                     posts = state.posts.map { post ->
+                        if (post.postId == result.postId) {
+                            post.copy(
+                                isBookmarked = result.bookmarked,
+                            )
+                        } else {
+                            post
+                        }
+                    },
+                    likedPosts = state.likedPosts.map { post ->
                         if (post.postId == result.postId) {
                             post.copy(
                                 isBookmarked = result.bookmarked,
