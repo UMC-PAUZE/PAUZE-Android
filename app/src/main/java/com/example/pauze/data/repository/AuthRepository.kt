@@ -1,5 +1,6 @@
 package com.example.pauze.data.repository
 
+import android.content.Context
 import com.example.pauze.data.model.KakaoLoginResult
 import com.example.pauze.data.model.LocalLoginResult
 import com.example.pauze.data.model.LocalSignUpRequest
@@ -13,5 +14,5 @@ interface AuthRepository {
     suspend fun verifyEmail(email: String, code: String): VerifyEmailResult?
     suspend fun login(email: String, password: String): LocalLoginResult?
     suspend fun refresh(refreshToken: String): Token?
-    suspend fun kakaoLogin(): KakaoLoginResult?
+    suspend fun kakaoLogin(context: Context): KakaoLoginResult?
 }

@@ -1,5 +1,7 @@
 package com.example.pauze.data.repository
 
+import android.content.Context
+import com.example.pauze.data.datastore.AuthDataStore
 import com.example.pauze.data.model.KakaoLoginRequest
 import com.example.pauze.data.model.KakaoLoginResult
 import com.example.pauze.data.model.LocalLoginRequest
@@ -12,11 +14,20 @@ import com.example.pauze.data.model.VerifyEmailRequest
 import com.example.pauze.data.model.VerifyEmailResult
 import com.example.pauze.data.service.AuthService
 import com.kakao.sdk.auth.model.OAuthToken
+import com.kakao.sdk.user.UserApi
+import com.kakao.sdk.user.UserApiClient
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
+import okhttp3.Dispatcher
 import java.sql.DriverManager.println
 import javax.inject.Inject
 
 class AuthRepositoryImpl @Inject constructor(
+    private val dataStore: AuthDataStore,
     private val service: AuthService
 ): AuthRepository{
     override suspend fun localSignUp(request: LocalSignUpRequest): LocalSignUpResult? {
@@ -74,18 +85,12 @@ class AuthRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun kakaoLogin(): KakaoLoginResult? {
-        try {
-            val callback: (OAuthToken?, Throwable?) -> Unit = { token, error ->
-                if(error != null) {
-                    println("카카오 로그인 실패: ${error.message}")
-                } else if (token != null) {
-                    val accessToken = token.accessToken
+    override suspend fun kakaoLogin(context: Context): KakaoLoginResult? {
+        val accessToken = dataStore.getKakaoAccessToken(context).firstOrNull() ?: return null
 
-                }
-            }
-            val response = service.kakaoLogin(KakaoLoginRequest(""))
-            return response.result
+        return try {
+            val response = service.kakaoLogin(KakaoLoginRequest(accessToken))
+            response.result
         } catch (e: CancellationException){
             println("작업이 사용자에 의해 취소되었습니다, ${e.message}")
             throw e
