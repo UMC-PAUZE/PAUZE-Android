@@ -28,7 +28,9 @@ class LoginViewModel(): BaseViewModel<LoginEffect, Boolean>(
     }
 
     fun login(email: String, pwd: String){
-        launch {
+        launch(
+            onFailure = {}
+        ) {
             // todo: 로그인 로직 구현
             val result = false
             updateState {

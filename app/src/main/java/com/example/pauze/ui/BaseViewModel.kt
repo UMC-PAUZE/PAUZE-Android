@@ -40,6 +40,7 @@ abstract class BaseViewModel<EFFECT, DATA: Any?>(
 
     // 로딩 및 예외 처리를 자동화한 공통 코루틴 launch 함수
     protected fun launch(
+        onFailure: ((Exception) -> Unit)? = null,
         block: suspend CoroutineScope.() -> Unit
     ) {
         viewModelScope.launch {
@@ -54,6 +55,8 @@ abstract class BaseViewModel<EFFECT, DATA: Any?>(
                 updateState { it.copy(isLoading = false, error = e) }
                 println("예외 발생: ${e.message}")
                 e.printStackTrace()
+
+                onFailure?.invoke(e)
             } finally {
                 updateState { it.copy(isLoading = false) }
             }
