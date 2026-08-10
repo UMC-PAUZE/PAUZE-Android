@@ -72,8 +72,6 @@ dependencies {
     kapt("org.jetbrains.kotlin:kotlin-metadata-jvm:2.4.10")
     implementation(libs.retrofit)
     implementation(libs.retrofit.converter.gson)
-    implementation(libs.kotlinx.serialization.retrofit)
-    implementation(libs.kotlinx.serialization.json)
     implementation(libs.okhttp)
     implementation(libs.okhttp.logging.interceptor)
     implementation(libs.hilt.navigation.compose)
