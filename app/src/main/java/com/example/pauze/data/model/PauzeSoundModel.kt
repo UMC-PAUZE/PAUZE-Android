@@ -9,7 +9,8 @@ data class SoundItem(
     val isLiked: Boolean,
     val isBookmarked: Boolean,
     val imageResId: Int,
-    val audioUrl: String = ""
+    val audioUrl: String = "",
+    val localFilePath: String? = null
 )
 
 enum class SoundCategory(val displayName: String) {
@@ -27,13 +28,6 @@ data class AudioGuideDto(
     val categoryName: String,
     val fileUrl: String,
     val isLiked: Boolean = false
-)
-
-@Serializable
-data class AudioSaveResultDto(
-    val audioId: Long,
-    val isSaved: Boolean,
-    val audioUrl: String
 )
 
 @Serializable
