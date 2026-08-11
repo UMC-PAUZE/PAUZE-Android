@@ -314,13 +314,7 @@ class CurationBoardViewModel @Inject constructor(
             onFailure = {
                 if (requestVersion == likesRequestVersion) {
                     updateData { state ->
-                        state.copy(
-                            likedPosts = currentState.likedPosts,
-                            likesPage = currentState.likesPage,
-                            likesTotalPages =
-                                currentState.likesTotalPages,
-                            isLikesLoading = false,
-                        )
+                        state.copy(isLikesLoading = false)
                     }
                 }
             },
