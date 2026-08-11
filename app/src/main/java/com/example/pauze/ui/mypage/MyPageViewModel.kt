@@ -23,12 +23,10 @@ class MyPageViewModel @Inject constructor(
 ) {
     fun refresh() {
         launch {
-            val profile = myPageRepository.getMyPage()
-            updateData { it.copy(profile = profile) }
+            uiState.value.data.copy(profile = myPageRepository.getMyPage())
         }
         launch {
-            val detail = myPageRepository.getProfile()
-            updateData { it.copy(stats = detail.stats) }
+            uiState.value.data.copy(stats = myPageRepository.getProfile().stats)
         }
     }
 
@@ -65,8 +63,7 @@ class MyPageViewModel @Inject constructor(
         val currentProfile = uiState.value.data.profile ?: return
         if (uiState.value.isLoading) return
         launch {
-            val updated = myPageRepository.updateSettings(request)
-            updateData { it.copy(profile = currentProfile.copy(settings = updated)) }
+            uiState.value.data.copy(profile = currentProfile.copy(settings = myPageRepository.updateSettings(request)))
         }
     }
 }

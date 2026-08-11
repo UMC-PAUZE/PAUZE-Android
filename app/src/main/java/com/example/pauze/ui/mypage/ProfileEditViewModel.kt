@@ -5,12 +5,15 @@ import android.net.Uri
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import com.example.pauze.data.model.BaseResponse
 import com.example.pauze.data.model.BaseUiState
 import com.example.pauze.data.repository.MyPageRepository
 import com.example.pauze.data.repository.UserProfileRepository
 import com.example.pauze.ui.BaseViewModel
+import com.google.gson.Gson
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import retrofit2.HttpException
 import java.io.File
 import javax.inject.Inject
 
@@ -63,14 +66,18 @@ class ProfileEditViewModel @Inject constructor(
     }
 
     fun onSaveClick() {
-        launch {
+        launch(
+            onSuccess = { sendEffect(ProfileEditEffect.NavigateToBack) },
+            onFailure = { e ->
+                loadError = (e as? HttpException)?.let(::parseErrorMessage) ?: e.message ?: "저장에 실패했습니다."
+            }
+        ) {
             val imageFile = newProfileImageUri?.let { uriToFile(it) }
             myPageRepository.updateProfile(
                 nickname = nickname,
                 introduction = bio,
                 profileImage = imageFile
             )
-            sendEffect(ProfileEditEffect.NavigateToBack)
         }
     }
 
@@ -81,5 +88,14 @@ class ProfileEditViewModel @Inject constructor(
             tempFile.outputStream().use { output -> input.copyTo(output) }
         }
         return tempFile
+    }
+
+    private fun parseErrorMessage(e: HttpException): String? {
+        return try {
+            val errorBody = e.response()?.errorBody()?.string() ?: return null
+            Gson().fromJson(errorBody, BaseResponse::class.java).message
+        } catch (parseError: Exception) {
+            null
+        }
     }
 }
