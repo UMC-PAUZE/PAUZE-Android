@@ -2,7 +2,6 @@ package com.example.pauze.ui.curation
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -17,11 +16,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -34,20 +30,19 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.pauze.R
 import com.example.pauze.data.model.CurationPost
+import com.example.pauze.ui.component.SearchBar
+import com.example.pauze.ui.component.Tab
 import com.example.pauze.ui.component.TopBar
 import com.example.pauze.ui.curation.component.CurationPostCard
 import com.example.pauze.ui.curation.component.CurationScrollToTopButton
 import com.example.pauze.ui.theme.AppTheme
 import com.example.pauze.ui.theme.PAUZEAndroidTheme
 import com.example.pauze.ui.theme.bodyTextLgBold
-import com.example.pauze.ui.theme.bodyTextMdMedium
 import com.example.pauze.ui.theme.bodyTextSmRegular
 import kotlinx.coroutines.launch
 
@@ -177,11 +172,12 @@ fun CurationArchiveScreen(
                 onBackClick = onBackClick,
             )
 
-            CurationArchiveSearchBar(
+            SearchBar(
                 query = searchKeyword,
                 onQueryChange = { keyword ->
                     searchKeyword = keyword
                 },
+                placeholder = "북마크한 글을 검색해보세요",
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(
@@ -202,24 +198,26 @@ fun CurationArchiveScreen(
                     Arrangement.spacedBy(16.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                CurationArchiveTabButton(
+                Tab(
                     text = "좋아요",
                     selected =
                         selectedTab == CurationArchiveTab.LIKES,
-                    iconRes =
+                    icon = painterResource(
                         R.drawable.ic_heart_off_curation,
+                    ),
                     onClick = {
                         selectedTab = CurationArchiveTab.LIKES
                     },
                     modifier = Modifier.weight(1f),
                 )
 
-                CurationArchiveTabButton(
+                Tab(
                     text = "북마크",
                     selected =
                         selectedTab == CurationArchiveTab.BOOKMARKS,
-                    iconRes =
+                    icon = painterResource(
                         R.drawable.ic_bookmark_off_curation,
+                    ),
                     onClick = {
                         selectedTab =
                             CurationArchiveTab.BOOKMARKS
@@ -320,111 +318,6 @@ fun CurationArchiveScreen(
                         end = 20.dp,
                         bottom = 20.dp,
                     ),
-            )
-        }
-    }
-}
-
-@Composable
-private fun CurationArchiveSearchBar(
-    query: String,
-    onQueryChange: (String) -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    BasicTextField(
-        value = query,
-        onValueChange = onQueryChange,
-        modifier = modifier,
-        singleLine = true,
-        textStyle = bodyTextMdMedium.copy(
-            color = AppTheme.palette.gray.getColor(2),
-        ),
-        cursorBrush = SolidColor(
-            AppTheme.palette.primary.getColor(4),
-        ),
-        decorationBox = { innerTextField ->
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(48.dp)
-                    .background(
-                        color = AppTheme.palette.gray.getColor(8),
-                        shape = CircleShape,
-                    )
-                    .padding(horizontal = 16.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Box(
-                    modifier = Modifier.weight(1f),
-                    contentAlignment = Alignment.CenterStart,
-                ) {
-                    if (query.isEmpty()) {
-                        Text(
-                            text = "북마크한 글을 검색해보세요",
-                            style = bodyTextMdMedium,
-                            color = AppTheme.palette.gray.getColor(6),
-                        )
-                    }
-
-                    innerTextField()
-                }
-
-                Icon(
-                    painter = painterResource(
-                        R.drawable.ic_search_curation,
-                    ),
-                    contentDescription = "검색",
-                    modifier = Modifier.size(20.dp),
-                    tint = Color.Unspecified,
-                )
-            }
-        },
-    )
-}
-
-@Composable
-private fun CurationArchiveTabButton(
-    text: String,
-    selected: Boolean,
-    iconRes: Int,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    val contentColor = if (selected) {
-        AppTheme.palette.gray.getColor(2)
-    } else {
-        AppTheme.palette.gray.getColor(4)
-    }
-
-    Box(
-        modifier = modifier
-            .height(40.dp)
-            .background(
-                color = if (selected) {
-                    AppTheme.palette.gray.getColor(7)
-                } else {
-                    Color.Transparent
-                },
-                shape = CircleShape,
-            )
-            .clickable(onClick = onClick),
-        contentAlignment = Alignment.Center,
-    ) {
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Icon(
-                painter = painterResource(iconRes),
-                contentDescription = null,
-                modifier = Modifier.size(20.dp),
-                tint = contentColor,
-            )
-
-            Text(
-                text = text,
-                style = bodyTextLgBold,
-                color = contentColor,
             )
         }
     }
