@@ -8,6 +8,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -150,16 +151,18 @@ fun LoginScreen(
         ModeBasedTextField(
             mode = TextFieldMode.Email,
             value = email,
-            onValueChanged = { email = it },
-            imeAction = ImeAction.Next
+            onValueChanged = { email = it; isLoginFailed = false },
+            imeAction = ImeAction.Next,
+            isError = isLoginFailed
         )
         if(isLoginFailed) LoginFailedText()
         Spacer(modifier = Modifier.height(12.dp))
         ModeBasedTextField(
             mode = TextFieldMode.Pwd,
             value = password,
-            onValueChanged = { password = it },
-            imeAction = ImeAction.Done
+            onValueChanged = { password = it; isLoginFailed = false },
+            imeAction = ImeAction.Done,
+            isError = isLoginFailed
         )
         if(isLoginFailed) LoginFailedText()
         Spacer(modifier = Modifier.height(32.dp))
@@ -250,7 +253,10 @@ fun LoginScreen(
 
 @Composable
 fun LoginFailedText(){
-    Column {
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalAlignment = Alignment.Start
+    ) {
         Spacer(modifier = Modifier.height(4.dp))
         Text("아이디나 비밀번호가 일치하지 않습니다", style = bodyTextSmRegular, color = AppTheme.palette.secondary.getColor(4))
     }
