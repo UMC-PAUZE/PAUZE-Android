@@ -1,36 +1,39 @@
 package com.example.pauze.ui.home
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
-import com.example.pauze.data.dummies.conditions
 import com.example.pauze.data.model.BaseUiState
 import com.example.pauze.data.model.Condition
+import com.example.pauze.data.model.GetTodayConditionResponseDto
 import com.example.pauze.data.model.HomeState
+import com.example.pauze.data.repository.TodayConditionRepository
 import com.example.pauze.ui.BaseViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.todayIn
+import javax.inject.Inject
+import kotlin.time.Clock
 
 sealed interface HomeEffect {
     object MoveToTodayCondition: HomeEffect
     object MoveToBreathingBtn: HomeEffect
     object MoveToReportScreen: HomeEffect
 }
-class HomeViewModel: BaseViewModel<HomeEffect, HomeState>(
+
+@HiltViewModel
+class HomeViewModel @Inject constructor(
+    private val repository: TodayConditionRepository
+) : BaseViewModel<HomeEffect, HomeState>(
     uiState = BaseUiState(data = HomeState())
 ) {
     init {
         getCondition()
     }
 
-    fun getCondition(){
+    fun getCondition() {
         launch {
-            val example = conditions.first()
-            updateData {
-                it.copy(condition = example, isTodayConditionExists = true)
-            }
+            repository.getTodayCondition()?.toHomeState() ?: HomeState()
         }
     }
+
     fun moveToTodayCondition(){
         sendEffect(HomeEffect.MoveToTodayCondition)
     }
@@ -40,5 +43,21 @@ class HomeViewModel: BaseViewModel<HomeEffect, HomeState>(
 
     fun moveToReportScreen(){
         sendEffect(HomeEffect.MoveToReportScreen)
+    }
+
+    private fun GetTodayConditionResponseDto.toHomeState(): HomeState {
+        val today = Clock.System.todayIn(TimeZone.currentSystemDefault()).toString()
+        return HomeState(
+            condition = Condition(
+                score = sensitivityScore,
+                sleep = sleepLevel,
+                noise = noiseLevel,
+                visual = visualLevel,
+                social = socialLevel,
+                energy = energyLevel,
+                sensitivity = sensitivityLevel
+            ),
+            isTodayConditionExists = conditionDate == today
+        )
     }
 }

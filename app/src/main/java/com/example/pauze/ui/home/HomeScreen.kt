@@ -3,13 +3,11 @@ package com.example.pauze.ui.home
 import android.content.Context
 import android.content.Intent
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -22,27 +20,32 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.pauze.BottomNavDestination
 import com.example.pauze.ui.theme.AppTheme
 import com.example.pauze.R
 import com.example.pauze.data.model.Condition
+import com.example.pauze.data.model.EnergyLevel
+import com.example.pauze.data.model.NoiseLevel
 import com.example.pauze.data.model.SensitivityLevel
+import com.example.pauze.data.model.SleepLevel
+import com.example.pauze.data.model.SocialLevel
+import com.example.pauze.data.model.VisualLevel
 import com.example.pauze.ui.component.Button
+import com.example.pauze.ui.component.Chips
 import com.example.pauze.ui.component.SensitivityScoreBar
 import com.example.pauze.ui.component.Destination
 import com.example.pauze.ui.component.NavigationButton
@@ -55,16 +58,15 @@ import com.example.pauze.ui.theme.bodyTextLgRegular
 import com.example.pauze.ui.theme.bodyTextMdBold
 import com.example.pauze.ui.theme.bodyTextMdMedium
 import com.example.pauze.ui.theme.bodyTextMdRegular
-import com.example.pauze.ui.theme.bodyTextSmRegular
 import com.example.pauze.ui.theme.bodyTextXlBold
 import com.example.pauze.ui.theme.headingMdMedium
-import com.example.pauze.ui.theme.headingSmBold
+import com.example.pauze.ui.theme.PAUZEAndroidTheme
 
 @Composable
 fun HomeScreen(
     context: Context,
     navController: NavController,
-    viewModel: HomeViewModel = viewModel()
+    viewModel: HomeViewModel = hiltViewModel()
 ){
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -133,6 +135,7 @@ fun HomeScreen(
             Spacer(modifier = Modifier.height(16.dp))
             ConditionBox(
                 condition = uiState.data.condition,
+                isTodayConditionExists = uiState.data.isTodayConditionExists,
                 boxPadding = conditionBoxPadding,
                 navigateToReport = { viewModel.moveToReportScreen() }
             )
@@ -141,7 +144,7 @@ fun HomeScreen(
 }
 
 @Composable
-fun ConditionBox(condition: Condition?, boxPadding: Int, navigateToReport: () -> Unit){
+fun ConditionBox(condition: Condition?, isTodayConditionExists: Boolean, boxPadding: Int, navigateToReport: () -> Unit){
     if(condition != null){
         Box (
             modifier = Modifier
@@ -161,7 +164,11 @@ fun ConditionBox(condition: Condition?, boxPadding: Int, navigateToReport: () ->
         ){
             Column{
                 Row{
-                    Text("어제 민감 지수", style = bodyTextLgRegular, color = AppTheme.palette.gray.getColor(2))
+                    Text(
+                        if (isTodayConditionExists) "오늘 민감 지수" else "어제 민감 지수",
+                        style = bodyTextLgRegular,
+                        color = AppTheme.palette.gray.getColor(2)
+                    )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
                         condition.sensitivity.label,
@@ -212,60 +219,67 @@ fun ConditionBox(condition: Condition?, boxPadding: Int, navigateToReport: () ->
 
 @Composable
 fun ConditionDetailBox(condition: Condition){
-    Column {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Start,
-        ) {
-            ConditionDetailBoxContainer(item = "과다")
-            Spacer(modifier = Modifier.width(8.dp))
-            ConditionDetailBoxContainer(item = "4시간 미만")
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Chips(
+                text = condition.noise.label,
+                icon = painterResource(R.drawable.ic_sound),
+                contentColor = severityColor(condition.noise.toSeverityRank())
+            )
+            Chips(
+                text = condition.sleep.label,
+                icon = painterResource(R.drawable.ic_sleep),
+                contentColor = severityColor(condition.sleep.toSeverityRank())
+            )
         }
-        Spacer(modifier = Modifier.height(8.dp))
         Row(
             modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            ConditionDetailBoxContainer(item = "보통")
-            Spacer(modifier = Modifier.width(8.dp))
-            ConditionDetailBoxContainer(item = "편안")
-            Spacer(modifier = Modifier.width(8.dp))
-            ConditionDetailBoxContainer(item = "적음")
+            Chips(
+                text = condition.social.label,
+                icon = painterResource(R.drawable.ic_community),
+                contentColor = severityColor(condition.social.toSeverityRank())
+            )
+            Chips(
+                text = condition.energy.label,
+                icon = painterResource(R.drawable.ic_energy),
+                contentColor = severityColor(condition.energy.toSeverityRank())
+            )
+            Chips(
+                text = condition.visual.label,
+                icon = painterResource(R.drawable.ic_see_outline),
+                contentColor = severityColor(condition.visual.toSeverityRank())
+            )
         }
     }
 }
 
+
 @Composable
-fun ConditionDetailBoxContainer(item: String){
-    Box(
-        modifier = Modifier
-            .background(
-                shape = RoundedCornerShape(100.dp),
-                color = AppTheme.palette.gray.getColor(8)
-            )
-            .border(
-                width = 1.dp,
-                color = AppTheme.palette.gray.getColor(7),
-                shape = RoundedCornerShape(100.dp),
-            )
-    ){
-        Row(
-            modifier = Modifier.padding(vertical = 8.dp, horizontal = 12.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center
-        ) {
-            Icon(
-                modifier = Modifier.size(16.dp),
-                painter = painterResource(R.drawable.ic_sound),
-                contentDescription = "소리",
-                tint = AppTheme.palette.secondary.getColor(3)
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            Text(
-                "과다",
-                style = bodyTextMdMedium,
-                color = AppTheme.palette.secondary.getColor(3)
-            )
-        }
-    }
+private fun severityColor(rank: Int): Color = when (rank) {
+    1 -> AppTheme.palette.primary.getColor(4)
+    2, 3 -> AppTheme.palette.tertiary.getColor(3)
+    else -> AppTheme.palette.secondary.getColor(3)
+}
+
+private fun SleepLevel.toSeverityRank() = when (this) {
+    SleepLevel.OVER_8 -> 1; SleepLevel.SIX_TO_EIGHT -> 2
+    SleepLevel.FOUR_TO_SIX -> 3; SleepLevel.LESS_4 -> 4
+}
+private fun NoiseLevel.toSeverityRank() = when (this) {
+    NoiseLevel.QUIET -> 1; NoiseLevel.NORMAL -> 2
+    NoiseLevel.UNCOMFORTABLE -> 3; NoiseLevel.HARD -> 4
+}
+private fun VisualLevel.toSeverityRank() = when (this) {
+    VisualLevel.LOW -> 1; VisualLevel.NORMAL -> 2
+    VisualLevel.HIGH -> 3; VisualLevel.VERY_HIGH -> 4
+}
+private fun SocialLevel.toSeverityRank() = when (this) {
+    SocialLevel.ALONE -> 1; SocialLevel.LITTLE -> 2
+    SocialLevel.SOME -> 3; SocialLevel.MANY -> 4
+}
+private fun EnergyLevel.toSeverityRank() = when (this) {
+    EnergyLevel.ENOUGH -> 1; EnergyLevel.NORMAL -> 2
+    EnergyLevel.LOW -> 3; EnergyLevel.NONE -> 4
 }
