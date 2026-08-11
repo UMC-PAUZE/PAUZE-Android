@@ -81,9 +81,22 @@ fun CurationArchiveScreen(
         mutableStateOf("")
     }
 
-    val posts = when (selectedTab) {
+    val archivePosts = when (selectedTab) {
         CurationArchiveTab.LIKES -> likedPosts
         CurationArchiveTab.BOOKMARKS -> bookmarkedPosts
+    }
+
+    val normalizedSearchKeyword = searchKeyword.trim()
+    val posts = archivePosts.filter { post ->
+        normalizedSearchKeyword.isBlank() ||
+                post.title.contains(
+                    normalizedSearchKeyword,
+                    ignoreCase = true,
+                ) ||
+                post.summary.contains(
+                    normalizedSearchKeyword,
+                    ignoreCase = true,
+                )
     }
 
     val isLoading = when (selectedTab) {
@@ -482,4 +495,3 @@ private fun CurationArchiveEmptyContent(
         )
     }
 }
-
