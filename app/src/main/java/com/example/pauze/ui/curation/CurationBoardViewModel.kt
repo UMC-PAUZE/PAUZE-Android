@@ -464,86 +464,86 @@ class CurationBoardViewModel @Inject constructor(
             )
         }
 
-        launch {
-            try {
-                val result = curationRepository.getMyBookmarks(
-                    page = page,
-                    size = size,
-                )
-
-                if (requestVersion != bookmarksRequestVersion) {
-                    return@launch
-                }
-
-                updateData { state ->
-                    val loadedBookmarks = result.content.map { item ->
-                        val bookmarkedPost = item.toCurationPost()
-                        val existingPost = state.posts.firstOrNull {
-                            it.postId == bookmarkedPost.postId
-                        } ?: state.likedPosts.firstOrNull {
-                            it.postId == bookmarkedPost.postId
-                        }
-
-                        if (existingPost == null) {
-                            bookmarkedPost
-                        } else {
-                            bookmarkedPost.copy(
-                                content = existingPost.content,
-                                viewCount = existingPost.viewCount,
-                            )
-                        }
-                    }
-
-                    val bookmarkedPosts = if (page == 1) {
-                        loadedBookmarks
-                    } else {
-                        (state.bookmarkedPosts + loadedBookmarks)
-                            .distinctBy { it.postId }
-                    }
-
-                    val bookmarksByPostId = bookmarkedPosts.associateBy {
-                        it.postId
-                    }
-
-                    state.copy(
-                        posts = state.posts.map { post ->
-                            val bookmarkPost = bookmarksByPostId[post.postId]
-
-                            if (bookmarkPost == null) {
-                                post
-                            } else {
-                                post.copy(
-                                    likeCount = bookmarkPost.likeCount,
-                                    isLiked = bookmarkPost.isLiked,
-                                    isBookmarked = true,
-                                )
-                            }
-                        },
-                        likedPosts = state.likedPosts.map { post ->
-                            val bookmarkPost =
-                                bookmarksByPostId[post.postId]
-
-                            if (bookmarkPost == null) {
-                                post
-                            } else {
-                                post.copy(
-                                    likeCount = bookmarkPost.likeCount,
-                                    isLiked = bookmarkPost.isLiked,
-                                    isBookmarked = true,
-                                )
-                            }
-                        },
-                        bookmarkedPosts = bookmarkedPosts,
-                        bookmarksPage = result.page,
-                        bookmarksTotalPages = result.totalPages,
-                    )
-                }
-            } finally {
+        launch(
+            onFailure = {
                 if (requestVersion == bookmarksRequestVersion) {
                     updateData { state ->
                         state.copy(isBookmarksLoading = false)
                     }
                 }
+            },
+        ) {
+            val result = curationRepository.getMyBookmarks(
+                page = page,
+                size = size,
+            )
+            val state = uiState.value.data
+
+            if (requestVersion != bookmarksRequestVersion) {
+                state
+            } else {
+                val loadedBookmarks = result.content.map { item ->
+                    val bookmarkedPost = item.toCurationPost()
+                    val existingPost = state.posts.firstOrNull {
+                        it.postId == bookmarkedPost.postId
+                    } ?: state.likedPosts.firstOrNull {
+                        it.postId == bookmarkedPost.postId
+                    }
+
+                    if (existingPost == null) {
+                        bookmarkedPost
+                    } else {
+                        bookmarkedPost.copy(
+                            content = existingPost.content,
+                            viewCount = existingPost.viewCount,
+                        )
+                    }
+                }
+
+                val bookmarkedPosts = if (page == 1) {
+                    loadedBookmarks
+                } else {
+                    (state.bookmarkedPosts + loadedBookmarks)
+                        .distinctBy { it.postId }
+                }
+
+                val bookmarksByPostId = bookmarkedPosts.associateBy {
+                    it.postId
+                }
+
+                state.copy(
+                    posts = state.posts.map { post ->
+                        val bookmarkPost = bookmarksByPostId[post.postId]
+
+                        if (bookmarkPost == null) {
+                            post
+                        } else {
+                            post.copy(
+                                likeCount = bookmarkPost.likeCount,
+                                isLiked = bookmarkPost.isLiked,
+                                isBookmarked = true,
+                            )
+                        }
+                    },
+                    likedPosts = state.likedPosts.map { post ->
+                        val bookmarkPost =
+                            bookmarksByPostId[post.postId]
+
+                        if (bookmarkPost == null) {
+                            post
+                        } else {
+                            post.copy(
+                                likeCount = bookmarkPost.likeCount,
+                                isLiked = bookmarkPost.isLiked,
+                                isBookmarked = true,
+                            )
+                        }
+                    },
+                    bookmarkedPosts = bookmarkedPosts,
+                    bookmarksPage = result.page,
+                    bookmarksTotalPages = result.totalPages,
+                    isBookmarksLoading = false,
+                )
             }
         }
     }
