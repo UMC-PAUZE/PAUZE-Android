@@ -2,14 +2,18 @@ package com.example.pauze.data.module
 
 import com.example.pauze.BuildConfig
 import com.example.pauze.data.service.AudioGuideService
+import com.example.pauze.data.service.AuthService
 import com.example.pauze.data.service.CurationService
 import com.example.pauze.data.service.MyPageService
 import com.example.pauze.data.service.ReportService
 import com.example.pauze.data.service.TodayConditionService
+import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import kotlinx.serialization.json.Json
+import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
@@ -21,6 +25,10 @@ import javax.inject.Singleton
 @Qualifier
 @Retention(AnnotationRetention.BINARY)
 annotation class PauzeBaseUrl
+
+@Qualifier
+@Retention(AnnotationRetention.BINARY)
+annotation class AuthRetrofit
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -57,6 +65,23 @@ object NetworkModule {
             .addConverterFactory(GsonConverterFactory.create())
             .build()
 
+    @Provides
+    @Singleton
+    @AuthRetrofit
+    fun provideAuthRetrofit(client: OkHttpClient): Retrofit {
+        val json = Json {
+            ignoreUnknownKeys = true
+            coerceInputValues = true
+            explicitNulls = false
+        }
+
+        return Retrofit.Builder()
+            .baseUrl(BASE_URL)
+            .client(client)
+            .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
+            .build()
+    }
+
     //리포트
     @Provides
     @Singleton
@@ -89,4 +114,8 @@ object NetworkModule {
     fun provideAudioGuideService(
         @PauzeBaseUrl retrofit: Retrofit
     ): AudioGuideService = retrofit.create(AudioGuideService::class.java)
+
+    @Provides
+    @Singleton
+    fun provideAuthService(@AuthRetrofit retrofit: Retrofit): AuthService = retrofit.create(AuthService::class.java)
 }
