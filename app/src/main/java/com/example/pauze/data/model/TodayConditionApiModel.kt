@@ -11,8 +11,7 @@ data class CreateTodayConditionRequest(
 data class CreateTodayConditionResult(
     val conditionId: Long,
     val sensitivityScore: Int,
-    val sensitivityLevel: SensitivityLevel,
-    val triggerCodes: List<TriggerCode> = emptyList()
+    val sensitivityLevel: SensitivityLevel
 )
 
 data class GetTodayConditionResponseDto(
@@ -25,7 +24,16 @@ data class GetTodayConditionResponseDto(
     val energyLevel: EnergyLevel,
     val sensitivityScore: Int,
     val sensitivityLevel: SensitivityLevel,
-    val triggerCodes: List<TriggerCode> = emptyList(),
+)
+
+fun GetTodayConditionResponseDto.toCondition() = Condition(
+    score = sensitivityScore,
+    sleep = sleepLevel,
+    noise = noiseLevel,
+    visual = visualLevel,
+    social = socialLevel,
+    energy = energyLevel,
+    sensitivity = sensitivityLevel
 )
 
 const val TODAY_CONDITION_QUESTION_COUNT = 5
@@ -36,7 +44,6 @@ data class TodayConditionState(
     val conditionId: Long? = null,
     val sensitivityScore: Int = 0,
     val sensitivityLevel: SensitivityLevel? = null,
-    val triggerCodes: List<TriggerCode> = emptyList(),
     val showResult: Boolean = false,
     val isSubmitting: Boolean = false,
     val submissionError: String? = null

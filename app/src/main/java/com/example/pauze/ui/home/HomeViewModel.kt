@@ -1,9 +1,9 @@
 package com.example.pauze.ui.home
 
 import com.example.pauze.data.model.BaseUiState
-import com.example.pauze.data.model.Condition
 import com.example.pauze.data.model.GetTodayConditionResponseDto
 import com.example.pauze.data.model.HomeState
+import com.example.pauze.data.model.toCondition
 import com.example.pauze.data.repository.TodayConditionRepository
 import com.example.pauze.ui.BaseViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -48,15 +48,7 @@ class HomeViewModel @Inject constructor(
     private fun GetTodayConditionResponseDto.toHomeState(): HomeState {
         val today = Clock.System.todayIn(TimeZone.currentSystemDefault()).toString()
         return HomeState(
-            condition = Condition(
-                score = sensitivityScore,
-                sleep = sleepLevel,
-                noise = noiseLevel,
-                visual = visualLevel,
-                social = socialLevel,
-                energy = energyLevel,
-                sensitivity = sensitivityLevel
-            ),
+            condition = toCondition(),
             isTodayConditionExists = conditionDate == today
         )
     }

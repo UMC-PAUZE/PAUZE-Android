@@ -7,7 +7,6 @@ import com.example.pauze.data.model.AverageScoreUiState
 import com.example.pauze.data.model.BaseUiState
 import com.example.pauze.data.model.ChartBar
 import com.example.pauze.data.model.Condition
-import com.example.pauze.data.model.GetTodayConditionResponseDto
 import com.example.pauze.data.model.InsightUiState
 import com.example.pauze.data.model.MonthlyReportDto
 import com.example.pauze.data.model.ReportPeriod
@@ -16,6 +15,7 @@ import com.example.pauze.data.model.TopTrigger
 import com.example.pauze.data.model.TriggerColorToken
 import com.example.pauze.data.model.TriggerUiState
 import com.example.pauze.data.model.WeeklyReportDto
+import com.example.pauze.data.model.toCondition
 import com.example.pauze.data.repository.ReportRepository
 import com.example.pauze.data.repository.TodayConditionRepository
 import com.example.pauze.ui.BaseViewModel
@@ -136,16 +136,6 @@ private fun MonthlyReportDto.toAverageScoreUiState(): AverageScoreUiState {
         executionCount = pauzeCount.toInt()
     )
 }
-
-private fun GetTodayConditionResponseDto.toCondition() = Condition(
-    score = sensitivityScore,
-    sleep = sleepLevel,
-    noise = noiseLevel,
-    visual = visualLevel,
-    social = socialLevel,
-    energy = energyLevel,
-    sensitivity = sensitivityLevel
-)
 
 private fun WeeklyReportDto.toInsightUiState() = InsightUiState(
     title = "이번 주 인사이트",

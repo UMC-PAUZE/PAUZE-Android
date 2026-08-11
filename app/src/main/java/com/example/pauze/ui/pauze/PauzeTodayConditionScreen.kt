@@ -417,8 +417,7 @@ private object PreviewTodayConditionRepository : TodayConditionRepository {
     ): CreateTodayConditionResult = CreateTodayConditionResult(
         conditionId = 1,
         sensitivityScore = 53,
-        sensitivityLevel = SensitivityLevel.NORMAL,
-        triggerCodes = emptyList()
+        sensitivityLevel = SensitivityLevel.NORMAL
     )
 
     override suspend fun getTodayCondition(): GetTodayConditionResponseDto? = null

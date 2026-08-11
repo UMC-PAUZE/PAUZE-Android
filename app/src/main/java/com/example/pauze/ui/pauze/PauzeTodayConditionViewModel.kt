@@ -10,7 +10,6 @@ import com.example.pauze.data.model.SleepLevel
 import com.example.pauze.data.model.SocialLevel
 import com.example.pauze.data.model.TODAY_CONDITION_QUESTION_COUNT
 import com.example.pauze.data.model.TodayConditionState
-import com.example.pauze.data.model.TriggerCode
 import com.example.pauze.data.model.VisualLevel
 import com.example.pauze.data.repository.TodayConditionRepository
 import com.example.pauze.ui.BaseViewModel
@@ -123,7 +122,6 @@ class PauzeTodayConditionViewModel @Inject constructor(
                         conditionId = result.conditionId,
                         sensitivityScore = result.sensitivityScore,
                         sensitivityLevel = result.sensitivityLevel,
-                        triggerCodes = result.triggerCodes,
                         showResult = true,
                         isSubmitting = false
                     )

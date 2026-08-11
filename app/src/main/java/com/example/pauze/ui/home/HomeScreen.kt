@@ -28,7 +28,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -38,12 +37,7 @@ import com.example.pauze.BottomNavDestination
 import com.example.pauze.ui.theme.AppTheme
 import com.example.pauze.R
 import com.example.pauze.data.model.Condition
-import com.example.pauze.data.model.EnergyLevel
-import com.example.pauze.data.model.NoiseLevel
 import com.example.pauze.data.model.SensitivityLevel
-import com.example.pauze.data.model.SleepLevel
-import com.example.pauze.data.model.SocialLevel
-import com.example.pauze.data.model.VisualLevel
 import com.example.pauze.ui.component.Button
 import com.example.pauze.ui.component.Chips
 import com.example.pauze.ui.component.SensitivityScoreBar
@@ -56,11 +50,9 @@ import com.example.pauze.ui.pauze.PauzeTodayConditionActivity
 import com.example.pauze.ui.theme.bodyTextLgBold
 import com.example.pauze.ui.theme.bodyTextLgRegular
 import com.example.pauze.ui.theme.bodyTextMdBold
-import com.example.pauze.ui.theme.bodyTextMdMedium
 import com.example.pauze.ui.theme.bodyTextMdRegular
 import com.example.pauze.ui.theme.bodyTextXlBold
 import com.example.pauze.ui.theme.headingMdMedium
-import com.example.pauze.ui.theme.PAUZEAndroidTheme
 
 @Composable
 fun HomeScreen(
@@ -224,12 +216,12 @@ fun ConditionDetailBox(condition: Condition){
             Chips(
                 text = condition.noise.label,
                 icon = painterResource(R.drawable.ic_sound),
-                contentColor = severityColor(condition.noise.toSeverityRank())
+                contentColor = severityColor(condition.noise.severityRank)
             )
             Chips(
                 text = condition.sleep.label,
                 icon = painterResource(R.drawable.ic_sleep),
-                contentColor = severityColor(condition.sleep.toSeverityRank())
+                contentColor = severityColor(condition.sleep.severityRank)
             )
         }
         Row(
@@ -239,17 +231,17 @@ fun ConditionDetailBox(condition: Condition){
             Chips(
                 text = condition.social.label,
                 icon = painterResource(R.drawable.ic_community),
-                contentColor = severityColor(condition.social.toSeverityRank())
+                contentColor = severityColor(condition.social.severityRank)
             )
             Chips(
                 text = condition.energy.label,
                 icon = painterResource(R.drawable.ic_energy),
-                contentColor = severityColor(condition.energy.toSeverityRank())
+                contentColor = severityColor(condition.energy.severityRank)
             )
             Chips(
                 text = condition.visual.label,
                 icon = painterResource(R.drawable.ic_see_outline),
-                contentColor = severityColor(condition.visual.toSeverityRank())
+                contentColor = severityColor(condition.visual.severityRank)
             )
         }
     }
@@ -261,25 +253,4 @@ private fun severityColor(rank: Int): Color = when (rank) {
     1 -> AppTheme.palette.primary.getColor(4)
     2, 3 -> AppTheme.palette.tertiary.getColor(3)
     else -> AppTheme.palette.secondary.getColor(3)
-}
-
-private fun SleepLevel.toSeverityRank() = when (this) {
-    SleepLevel.OVER_8 -> 1; SleepLevel.SIX_TO_EIGHT -> 2
-    SleepLevel.FOUR_TO_SIX -> 3; SleepLevel.LESS_4 -> 4
-}
-private fun NoiseLevel.toSeverityRank() = when (this) {
-    NoiseLevel.QUIET -> 1; NoiseLevel.NORMAL -> 2
-    NoiseLevel.UNCOMFORTABLE -> 3; NoiseLevel.HARD -> 4
-}
-private fun VisualLevel.toSeverityRank() = when (this) {
-    VisualLevel.LOW -> 1; VisualLevel.NORMAL -> 2
-    VisualLevel.HIGH -> 3; VisualLevel.VERY_HIGH -> 4
-}
-private fun SocialLevel.toSeverityRank() = when (this) {
-    SocialLevel.ALONE -> 1; SocialLevel.LITTLE -> 2
-    SocialLevel.SOME -> 3; SocialLevel.MANY -> 4
-}
-private fun EnergyLevel.toSeverityRank() = when (this) {
-    EnergyLevel.ENOUGH -> 1; EnergyLevel.NORMAL -> 2
-    EnergyLevel.LOW -> 3; EnergyLevel.NONE -> 4
 }
