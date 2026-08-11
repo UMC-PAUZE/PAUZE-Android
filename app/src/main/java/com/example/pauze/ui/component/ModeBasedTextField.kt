@@ -207,6 +207,14 @@ fun ModeBasedTextField(
                                     isFocused = false
                                 }
                             }
+                            TextFieldMode.Nickname -> Row(
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                ActionButton(actions = Actions.EmailCheck) {
+                                    onCheckClick()
+                                    isFocused = false
+                                }
+                            }
                             else -> ActionButton(actions = Actions.Reset) { onValueChanged("") }
                         }
 

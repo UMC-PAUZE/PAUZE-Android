@@ -30,9 +30,10 @@ class LoginViewModel @Inject constructor(
 ) {
         fun loginWithKakao(){
         launch(
-            onSuccess = { sendEffect(LoginEffect.NavigateToHome) },
+            onSuccess = { sendEffect(LoginEffect.NavigateToAdditionalScreen) },
         ) {
-            repository.kakaoLogin(context)
+            //repository.kakaoLogin(context)
+
         }
     }
 

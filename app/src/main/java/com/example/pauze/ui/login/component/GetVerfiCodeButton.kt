@@ -18,12 +18,7 @@ fun GetVerifCodeButton(
 ){
     Button(
         "인증코드 받기",
-        onClick = {
-            if(kakaoSignUp){
-                (viewModel as KakaoSignUpViewModel).updatePhase()
-            } else {
-                (viewModel as SignUpViewModel).updatePhase()
-            } },
+        onClick = { (viewModel as SignUpViewModel).updatePhase() },
         modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp),
         color = AppTheme.palette.gray.getColor(7),
         contentColor = AppTheme.palette.gray.getColor(2)
