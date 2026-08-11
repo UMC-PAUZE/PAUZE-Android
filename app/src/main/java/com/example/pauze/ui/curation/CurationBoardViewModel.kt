@@ -181,57 +181,56 @@ class CurationBoardViewModel @Inject constructor(
                     postId = postId,
                 )
 
-            updateData { state ->
-                val existingPost = state.posts.firstOrNull {
-                    post -> post.postId == postId
-                } ?: state.likedPosts.firstOrNull {
-                    post -> post.postId == postId
-                } ?: state.bookmarkedPosts.firstOrNull {
-                    post -> post.postId == postId
-                }
+            val state = uiState.value.data
+            val existingPost = state.posts.firstOrNull {
+                post -> post.postId == postId
+            } ?: state.likedPosts.firstOrNull {
+                post -> post.postId == postId
+            } ?: state.bookmarkedPosts.firstOrNull {
+                post -> post.postId == postId
+            }
 
-                val detailPost = detail.toCurationPost(
-                    summary = existingPost?.summary
-                        ?: detail.content,
-                )
+            val detailPost = detail.toCurationPost(
+                summary = existingPost?.summary
+                    ?: detail.content,
+            )
 
-                val updatedPosts =
-                    if (state.posts.none { post ->
-                            post.postId == postId
-                        }
-                    ) {
-                        state.posts + detailPost
-                    } else {
-                        state.posts.map { post ->
-                            if (post.postId == postId) {
-                                detailPost
-                            } else {
-                                post
-                            }
+            val updatedPosts =
+                if (state.posts.none { post ->
+                        post.postId == postId
+                    }
+                ) {
+                    state.posts + detailPost
+                } else {
+                    state.posts.map { post ->
+                        if (post.postId == postId) {
+                            detailPost
+                        } else {
+                            post
                         }
                     }
+                }
 
-                state.copy(
-                    posts = updatedPosts,
-                    likedPosts =
-                        state.likedPosts.map { post ->
-                            if (post.postId == postId) {
-                                detailPost
-                            } else {
-                                post
-                            }
-                        },
-                    bookmarkedPosts =
-                        state.bookmarkedPosts.map { post ->
-                            if (post.postId == postId) {
-                                detailPost
-                            } else {
-                                post
-                            }
-                        },
-                    selectedPostId = postId,
-                )
-            }
+            state.copy(
+                posts = updatedPosts,
+                likedPosts =
+                    state.likedPosts.map { post ->
+                        if (post.postId == postId) {
+                            detailPost
+                        } else {
+                            post
+                        }
+                    },
+                bookmarkedPosts =
+                    state.bookmarkedPosts.map { post ->
+                        if (post.postId == postId) {
+                            detailPost
+                        } else {
+                            post
+                        }
+                    },
+                selectedPostId = postId,
+            )
         }
     }
 
