@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -33,6 +34,8 @@ fun PauzeVisualScreen(
     navController: NavController,
     viewModel: PauzeVisualViewModel = hiltViewModel()
 ) {
+    val uiState by viewModel.uiState.collectAsState()
+
     var step by remember { mutableStateOf(PauzeVisualStep.SelectMethod) }
     var selectedMethod by remember { mutableStateOf<PauzeVisualMethod?>(null) }
     var selectedHour by remember { mutableStateOf(0) }
@@ -112,6 +115,7 @@ fun PauzeVisualScreen(
         PauzeVisualStep.Running -> when (selectedMethod) {
             PauzeVisualMethod.BreathingGuide -> PauzeVisualBreathingRunningScreen(
                 totalSeconds = totalSeconds,
+                visualUrl = uiState.data.visualUrl,
                 showStopDialog = showStopDialog,
                 onShowStopDialog = viewModel::showStopDialog,
                 onStopClick = {
