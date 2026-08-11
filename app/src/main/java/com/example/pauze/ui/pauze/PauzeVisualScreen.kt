@@ -60,7 +60,12 @@ fun PauzeVisualScreen(
         PauzeVisualStep.SelectMethod -> PauzeVisualMethodSelectScreen(
             selectedMethod = selectedMethod,
             onMethodSelect = { selectedMethod = it },
-            onNextClick = { step = PauzeVisualStep.SelectTime },
+            onNextClick = {
+                if (selectedMethod == PauzeVisualMethod.BreathingGuide) {
+                    viewModel.loadVisualGuide()
+                }
+                step = PauzeVisualStep.SelectTime
+            },
             onBackClick = { step = PauzeVisualStep.Start }
         )
 

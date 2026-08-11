@@ -22,6 +22,8 @@ class PauzeVisualViewModel @Inject constructor(
     uiState = BaseUiState(data = PauzeVisualState())
 ) {
     fun loadVisualGuide() {
+        if (uiState.value.isLoading || uiState.value.data.visualUrl != null) return
+
         launch {
             PauzeVisualState(
                 visualUrl = visualGuideRepository.getVisualUrl()
