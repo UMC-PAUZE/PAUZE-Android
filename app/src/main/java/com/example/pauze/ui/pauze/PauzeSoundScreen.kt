@@ -20,7 +20,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -31,6 +30,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.pauze.R
 import com.example.pauze.data.dummies.Sounds
 import com.example.pauze.data.model.AudioGuideDto
@@ -52,7 +52,9 @@ fun PauzeSoundScreen(
     onBackClick: () -> Unit = {},
     viewModel: PauzeSoundViewModel = hiltViewModel()
 ) {
-    val state by viewModel.state.collectAsState()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val state = uiState.data
+    val errorMessage = uiState.error?.toPauzeSoundErrorMessage()
     var currentDestination by remember { mutableStateOf(SoundDestination.LIST) }
     var detailOrigin by remember { mutableStateOf(SoundDestination.LIST) }
     var selectedSoundId by remember { mutableStateOf<String?>(null) }
@@ -145,7 +147,7 @@ fun PauzeSoundScreen(
                 Spacer(modifier = Modifier.height(32.dp))
 
                 when {
-                    state.isLoading && state.filteredSounds.isEmpty() -> {
+                    uiState.isLoading && state.filteredSounds.isEmpty() -> {
                         Box(
                             modifier = Modifier
                                 .weight(1f)
@@ -158,9 +160,9 @@ fun PauzeSoundScreen(
                         }
                     }
 
-                    state.errorMessage != null && state.filteredSounds.isEmpty() -> {
+                    errorMessage != null && state.filteredSounds.isEmpty() -> {
                         SoundMessage(
-                            message = state.errorMessage.orEmpty(),
+                            message = errorMessage,
                             actionText = "다시 시도",
                             onActionClick = viewModel::retry,
                             modifier = Modifier
@@ -188,7 +190,7 @@ fun PauzeSoundScreen(
                                 .weight(1f)
                                 .width(312.dp)
                         ) {
-                            state.errorMessage?.let { message ->
+                            errorMessage?.let { message ->
                                 Text(
                                     text = message,
                                     style = bodyTextMdMedium,
