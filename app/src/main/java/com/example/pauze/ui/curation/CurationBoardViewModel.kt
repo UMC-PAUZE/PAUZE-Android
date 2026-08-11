@@ -71,44 +71,43 @@ class CurationBoardViewModel @Inject constructor(
             )
         }
 
-        launch {
-            try {
-                val result = curationRepository.getCurationPosts(
-                    categoryId = categoryId,
-                    keyword = keyword.takeIf { !it.isNullOrBlank() },
-                    page = page,
-                    size = size,
-                )
-
-                if (requestVersion != postsRequestVersion) {
-                    return@launch
-                }
-
-                val posts = result.content.map { item ->
-                    item.toCurationPost()
-                }
-
-                updateData { state ->
-                    val updatedPosts = if (page == 1) {
-                        posts
-                    } else {
-                        (state.posts + posts).distinctBy {
-                            it.postId
-                        }
-                    }
-
-                    state.copy(
-                        posts = updatedPosts,
-                        postsPage = result.page,
-                        postsTotalPages = result.totalPages,
-                    )
-                }
-            } finally {
+        launch(
+            onFailure = {
                 if (requestVersion == postsRequestVersion) {
                     updateData { state ->
                         state.copy(isPostsLoading = false)
                     }
                 }
+            },
+        ) {
+            val result = curationRepository.getCurationPosts(
+                categoryId = categoryId,
+                keyword = keyword.takeIf { !it.isNullOrBlank() },
+                page = page,
+                size = size,
+            )
+            val state = uiState.value.data
+
+            if (requestVersion != postsRequestVersion) {
+                state
+            } else {
+                val posts = result.content.map { item ->
+                    item.toCurationPost()
+                }
+                val updatedPosts = if (page == 1) {
+                    posts
+                } else {
+                    (state.posts + posts).distinctBy {
+                        it.postId
+                    }
+                }
+
+                state.copy(
+                    posts = updatedPosts,
+                    postsPage = result.page,
+                    postsTotalPages = result.totalPages,
+                    isPostsLoading = false,
+                )
             }
         }
     }
