@@ -55,20 +55,7 @@ class CurationBoardViewModel @Inject constructor(
         }
 
         updateData { state ->
-            state.copy(
-                posts = if (page == 1) {
-                    emptyList()
-                } else {
-                    state.posts
-                },
-                postsPage = if (page == 1) 0 else state.postsPage,
-                postsTotalPages = if (page == 1) {
-                    1
-                } else {
-                    state.postsTotalPages
-                },
-                isPostsLoading = true,
-            )
+            state.copy(isPostsLoading = true)
         }
 
         launch(
