@@ -74,6 +74,27 @@ data class MyBookmarkListItemDto(
     val createdAt: String,
 )
 
+data class MyLikeListResultDto(
+    val content: List<MyLikeListItemDto>,
+    val page: Int,
+    val size: Int,
+    val totalElements: Int,
+    val totalPages: Int,
+)
+
+data class MyLikeListItemDto(
+    val likesId: Long,
+    val postId: Long,
+    val categoryId: Long,
+    val categoryName: String,
+    val title: String,
+    val estimatedReadTime: Int,
+    val summary: String,
+    val likeCount: Int,
+    val isBookmarked: Boolean,
+    val createdAt: String,
+)
+
 fun CurationPostListItemDto.toCurationPost(): CurationPost {
     return CurationPost(
         postId = postId,
@@ -124,6 +145,23 @@ fun MyBookmarkListItemDto.toCurationPost(): CurationPost {
         readingTimeMinutes = estimatedReadTime,
         isLiked = isLiked,
         isBookmarked = true,
+        createdAt = createdAt,
+    )
+}
+
+fun MyLikeListItemDto.toCurationPost(): CurationPost {
+    return CurationPost(
+        postId = postId,
+        categoryId = categoryId,
+        categoryName = categoryName,
+        title = title,
+        summary = summary,
+        thumbnailUrl = null,
+        viewCount = 0,
+        likeCount = likeCount,
+        readingTimeMinutes = estimatedReadTime,
+        isLiked = true,
+        isBookmarked = isBookmarked,
         createdAt = createdAt,
     )
 }
