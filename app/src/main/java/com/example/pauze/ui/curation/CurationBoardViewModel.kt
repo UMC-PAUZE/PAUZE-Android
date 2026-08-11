@@ -646,67 +646,68 @@ class CurationBoardViewModel @Inject constructor(
             return
         }
 
-        launch {
-            val result =
-                curationRepository.toggleCurationPostBookmark(
-                    postId = postId,
-                )
+        launch(
+            onSuccess = { result ->
+                updateData { state ->
+                    val currentPost = state.posts.firstOrNull {
+                        it.postId == result.postId
+                    } ?: state.likedPosts.firstOrNull {
+                        it.postId == result.postId
+                    } ?: state.bookmarkedPosts.firstOrNull {
+                        it.postId == result.postId
+                    }
 
-            updateData { state ->
-                val currentPost = state.posts.firstOrNull {
-                    it.postId == result.postId
-                } ?: state.likedPosts.firstOrNull {
-                    it.postId == result.postId
-                } ?: state.bookmarkedPosts.firstOrNull {
-                    it.postId == result.postId
-                }
-
-                val updatedBookmarkedPosts = if (result.bookmarked) {
-                    if (state.bookmarkedPosts.any {
-                            it.postId == result.postId
+                    val updatedBookmarkedPosts = if (result.bookmarked) {
+                        if (state.bookmarkedPosts.any {
+                                it.postId == result.postId
+                            }
+                        ) {
+                            state.bookmarkedPosts.map { post ->
+                                if (post.postId == result.postId) {
+                                    post.copy(isBookmarked = true)
+                                } else {
+                                    post
+                                }
+                            }
+                        } else {
+                            currentPost?.let { post ->
+                                state.bookmarkedPosts +
+                                    post.copy(isBookmarked = true)
+                            } ?: state.bookmarkedPosts
                         }
-                    ) {
-                        state.bookmarkedPosts.map { post ->
+                    } else {
+                        state.bookmarkedPosts.filterNot { post ->
+                            post.postId == result.postId
+                        }
+                    }
+
+                    state.copy(
+                        posts = state.posts.map { post ->
                             if (post.postId == result.postId) {
-                                post.copy(isBookmarked = true)
+                                post.copy(
+                                    isBookmarked = result.bookmarked,
+                                )
                             } else {
                                 post
                             }
-                        }
-                    } else {
-                        currentPost?.let { post ->
-                            state.bookmarkedPosts +
-                                post.copy(isBookmarked = true)
-                        } ?: state.bookmarkedPosts
-                    }
-                } else {
-                    state.bookmarkedPosts.filterNot { post ->
-                        post.postId == result.postId
-                    }
+                        },
+                        likedPosts = state.likedPosts.map { post ->
+                            if (post.postId == result.postId) {
+                                post.copy(
+                                    isBookmarked = result.bookmarked,
+                                )
+                            } else {
+                                post
+                            }
+                        },
+                        bookmarkedPosts = updatedBookmarkedPosts,
+                    )
                 }
-
-                state.copy(
-                    posts = state.posts.map { post ->
-                        if (post.postId == result.postId) {
-                            post.copy(
-                                isBookmarked = result.bookmarked,
-                            )
-                        } else {
-                            post
-                        }
-                    },
-                    likedPosts = state.likedPosts.map { post ->
-                        if (post.postId == result.postId) {
-                            post.copy(
-                                isBookmarked = result.bookmarked,
-                            )
-                        } else {
-                            post
-                        }
-                    },
-                    bookmarkedPosts = updatedBookmarkedPosts,
-                )
-            }
+            },
+        ) {
+            curationRepository.toggleCurationPostBookmark(
+                postId = postId,
+            )
         }
     }
 
