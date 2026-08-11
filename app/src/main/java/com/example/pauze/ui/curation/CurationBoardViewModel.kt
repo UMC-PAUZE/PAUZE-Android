@@ -387,6 +387,19 @@ class CurationBoardViewModel @Inject constructor(
                         likesTotalPages = result.totalPages,
                     )
                 }
+            } catch (error: Exception) {
+                if (requestVersion == likesRequestVersion) {
+                    updateData { state ->
+                        state.copy(
+                            likedPosts = currentState.likedPosts,
+                            likesPage = currentState.likesPage,
+                            likesTotalPages =
+                                currentState.likesTotalPages,
+                        )
+                    }
+                }
+
+                throw error
             } finally {
                 if (requestVersion == likesRequestVersion) {
                     updateData { state ->
