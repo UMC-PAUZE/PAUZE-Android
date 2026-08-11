@@ -10,7 +10,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 
 // 시각 안정 화면 단계
@@ -31,7 +31,7 @@ enum class PauzeVisualMethod {
 @Composable
 fun PauzeVisualScreen(
     navController: NavController,
-    viewModel: PauzeVisualViewModel = viewModel()
+    viewModel: PauzeVisualViewModel = hiltViewModel()
 ) {
     var step by remember { mutableStateOf(PauzeVisualStep.SelectMethod) }
     var selectedMethod by remember { mutableStateOf<PauzeVisualMethod?>(null) }
