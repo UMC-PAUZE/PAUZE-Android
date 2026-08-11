@@ -578,64 +578,65 @@ class CurationBoardViewModel @Inject constructor(
             return
         }
 
-        launch {
-            val result =
-                curationRepository.toggleCurationPostLike(
-                    postId = postId,
-                )
+        launch(
+            onSuccess = { result ->
+                updateData { state ->
+                    val currentPost = state.posts.firstOrNull {
+                        it.postId == result.postId
+                    } ?: state.likedPosts.firstOrNull {
+                        it.postId == result.postId
+                    } ?: state.bookmarkedPosts.firstOrNull {
+                        it.postId == result.postId
+                    }
 
-            updateData { state ->
-                val currentPost = state.posts.firstOrNull {
-                    it.postId == result.postId
-                } ?: state.likedPosts.firstOrNull {
-                    it.postId == result.postId
-                } ?: state.bookmarkedPosts.firstOrNull {
-                    it.postId == result.postId
-                }
+                    val updatePost: (CurationPost) -> CurationPost = { post ->
+                        if (post.postId == result.postId) {
+                            val likeCountChange = when {
+                                post.isLiked == result.liked -> 0
+                                result.liked -> 1
+                                else -> -1
+                            }
 
-                val updatePost: (CurationPost) -> CurationPost = { post ->
-                    if (post.postId == result.postId) {
-                        val likeCountChange = when {
-                            post.isLiked == result.liked -> 0
-                            result.liked -> 1
-                            else -> -1
+                            post.copy(
+                                isLiked = result.liked,
+                                likeCount = (
+                                    post.likeCount + likeCountChange
+                                ).coerceAtLeast(0),
+                            )
+                        } else {
+                            post
                         }
-
-                        post.copy(
-                            isLiked = result.liked,
-                            likeCount = (
-                                post.likeCount + likeCountChange
-                            ).coerceAtLeast(0),
-                        )
-                    } else {
-                        post
                     }
-                }
 
-                val updatedLikedPosts = if (result.liked) {
-                    if (state.likedPosts.any {
-                            it.postId == result.postId
+                    val updatedLikedPosts = if (result.liked) {
+                        if (state.likedPosts.any {
+                                it.postId == result.postId
+                            }
+                        ) {
+                            state.likedPosts.map(updatePost)
+                        } else {
+                            currentPost?.let { post ->
+                                listOf(updatePost(post)) + state.likedPosts
+                            } ?: state.likedPosts
                         }
-                    ) {
-                        state.likedPosts.map(updatePost)
                     } else {
-                        currentPost?.let { post ->
-                            listOf(updatePost(post)) + state.likedPosts
-                        } ?: state.likedPosts
+                        state.likedPosts.filterNot { post ->
+                            post.postId == result.postId
+                        }
                     }
-                } else {
-                    state.likedPosts.filterNot { post ->
-                        post.postId == result.postId
-                    }
-                }
 
-                state.copy(
-                    posts = state.posts.map(updatePost),
-                    likedPosts = updatedLikedPosts,
-                    bookmarkedPosts =
-                        state.bookmarkedPosts.map(updatePost),
-                )
-            }
+                    state.copy(
+                        posts = state.posts.map(updatePost),
+                        likedPosts = updatedLikedPosts,
+                        bookmarkedPosts =
+                            state.bookmarkedPosts.map(updatePost),
+                    )
+                }
+            },
+        ) {
+            curationRepository.toggleCurationPostLike(
+                postId = postId,
+            )
         }
     }
 
