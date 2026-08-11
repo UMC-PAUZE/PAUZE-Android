@@ -21,6 +21,7 @@ data class CurationBoardState(
     val isBookmarksLoading: Boolean = false,
 
     val selectedPostId: Long? = null,
+    val selectedPostDetail: CurationPost? = null,
 ) {
     val selectedPost: CurationPost?
         get() = posts.firstOrNull { post ->
@@ -28,6 +29,8 @@ data class CurationBoardState(
         } ?: likedPosts.firstOrNull { post ->
             post.postId == selectedPostId
         } ?: bookmarkedPosts.firstOrNull { post ->
+            post.postId == selectedPostId
+        } ?: selectedPostDetail?.takeIf { post ->
             post.postId == selectedPostId
         }
 

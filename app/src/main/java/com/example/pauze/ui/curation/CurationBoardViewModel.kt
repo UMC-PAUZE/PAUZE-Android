@@ -152,7 +152,10 @@ class CurationBoardViewModel @Inject constructor(
 
     fun selectPost(postId: Long) {
         updateData { state ->
-            state.copy(selectedPostId = postId)
+            state.copy(
+                selectedPostId = postId,
+                selectedPostDetail = null,
+            )
         }
 
         loadCurationPostDetail(postId)
@@ -161,7 +164,23 @@ class CurationBoardViewModel @Inject constructor(
     private fun loadCurationPostDetail(
         postId: Long,
     ) {
-        launch {
+        launch(
+            onFailure = {
+                updateData { state ->
+                    if (
+                        state.selectedPostId == postId &&
+                        state.selectedPost == null
+                    ) {
+                        state.copy(
+                            selectedPostId = null,
+                            selectedPostDetail = null,
+                        )
+                    } else {
+                        state
+                    }
+                }
+            },
+        ) {
             val detail =
                 curationRepository.getCurationPostDetail(
                     postId = postId,
@@ -181,21 +200,13 @@ class CurationBoardViewModel @Inject constructor(
                     ?: detail.content,
             )
 
-            val updatedPosts =
-                if (state.posts.none { post ->
-                        post.postId == postId
-                    }
-                ) {
-                    state.posts + detailPost
+            val updatedPosts = state.posts.map { post ->
+                if (post.postId == postId) {
+                    detailPost
                 } else {
-                    state.posts.map { post ->
-                        if (post.postId == postId) {
-                            detailPost
-                        } else {
-                            post
-                        }
-                    }
+                    post
                 }
+            }
 
             state.copy(
                 posts = updatedPosts,
@@ -216,6 +227,11 @@ class CurationBoardViewModel @Inject constructor(
                         }
                     },
                 selectedPostId = postId,
+                selectedPostDetail = if (existingPost == null) {
+                    detailPost
+                } else {
+                    null
+                },
             )
         }
     }
@@ -234,7 +250,10 @@ class CurationBoardViewModel @Inject constructor(
         handledDeepLink = null
 
         updateData { state ->
-            state.copy(selectedPostId = null)
+            state.copy(
+                selectedPostId = null,
+                selectedPostDetail = null,
+            )
         }
     }
 
@@ -559,6 +578,8 @@ class CurationBoardViewModel @Inject constructor(
                         it.postId == result.postId
                     } ?: state.bookmarkedPosts.firstOrNull {
                         it.postId == result.postId
+                    } ?: state.selectedPostDetail?.takeIf {
+                        it.postId == result.postId
                     }
 
                     val updatePost: (CurationPost) -> CurationPost = { post ->
@@ -602,6 +623,8 @@ class CurationBoardViewModel @Inject constructor(
                         likedPosts = updatedLikedPosts,
                         bookmarkedPosts =
                             state.bookmarkedPosts.map(updatePost),
+                        selectedPostDetail =
+                            state.selectedPostDetail?.let(updatePost),
                     )
                 }
             },
@@ -626,6 +649,8 @@ class CurationBoardViewModel @Inject constructor(
                     } ?: state.likedPosts.firstOrNull {
                         it.postId == result.postId
                     } ?: state.bookmarkedPosts.firstOrNull {
+                        it.postId == result.postId
+                    } ?: state.selectedPostDetail?.takeIf {
                         it.postId == result.postId
                     }
 
@@ -673,6 +698,16 @@ class CurationBoardViewModel @Inject constructor(
                             }
                         },
                         bookmarkedPosts = updatedBookmarkedPosts,
+                        selectedPostDetail =
+                            state.selectedPostDetail?.let { post ->
+                                if (post.postId == result.postId) {
+                                    post.copy(
+                                        isBookmarked = result.bookmarked,
+                                    )
+                                } else {
+                                    post
+                                }
+                            },
                     )
                 }
             },
