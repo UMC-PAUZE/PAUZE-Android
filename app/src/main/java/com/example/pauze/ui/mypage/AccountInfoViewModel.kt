@@ -22,15 +22,13 @@ class AccountInfoViewModel @Inject constructor(
 ) {
 
     init {
-        launch {
-            val profile = myPageRepository.getProfile()
-            updateData {
-                it.copy(
-                    email = profile.email,
-                    joinedAt = profile.joinedAt,
-                    socialTypes = profile.socialTypes
-                )
-            }
+        launch(
+            onSuccess = { profile ->
+                updateData { state ->
+                state.copy(profile.email, profile.joinedAt, profile.socialTypes)
+            } }
+        ) {
+            myPageRepository.getProfile()
         }
     }
 
@@ -38,9 +36,10 @@ class AccountInfoViewModel @Inject constructor(
     fun onLogoutClick() = sendEffect(AccountInfoEffect.NavigateToLogout)
     fun onWithdrawClick() = sendEffect(AccountInfoEffect.ShowWithdrawDialog)
     fun onWithdrawConfirm() {
-        launch {
+        launch(
+            onSuccess = { sendEffect(AccountInfoEffect.NavigateToWithdraw)}
+        ) {
             myPageRepository.withdraw()
-            sendEffect(AccountInfoEffect.NavigateToWithdraw)
         }
     }
 }

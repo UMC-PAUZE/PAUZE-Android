@@ -21,16 +21,16 @@ class MyPageViewModel @Inject constructor(
 ) : BaseViewModel<MyPageEffect, MyPageState>(
     uiState = BaseUiState(data = MyPageState())
 ) {
-    fun refresh() {
-        launch {
-            val profile = myPageRepository.getMyPage()
-            updateData { it.copy(profile = profile) }
-        }
-        launch {
-            val detail = myPageRepository.getProfile()
-            updateData { it.copy(stats = detail.stats) }
-        }
-    }
+//    fun refresh() {
+//        launch {
+//            val profile = myPageRepository.getMyPage()
+//            updateData { it.copy(profile = profile) }
+//        }
+//        launch {
+//            val detail = myPageRepository.getProfile()
+//            updateData { it.copy(stats = detail.stats) }
+//        }
+//    }
 
     val dailyReminder: Boolean
         get() = uiState.value.data.profile?.settings?.notifications?.reminderAlarmActive ?: true
@@ -64,9 +64,12 @@ class MyPageViewModel @Inject constructor(
     private fun updateSettings(request: UpdateSettingsRequest) {
         val currentProfile = uiState.value.data.profile ?: return
         if (uiState.value.isLoading) return
-        launch {
-            val updated = myPageRepository.updateSettings(request)
-            updateData { it.copy(profile = currentProfile.copy(settings = updated)) }
+        launch(
+            onSuccess = { updated ->
+                updateData { it.copy(profile = currentProfile.copy(settings = updated)) }
+            }
+        ) {
+            myPageRepository.updateSettings(request)
         }
     }
 }

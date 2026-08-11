@@ -85,7 +85,7 @@ fun MyPageScreen(
     }
 
     LifecycleResumeEffect(isGuest) {
-        if (!isGuest) viewModel.refresh()
+//        if (!isGuest) viewModel.refresh()
         onPauseOrDispose { }
     }
 

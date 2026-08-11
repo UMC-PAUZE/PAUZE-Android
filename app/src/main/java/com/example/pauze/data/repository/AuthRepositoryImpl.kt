@@ -1,6 +1,10 @@
 package com.example.pauze.data.repository
 
 import android.content.Context
+import android.os.Build
+import androidx.annotation.RequiresApi
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
 import com.example.pauze.data.datastore.AuthDataStore
 import com.example.pauze.data.model.KakaoLoginRequest
 import com.example.pauze.data.model.KakaoLoginResult
@@ -85,6 +89,7 @@ class AuthRepositoryImpl @Inject constructor(
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override suspend fun kakaoLogin(context: Context): KakaoLoginResult? {
         val accessToken = dataStore.getKakaoAccessToken(context).firstOrNull() ?: return null
 

@@ -62,8 +62,15 @@ class SignUpViewModel @Inject constructor(
     }
     fun checkVerifCodeRight(): Boolean = code == "643590"
     fun signUp(){
-        launch {
-            val result = repository.localSignUp(
+        launch(
+            onSuccess = {
+                verifyEmail()
+                if(isVerified){
+                    sendEffect(SignUpEffect.NavigateToCompleted)
+                }
+            }
+        ) {
+            repository.localSignUp(
                 LocalSignUpRequest(
                     name = name,
                     nickname = nickname,
@@ -76,26 +83,19 @@ class SignUpViewModel @Inject constructor(
                     )
                 )
             )
-            if(result != null){
-                when(result){
-                    is LocalSignUpResult.Success -> {
-                        verifyEmail()
-                        if(isVerified){
-                            sendEffect(SignUpEffect.NavigateToCompleted)
-                        }
-                    }
-                    is LocalSignUpResult.KakaoExists -> {
-                        // todo: 이후 구현
-                    }
-                }
-            }
         }
     }
 
     fun verifyEmail(){
-        launch {
-            val result = repository.verifyEmail(email, code)
-            isVerified = result != null
+        launch(
+            onSuccess = {
+                isVerified = true
+            },
+            onFailure = {
+                isVerified = false
+            }
+        ) {
+            repository.verifyEmail(email, code)
         }
     }
     fun updateIsAgreedToTerm(isAgreed: Boolean){

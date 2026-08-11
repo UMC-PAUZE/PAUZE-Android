@@ -103,7 +103,7 @@ fun LoginScreen(
     val focusManager = LocalFocusManager.current
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-    var showDialog by rememberSaveable { mutableStateOf(false) }
+    var isLoginFailed by remember { mutableStateOf(false) }
 
     // 로그인 성공 여부 collect하기
     LaunchedEffect(viewModel.effect) {
@@ -121,8 +121,8 @@ fun LoginScreen(
                 is LoginEffect.NavigateToAdditionalScreen -> {
                     navController.navigate(LoginNavDestination.Kakao(isAgreedToTerm = false, isAgreedToPolicy = false))
                 }
-                is LoginEffect.ShowDialog -> {
-                    showDialog = true
+                is LoginEffect.IsLoginFailed -> {
+                    isLoginFailed = true
                 }
             }
         }
@@ -153,6 +153,7 @@ fun LoginScreen(
             onValueChanged = { email = it },
             imeAction = ImeAction.Next
         )
+        if(isLoginFailed) LoginFailedText()
         Spacer(modifier = Modifier.height(12.dp))
         ModeBasedTextField(
             mode = TextFieldMode.Pwd,
@@ -160,6 +161,7 @@ fun LoginScreen(
             onValueChanged = { password = it },
             imeAction = ImeAction.Done
         )
+        if(isLoginFailed) LoginFailedText()
         Spacer(modifier = Modifier.height(32.dp))
         Button(
             "로그인",
@@ -243,14 +245,13 @@ fun LoginScreen(
                 color = AppTheme.palette.gray.getColor(2)
             )
         }
+    }
+}
 
-        if(showDialog){
-            Dialog(
-                title = "로그인 오류",
-                content = "이메일이나 비밀번호가 일치하지 않습니다",
-                btnCancel = "다시 입력하기",
-                onDismissRequest = { showDialog = false}
-            )
-        }
+@Composable
+fun LoginFailedText(){
+    Column {
+        Spacer(modifier = Modifier.height(4.dp))
+        Text("아이디나 비밀번호가 일치하지 않습니다", style = bodyTextSmRegular, color = AppTheme.palette.secondary.getColor(4))
     }
 }

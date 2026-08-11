@@ -70,23 +70,11 @@ class CurationBoardViewModel @Inject constructor(
             )
         }
 
-        launch {
-            try {
-                val result = curationRepository.getCurationPosts(
-                    categoryId = categoryId,
-                    keyword = keyword.takeIf { !it.isNullOrBlank() },
-                    page = page,
-                    size = size,
-                )
-
-                if (requestVersion != postsRequestVersion) {
-                    return@launch
-                }
-
+        launch(
+            onSuccess = { result ->
                 val posts = result.content.map { item ->
                     item.toCurationPost()
                 }
-
                 updateData { state ->
                     val updatedPosts = if (page == 1) {
                         posts
@@ -102,12 +90,24 @@ class CurationBoardViewModel @Inject constructor(
                         postsTotalPages = result.totalPages,
                     )
                 }
-            } finally {
-                if (requestVersion == postsRequestVersion) {
-                    updateData { state ->
-                        state.copy(isPostsLoading = false)
-                    }
+
+            },
+            onFailure = {
+                if (requestVersion != postsRequestVersion) {
+                    return@launch
                 }
+            }
+        ) {
+            curationRepository.getCurationPosts(
+                categoryId = categoryId,
+                keyword = keyword.takeIf { !it.isNullOrBlank() },
+                page = page,
+                size = size,
+            )
+        }
+        if (requestVersion == postsRequestVersion) {
+            updateData { state ->
+                state.copy(isPostsLoading = false)
             }
         }
     }
@@ -174,53 +174,54 @@ class CurationBoardViewModel @Inject constructor(
     private fun loadCurationPostDetail(
         postId: Long,
     ) {
-        launch {
-            val detail =
-                curationRepository.getCurationPostDetail(
-                    postId = postId,
-                )
-
-            updateData { state ->
-                val existingPost = state.posts.firstOrNull {
-                    post -> post.postId == postId
-                } ?: state.bookmarkedPosts.firstOrNull {
-                    post -> post.postId == postId
-                }
-
-                val detailPost = detail.toCurationPost(
-                    summary = existingPost?.summary
-                        ?: detail.content,
-                )
-
-                val updatedPosts =
-                    if (state.posts.none { post ->
-                            post.postId == postId
-                        }
-                    ) {
-                        state.posts + detailPost
-                    } else {
-                        state.posts.map { post ->
-                            if (post.postId == postId) {
-                                detailPost
-                            } else {
-                                post
-                            }
-                        }
+        launch(
+            onSuccess = { detail ->
+                updateData { state ->
+                    val existingPost = state.posts.firstOrNull {
+                            post -> post.postId == postId
+                    } ?: state.bookmarkedPosts.firstOrNull {
+                            post -> post.postId == postId
                     }
 
-                state.copy(
-                    posts = updatedPosts,
-                    bookmarkedPosts =
-                        state.bookmarkedPosts.map { post ->
-                            if (post.postId == postId) {
-                                detailPost
-                            } else {
-                                post
+                    val detailPost = detail.toCurationPost(
+                        summary = existingPost?.summary
+                            ?: detail.content,
+                    )
+
+                    val updatedPosts =
+                        if (state.posts.none { post ->
+                                post.postId == postId
                             }
-                        },
-                    selectedPostId = postId,
-                )
+                        ) {
+                            state.posts + detailPost
+                        } else {
+                            state.posts.map { post ->
+                                if (post.postId == postId) {
+                                    detailPost
+                                } else {
+                                    post
+                                }
+                            }
+                        }
+
+                    state.copy(
+                        posts = updatedPosts,
+                        bookmarkedPosts =
+                            state.bookmarkedPosts.map { post ->
+                                if (post.postId == postId) {
+                                    detailPost
+                                } else {
+                                    post
+                                }
+                            },
+                        selectedPostId = postId,
+                    )
+                }
             }
+        ) {
+            curationRepository.getCurationPostDetail(
+                postId = postId
+            )
         }
     }
 
@@ -300,17 +301,8 @@ class CurationBoardViewModel @Inject constructor(
             )
         }
 
-        launch {
-            try {
-                val result = curationRepository.getMyBookmarks(
-                    page = page,
-                    size = size,
-                )
-
-                if (requestVersion != bookmarksRequestVersion) {
-                    return@launch
-                }
-
+        launch(
+            onSuccess = { result ->
                 updateData { state ->
                     val loadedBookmarks = result.content.map { item ->
                         val bookmarkedPost = item.toCurationPost()
@@ -358,12 +350,21 @@ class CurationBoardViewModel @Inject constructor(
                         bookmarksTotalPages = result.totalPages,
                     )
                 }
-            } finally {
-                if (requestVersion == bookmarksRequestVersion) {
-                    updateData { state ->
-                        state.copy(isBookmarksLoading = false)
-                    }
+            },
+            onFailure = {
+                if (requestVersion != bookmarksRequestVersion) {
+                    return@launch
                 }
+            }
+        ) {
+            curationRepository.getMyBookmarks(
+                page = page,
+                size = size
+            )
+        }
+        if (requestVersion == bookmarksRequestVersion) {
+            updateData { state ->
+                state.copy(isBookmarksLoading = false)
             }
         }
     }
@@ -389,38 +390,39 @@ class CurationBoardViewModel @Inject constructor(
             return
         }
 
-        launch {
-            val result =
-                curationRepository.toggleCurationPostLike(
-                    postId = postId,
-                )
+        launch(
+            onSuccess = { result ->
+                updateData { state ->
+                    val updatePost: (CurationPost) -> CurationPost = { post ->
+                        if (post.postId == result.postId) {
+                            val likeCountChange = when {
+                                post.isLiked == result.liked -> 0
+                                result.liked -> 1
+                                else -> -1
+                            }
 
-            updateData { state ->
-                val updatePost: (CurationPost) -> CurationPost = { post ->
-                    if (post.postId == result.postId) {
-                        val likeCountChange = when {
-                            post.isLiked == result.liked -> 0
-                            result.liked -> 1
-                            else -> -1
+                            post.copy(
+                                isLiked = result.liked,
+                                likeCount = (
+                                        post.likeCount + likeCountChange
+                                        ).coerceAtLeast(0),
+                            )
+                        } else {
+                            post
                         }
-
-                        post.copy(
-                            isLiked = result.liked,
-                            likeCount = (
-                                post.likeCount + likeCountChange
-                            ).coerceAtLeast(0),
-                        )
-                    } else {
-                        post
                     }
-                }
 
-                state.copy(
-                    posts = state.posts.map(updatePost),
-                    bookmarkedPosts =
-                        state.bookmarkedPosts.map(updatePost),
-                )
+                    state.copy(
+                        posts = state.posts.map(updatePost),
+                        bookmarkedPosts =
+                            state.bookmarkedPosts.map(updatePost),
+                    )
+                }
             }
+        ) {
+            curationRepository.toggleCurationPostLike(
+                postId = postId
+            )
         }
     }
 
@@ -430,56 +432,57 @@ class CurationBoardViewModel @Inject constructor(
             return
         }
 
-        launch {
-            val result =
-                curationRepository.toggleCurationPostBookmark(
-                    postId = postId,
-                )
+        launch(
+            onSuccess = { result ->
+                updateData { state ->
+                    val currentPost = state.posts.firstOrNull {
+                        it.postId == result.postId
+                    } ?: state.bookmarkedPosts.firstOrNull {
+                        it.postId == result.postId
+                    }
 
-            updateData { state ->
-                val currentPost = state.posts.firstOrNull {
-                    it.postId == result.postId
-                } ?: state.bookmarkedPosts.firstOrNull {
-                    it.postId == result.postId
-                }
-
-                val updatedBookmarkedPosts = if (result.bookmarked) {
-                    if (state.bookmarkedPosts.any {
-                            it.postId == result.postId
+                    val updatedBookmarkedPosts = if (result.bookmarked) {
+                        if (state.bookmarkedPosts.any {
+                                it.postId == result.postId
+                            }
+                        ) {
+                            state.bookmarkedPosts.map { post ->
+                                if (post.postId == result.postId) {
+                                    post.copy(isBookmarked = true)
+                                } else {
+                                    post
+                                }
+                            }
+                        } else {
+                            currentPost?.let { post ->
+                                state.bookmarkedPosts +
+                                        post.copy(isBookmarked = true)
+                            } ?: state.bookmarkedPosts
                         }
-                    ) {
-                        state.bookmarkedPosts.map { post ->
+                    } else {
+                        state.bookmarkedPosts.filterNot { post ->
+                            post.postId == result.postId
+                        }
+                    }
+
+                    state.copy(
+                        posts = state.posts.map { post ->
                             if (post.postId == result.postId) {
-                                post.copy(isBookmarked = true)
+                                post.copy(
+                                    isBookmarked = result.bookmarked,
+                                )
                             } else {
                                 post
                             }
-                        }
-                    } else {
-                        currentPost?.let { post ->
-                            state.bookmarkedPosts +
-                                post.copy(isBookmarked = true)
-                        } ?: state.bookmarkedPosts
-                    }
-                } else {
-                    state.bookmarkedPosts.filterNot { post ->
-                        post.postId == result.postId
-                    }
+                        },
+                        bookmarkedPosts = updatedBookmarkedPosts,
+                    )
                 }
-
-                state.copy(
-                    posts = state.posts.map { post ->
-                        if (post.postId == result.postId) {
-                            post.copy(
-                                isBookmarked = result.bookmarked,
-                            )
-                        } else {
-                            post
-                        }
-                    },
-                    bookmarkedPosts = updatedBookmarkedPosts,
-                )
             }
+        ) {
+            curationRepository.toggleCurationPostBookmark(
+                postId = postId
+            )
         }
     }
 
