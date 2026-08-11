@@ -50,7 +50,7 @@ class SignUpViewModel @Inject constructor(
     var pwdCheck by mutableStateOf("")
     var showBirthdayPicker by mutableStateOf(false)
     var code by mutableStateOf("")
-    var isVerified by mutableStateOf(false)
+    var isVerified by mutableStateOf(true)
     var time by mutableStateOf("00:00")
     private var countDownTimer: CountDownTimer? = null
 
@@ -60,29 +60,25 @@ class SignUpViewModel @Inject constructor(
     fun toggleEmailExist(){
         isEmailNoExisted = !isEmailNoExisted
     }
-    fun checkVerifCodeRight(): Boolean = code == "643590"
     fun signUp(){
         launch(
             onSuccess = {
-                verifyEmail()
-                if(isVerified){
-                    sendEffect(SignUpEffect.NavigateToCompleted)
-                }
+                sendEffect(SignUpEffect.NavigateToCompleted)
             }
         ) {
-            repository.localSignUp(
-                LocalSignUpRequest(
-                    name = name,
-                    nickname = nickname,
-                    birth = birthday.toString().replace("-", ""),
-                    email = email,
-                    password = password,
-                    termAgreement = listOf<TermsAgreement>(
-                        TermsAgreement(0, isAgreedToTerm),
-                        TermsAgreement(1, isAgreedToPolicy)
-                    )
-                )
-            )
+//            repository.localSignUp(
+//                LocalSignUpRequest(
+//                    name = name,
+//                    nickname = nickname,
+//                    birth = birthday.toString().replace("-", ""),
+//                    email = email,
+//                    password = password,
+//                    termAgreement = listOf<TermsAgreement>(
+//                        TermsAgreement(0, isAgreedToTerm),
+//                        TermsAgreement(1, isAgreedToPolicy)
+//                    )
+//                )
+//            )
         }
     }
 
@@ -108,7 +104,7 @@ class SignUpViewModel @Inject constructor(
 
     fun updatePhase(){
         phase = phase + 1
-        if(phase == 2){
+        if(phase == 1){
             startTimer()
         }
     }

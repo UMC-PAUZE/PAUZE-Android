@@ -180,5 +180,5 @@ fun AdditionalInfoContent(
             )
         }
     }
-    return viewModel.name.length >= 2 && viewModel.nickname.length < 10 && viewModel.birthday != null
+    return viewModel.name.length > 1 && viewModel.nickname.length < 10 && viewModel.birthday != null
 }

@@ -103,27 +103,31 @@ fun SignUpScreen(
             PhaseBar(modifier = Modifier.weight(1f), isWaiting = viewModel.phase < 2)
             Spacer(modifier = Modifier.width(4.dp))
             PhaseBar(modifier = Modifier.weight(1f), isWaiting = viewModel.phase < 3)
+            Spacer(modifier = Modifier.width(4.dp))
+            PhaseBar(modifier = Modifier.weight(1f), isWaiting = viewModel.phase < 4)
         }
         Spacer(modifier = Modifier.height(24.dp))
         Column(modifier = Modifier.padding(24.dp)){
             Text(
                 when(viewModel.phase){
-                    0 -> "이름과 생년월일을\n알려주세요"
-                    1 -> "이메일을 입력하고\n중복확인을 완료해주세요"
-                    2 -> "인증코드를 입력하고\n본인인증을 완료해주세요"
-                    else -> "비밀번호를 설정하고\n이용약관에 동의해주세요"
+                    0 -> "이메일을 입력하고\n중복확인을 완료해주세요"
+                    1 -> "인증코드를 입력하고\n본인인증을 완료해주세요"
+                    2 -> "안전하게 사용할\n비밀번호를 만들어주세요"
+                    3 -> "이름과 닉네임을\n설정해주세요"
+                    else -> "생년월일을 선택하고\n약관에 동의해주세요"
                 },
                 style = headingMdMedium,
                 color = AppTheme.palette.gray.getColor(2)
             )
             Spacer(modifier = Modifier.height(48.dp))
             isCompleted = when(viewModel.phase){
-                0 -> PersonalInfoContent(viewModel)
-                1 -> SetAndCheckEmail(viewModel)
-                2 -> EnterVerificationCode(viewModel, false)
-                else -> SetPwdContent(viewModel)
+                0 -> SetAndCheckEmail(viewModel)
+                1 -> EnterVerificationCode(viewModel, false)
+                2 -> SetPwdContent(viewModel)
+                3 -> SetNameAndNickname(viewModel)
+                else -> SetBirthdayAndAgree(viewModel)
             }
-            if(viewModel.phase == 1){
+            if(viewModel.phase == 0){
                 if(isCompleted){
                     Spacer(modifier = Modifier.height(12.dp))
                     GetVerifCodeButton(viewModel, false)
@@ -131,12 +135,12 @@ fun SignUpScreen(
             } else {
                 Spacer(modifier = Modifier.padding(horizontal = 24.dp).weight(1f))
                 Button(
-                    if(viewModel.phase == 3) "가입 완료하기" else "다음",
+                    if(viewModel.phase == 4) "가입 완료하기" else "다음",
                     onClick = {
                         if(isCompleted){
                             viewModel.updatePhase()
                         }
-                        if(viewModel.phase == 4) {
+                        if(viewModel.phase == 5) {
                             viewModel.signUp()
                         }
                     },
