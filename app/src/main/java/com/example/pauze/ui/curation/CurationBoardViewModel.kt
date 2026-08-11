@@ -310,82 +310,8 @@ class CurationBoardViewModel @Inject constructor(
             )
         }
 
-        launch {
-            try {
-                val result = curationRepository.getMyLikes(
-                    page = page,
-                    size = size,
-                )
-
-                if (requestVersion != likesRequestVersion) {
-                    return@launch
-                }
-
-                updateData { state ->
-                    val loadedLikes = result.content.map { item ->
-                        val likedPost = item.toCurationPost()
-                        val existingPost = state.posts.firstOrNull {
-                            it.postId == likedPost.postId
-                        } ?: state.bookmarkedPosts.firstOrNull {
-                            it.postId == likedPost.postId
-                        }
-
-                        if (existingPost == null) {
-                            likedPost
-                        } else {
-                            likedPost.copy(
-                                content = existingPost.content,
-                                thumbnailUrl = existingPost.thumbnailUrl,
-                                viewCount = existingPost.viewCount,
-                            )
-                        }
-                    }
-
-                    val likedPosts = if (page == 1) {
-                        loadedLikes
-                    } else {
-                        (state.likedPosts + loadedLikes)
-                            .distinctBy { it.postId }
-                    }
-
-                    val likesByPostId = likedPosts.associateBy {
-                        it.postId
-                    }
-
-                    state.copy(
-                        posts = state.posts.map { post ->
-                            val likedPost = likesByPostId[post.postId]
-
-                            if (likedPost == null) {
-                                post
-                            } else {
-                                post.copy(
-                                    likeCount = likedPost.likeCount,
-                                    isLiked = true,
-                                    isBookmarked = likedPost.isBookmarked,
-                                )
-                            }
-                        },
-                        likedPosts = likedPosts,
-                        bookmarkedPosts =
-                            state.bookmarkedPosts.map { post ->
-                                val likedPost =
-                                    likesByPostId[post.postId]
-
-                                if (likedPost == null) {
-                                    post
-                                } else {
-                                    post.copy(
-                                        likeCount = likedPost.likeCount,
-                                        isLiked = true,
-                                    )
-                                }
-                            },
-                        likesPage = result.page,
-                        likesTotalPages = result.totalPages,
-                    )
-                }
-            } catch (error: Exception) {
+        launch(
+            onFailure = {
                 if (requestVersion == likesRequestVersion) {
                     updateData { state ->
                         state.copy(
@@ -393,17 +319,84 @@ class CurationBoardViewModel @Inject constructor(
                             likesPage = currentState.likesPage,
                             likesTotalPages =
                                 currentState.likesTotalPages,
+                            isLikesLoading = false,
+                        )
+                    }
+                }
+            },
+        ) {
+            val result = curationRepository.getMyLikes(
+                page = page,
+                size = size,
+            )
+            val state = uiState.value.data
+
+            if (requestVersion != likesRequestVersion) {
+                state
+            } else {
+                val loadedLikes = result.content.map { item ->
+                    val likedPost = item.toCurationPost()
+                    val existingPost = state.posts.firstOrNull {
+                        it.postId == likedPost.postId
+                    } ?: state.bookmarkedPosts.firstOrNull {
+                        it.postId == likedPost.postId
+                    }
+
+                    if (existingPost == null) {
+                        likedPost
+                    } else {
+                        likedPost.copy(
+                            content = existingPost.content,
+                            thumbnailUrl = existingPost.thumbnailUrl,
+                            viewCount = existingPost.viewCount,
                         )
                     }
                 }
 
-                throw error
-            } finally {
-                if (requestVersion == likesRequestVersion) {
-                    updateData { state ->
-                        state.copy(isLikesLoading = false)
-                    }
+                val likedPosts = if (page == 1) {
+                    loadedLikes
+                } else {
+                    (state.likedPosts + loadedLikes)
+                        .distinctBy { it.postId }
                 }
+
+                val likesByPostId = likedPosts.associateBy {
+                    it.postId
+                }
+
+                state.copy(
+                    posts = state.posts.map { post ->
+                        val likedPost = likesByPostId[post.postId]
+
+                        if (likedPost == null) {
+                            post
+                        } else {
+                            post.copy(
+                                likeCount = likedPost.likeCount,
+                                isLiked = true,
+                                isBookmarked = likedPost.isBookmarked,
+                            )
+                        }
+                    },
+                    likedPosts = likedPosts,
+                    bookmarkedPosts =
+                        state.bookmarkedPosts.map { post ->
+                            val likedPost =
+                                likesByPostId[post.postId]
+
+                            if (likedPost == null) {
+                                post
+                            } else {
+                                post.copy(
+                                    likeCount = likedPost.likeCount,
+                                    isLiked = true,
+                                )
+                            }
+                        },
+                    likesPage = result.page,
+                    likesTotalPages = result.totalPages,
+                    isLikesLoading = false,
+                )
             }
         }
     }
