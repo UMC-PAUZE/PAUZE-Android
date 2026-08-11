@@ -159,7 +159,10 @@ fun CurationBoardScreen(
     }
 
     val selectedPost = curationState.selectedPost
-    val filteredPosts = curationState.filteredPosts
+    val posts = curationState.posts
+    val hasActiveFilter =
+        curationState.submittedKeyword.isNotBlank() ||
+                curationState.selectedCategoryId != null
 
     val shouldLoadMorePosts by remember {
         derivedStateOf {
@@ -357,14 +360,14 @@ fun CurationBoardScreen(
                             AppTheme.palette.primary.getColor(4),
                     )
                 }
-            } else if (curationState.posts.isEmpty()) {
-                CurationEmptyBoard(
+            } else if (posts.isEmpty() && hasActiveFilter) {
+                CurationEmptySearchResult(
                     modifier = Modifier
                         .fillMaxWidth()
                         .weight(1f),
                 )
-            } else if (filteredPosts.isEmpty()) {
-                CurationEmptySearchResult(
+            } else if (posts.isEmpty()) {
+                CurationEmptyBoard(
                     modifier = Modifier
                         .fillMaxWidth()
                         .weight(1f),
@@ -382,7 +385,7 @@ fun CurationBoardScreen(
                     ),
                 ) {
                     itemsIndexed(
-                        items = filteredPosts,
+                        items = posts,
                         key = { _, post ->
                             post.postId
                         },
@@ -404,7 +407,7 @@ fun CurationBoardScreen(
                             },
                         )
 
-                        if (index < filteredPosts.lastIndex) {
+                        if (index < posts.lastIndex) {
                             HorizontalDivider(
                                 thickness = 1.dp,
                                 color = AppTheme.palette.gray
@@ -715,4 +718,3 @@ internal fun formatRelativeTime(
             "${difference / YEAR_MILLIS}년 전"
     }
 }
-

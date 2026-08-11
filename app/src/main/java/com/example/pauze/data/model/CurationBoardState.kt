@@ -22,26 +22,6 @@ data class CurationBoardState(
 
     val selectedPostId: Long? = null,
 ) {
-    val filteredPosts: List<CurationPost>
-        get() = posts.filter { post ->
-            val matchesCategory =
-                selectedCategoryId == null ||
-                        post.categoryId == selectedCategoryId
-
-            val matchesKeyword =
-                submittedKeyword.isBlank() ||
-                        post.title.contains(
-                            submittedKeyword,
-                            ignoreCase = true,
-                        ) ||
-                        post.summary.contains(
-                            submittedKeyword,
-                            ignoreCase = true,
-                        )
-
-            matchesCategory && matchesKeyword
-        }
-
     val selectedPost: CurationPost?
         get() = posts.firstOrNull { post ->
             post.postId == selectedPostId
