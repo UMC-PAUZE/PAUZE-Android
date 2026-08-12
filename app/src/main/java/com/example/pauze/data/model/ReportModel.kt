@@ -49,7 +49,8 @@ data class ReportState(
     val weekly: WeeklyReportDto? = null,
     val monthly: MonthlyReportDto? = null,
     val weeklyError: String? = null,
-    val monthlyError: String? = null
+    val monthlyError: String? = null,
+    val todayCondition: Condition? = null
 )
 
 data class AverageScoreUiState(
