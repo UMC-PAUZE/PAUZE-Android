@@ -7,9 +7,12 @@ import com.example.pauze.data.model.SoundItem
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.io.File
 import java.io.IOException
+import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -25,6 +28,7 @@ class PauzeSoundLocalDataSource @Inject constructor(
         Context.MODE_PRIVATE
     )
     private val metadataLock = Any()
+    private val downloadMutexes = ConcurrentHashMap<String, Mutex>()
     private val downloadClient = okHttpClient.newBuilder()
         .apply {
             interceptors().removeAll { interceptor ->
@@ -44,55 +48,59 @@ class PauzeSoundLocalDataSource @Inject constructor(
             "다운로드할 오디오 주소가 없습니다."
         }
 
-        synchronized(metadataLock) {
-            readDownloadedSound(sound.id)?.localFilePath
-        }?.let { existingPath ->
-            persistDownloadedSound(sound, existingPath)
-            return@withContext existingPath
-        }
-
-        val directory = audioDirectory()
         val safeId = sound.id.replace(UNSAFE_FILE_NAME_REGEX, "_")
-        val extension = sound.audioUrl.fileExtension()
-        val targetFile = File(directory, "$safeId.$extension")
-        val temporaryFile = File(directory, "$safeId.download")
+        val downloadMutex = downloadMutexes.getOrPut(safeId) { Mutex() }
 
-        temporaryFile.delete()
+        downloadMutex.withLock {
+            synchronized(metadataLock) {
+                readDownloadedSound(sound.id)?.localFilePath
+            }?.let { existingPath ->
+                persistDownloadedSound(sound, existingPath)
+                return@withLock existingPath
+            }
 
-        try {
-            val request = Request.Builder()
-                .url(sound.audioUrl)
-                .get()
-                .build()
+            val directory = audioDirectory()
+            val extension = sound.audioUrl.fileExtension()
+            val targetFile = File(directory, "$safeId.$extension")
+            val temporaryFile = File(directory, "$safeId.download")
 
-            downloadClient.newCall(request).execute().use { response ->
-                if (!response.isSuccessful) {
-                    throw IOException("오디오 다운로드에 실패했습니다. (${response.code})")
-                }
+            temporaryFile.delete()
 
-                val responseBody = response.body
-                    ?: throw IOException("다운로드할 오디오 파일이 없습니다.")
+            try {
+                val request = Request.Builder()
+                    .url(sound.audioUrl)
+                    .get()
+                    .build()
 
-                responseBody.byteStream().use { input ->
-                    temporaryFile.outputStream().buffered().use { output ->
-                        input.copyTo(output)
+                downloadClient.newCall(request).execute().use { response ->
+                    if (!response.isSuccessful) {
+                        throw IOException("오디오 다운로드에 실패했습니다. (${response.code})")
+                    }
+
+                    val responseBody = response.body
+                        ?: throw IOException("다운로드할 오디오 파일이 없습니다.")
+
+                    responseBody.byteStream().use { input ->
+                        temporaryFile.outputStream().buffered().use { output ->
+                            input.copyTo(output)
+                        }
                     }
                 }
-            }
 
-            if (targetFile.exists() && !targetFile.delete()) {
-                throw IOException("기존 오디오 파일을 교체할 수 없습니다.")
-            }
-            if (!temporaryFile.renameTo(targetFile)) {
-                temporaryFile.copyTo(targetFile, overwrite = true)
+                if (targetFile.exists() && !targetFile.delete()) {
+                    throw IOException("기존 오디오 파일을 교체할 수 없습니다.")
+                }
+                if (!temporaryFile.renameTo(targetFile)) {
+                    temporaryFile.copyTo(targetFile, overwrite = true)
+                    temporaryFile.delete()
+                }
+
+                persistDownloadedSound(sound, targetFile.absolutePath)
+                targetFile.absolutePath
+            } catch (error: Throwable) {
                 temporaryFile.delete()
+                throw error
             }
-
-            persistDownloadedSound(sound, targetFile.absolutePath)
-            targetFile.absolutePath
-        } catch (error: Throwable) {
-            temporaryFile.delete()
-            throw error
         }
     }
 
