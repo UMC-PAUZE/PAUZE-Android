@@ -1,5 +1,6 @@
 package com.example.pauze.ui.splash
 
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import androidx.compose.foundation.Image
@@ -31,6 +32,7 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextAlign.Companion.Center
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.pauze.R
 import com.example.pauze.ui.component.Button
 import com.example.pauze.ui.component.ButtonSize
@@ -42,8 +44,21 @@ import com.example.pauze.ui.theme.bodyTextMdRegular
 import com.example.pauze.ui.theme.headingMdBold
 
 @Composable
-fun OnboardingScreen(context: Context) {
+fun OnboardingScreen(
+    context: Context,
+    viewModel: SplashViewModel = hiltViewModel()
+) {
     var currentPage by remember { mutableStateOf(0) }
+
+    fun finishOnboarding() {
+        viewModel.markOnboardingSeen()
+        context.startActivity(
+            Intent(context, LoginActivity::class.java).apply {
+                flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+            }
+        )
+        (context as? Activity)?.finish()
+    }
 
     val (title, description, icon) = when (currentPage) {
         0 -> Triple(
@@ -90,10 +105,10 @@ fun OnboardingScreen(context: Context) {
             icon = icon,
             onNextClick = {
                 if (currentPage < 2) currentPage++
-                else context.startActivity(Intent(context, LoginActivity::class.java))
+                else finishOnboarding()
             },
             onSkipClick = {
-                context.startActivity(Intent(context, LoginActivity::class.java))
+                finishOnboarding()
             }
         )
     }
@@ -136,11 +151,7 @@ fun OnboardingPage(
         Spacer(modifier = Modifier.height(80.dp))
 
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Image(
-                painter = icon,
-                contentDescription = "온보딩 아이콘",
-                modifier = Modifier.size(160.dp)
-            )
+            Image(painter = icon, contentDescription = "온보딩 아이콘", modifier = Modifier.size(160.dp))
 
             Spacer(modifier = Modifier.height(48.dp))
 
