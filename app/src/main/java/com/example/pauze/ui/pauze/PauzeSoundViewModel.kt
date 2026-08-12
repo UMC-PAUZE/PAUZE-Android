@@ -186,64 +186,64 @@ class PauzeSoundViewModel @Inject constructor(
         clearError()
 
         launch(
-            onFailure = {
-                if (category == SoundCategory.ALL) {
-                    isAllSoundsRequestRunning = false
-                }
-            },
             block = {
-                if (restoreDownloads) {
-                    val downloadedSounds = try {
-                        repository.getDownloadedSounds()
-                    } catch (error: CancellationException) {
-                        throw error
-                    } catch (_: Exception) {
-                        emptyList()
-                    }
-                    updateData { currentState ->
-                        currentState.copy(
-                            sounds = mergeDownloadedIntoAll(
-                                currentSounds = currentState.sounds,
-                                downloadedSounds = downloadedSounds
+                try {
+                    if (restoreDownloads) {
+                        val downloadedSounds = try {
+                            repository.getDownloadedSounds()
+                        } catch (error: CancellationException) {
+                            throw error
+                        } catch (_: Exception) {
+                            emptyList()
+                        }
+                        updateData { currentState ->
+                            currentState.copy(
+                                sounds = mergeDownloadedIntoAll(
+                                    currentSounds = currentState.sounds,
+                                    downloadedSounds = downloadedSounds
+                                )
                             )
+                        }
+                    }
+
+                    val remoteSounds = if (category == SoundCategory.ALL) {
+                        repository.getAllSounds()
+                    } else {
+                        repository.getSoundsByCategory(category)
+                    }.map(AudioGuideDto::toSoundItem)
+
+                    val currentState = uiState.value.data
+                    val localSounds = currentState.sounds + currentState.categorySounds.orEmpty()
+                    val mergedSounds = mergeRemoteWithLocal(remoteSounds, localSounds)
+
+                    if (category == SoundCategory.ALL) {
+                        currentState.copy(
+                            sounds = mergedSounds,
+                            categorySounds = if (
+                                currentState.selectedCategory == SoundCategory.ALL
+                            ) {
+                                null
+                            } else {
+                                currentState.categorySounds
+                            }
+                        )
+                    } else {
+                        val isCurrentCategory =
+                            requestVersion == categoryRequestVersion &&
+                                currentState.selectedCategory == category
+                        currentState.copy(
+                            sounds = mergeIntoAll(currentState.sounds, mergedSounds),
+                            categorySounds = if (isCurrentCategory) {
+                                mergedSounds
+                            } else {
+                                currentState.categorySounds
+                            }
                         )
                     }
-                }
-
-                val remoteSounds = if (category == SoundCategory.ALL) {
-                    repository.getAllSounds()
-                } else {
-                    repository.getSoundsByCategory(category)
-                }.map(AudioGuideDto::toSoundItem)
-
-                val currentState = uiState.value.data
-                val localSounds = currentState.sounds + currentState.categorySounds.orEmpty()
-                val mergedSounds = mergeRemoteWithLocal(remoteSounds, localSounds)
-
-                if (category == SoundCategory.ALL) {
-                    isAllSoundsRequestRunning = false
-                    currentState.copy(
-                        sounds = mergedSounds,
-                        categorySounds = if (
-                            currentState.selectedCategory == SoundCategory.ALL
-                        ) {
-                            null
-                        } else {
-                            currentState.categorySounds
-                        }
-                    )
-                } else {
-                    val isCurrentCategory =
-                        requestVersion == categoryRequestVersion &&
-                            currentState.selectedCategory == category
-                    currentState.copy(
-                        sounds = mergeIntoAll(currentState.sounds, mergedSounds),
-                        categorySounds = if (isCurrentCategory) {
-                            mergedSounds
-                        } else {
-                            currentState.categorySounds
-                        }
-                    )
+                } finally {
+                    if (category == SoundCategory.ALL) {
+                        isAllSoundsRequestRunning = false
+                    }
                 }
             }
         )
