@@ -92,7 +92,8 @@ fun PauzeSoundStashScreen(
                 SoundItem(
                     sound = sound,
                     onToggleLike = viewModel::toggleLike,
-                    onToggleBookmark = viewModel::toggleBookmark
+                    onToggleBookmark = viewModel::toggleBookmark,
+                    isDownloading = sound.id in state.downloadingSoundIds
                 )
             }
         }
