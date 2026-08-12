@@ -5,9 +5,13 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -18,48 +22,63 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.pauze.ui.theme.AppTheme
 import com.example.pauze.ui.theme.MainPaletteTheme
 import com.example.pauze.ui.theme.bodyTextMdMedium
 
-/** 선택 여부에 따라 스타일이 바뀌는 단일 칩 버튼입니다. */
 @Composable
 fun Chips(
     text: String,
-    isSelected: Boolean,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    isSelected: Boolean = false,
+    onClick: () -> Unit = {},
+    modifier: Modifier = Modifier,
+    icon: Painter? = null,
+    contentColor: Color? = null,
 ) {
+    val isDisplayStyle = contentColor != null
+    val resolvedColor = contentColor
+        ?: if (isSelected) AppTheme.palette.base.getColor(0) else AppTheme.palette.gray.getColor(4)
+
     Box(
         modifier = modifier
             .clip(RoundedCornerShape(20.dp))
             .background(
-                if (isSelected) AppTheme.palette.primary.getColor(3)
-                else Color.Transparent
+                when {
+                    isDisplayStyle -> AppTheme.palette.gray.getColor(8)
+                    isSelected -> AppTheme.palette.primary.getColor(3)
+                    else -> Color.Transparent
+                }
             )
             .border(
-                border = if (isSelected) {
-                    BorderStroke(0.dp, Color.Transparent)
-                } else {
-                    BorderStroke(1.dp, AppTheme.palette.gray.getColor(7))
+                border = when {
+                    isDisplayStyle -> BorderStroke(1.5.dp, AppTheme.palette.gray.getColor(7))
+                    isSelected -> BorderStroke(0.dp, Color.Transparent)
+                    else -> BorderStroke(1.dp, AppTheme.palette.gray.getColor(7))
                 },
                 shape = RoundedCornerShape(20.dp)
             )
-            .clickable(onClick = onClick)
-            .padding(horizontal = 8.dp),
+            .let { if (isDisplayStyle) it else it.clickable(onClick = onClick) }
+            .padding(
+                horizontal = if (isDisplayStyle) 12.dp else 8.dp,
+                vertical = if (isDisplayStyle) 8.dp else 0.dp
+            ),
         contentAlignment = Alignment.Center
     ) {
-        Text(
-            text = text,
-            style = bodyTextMdMedium,
-            color = if (isSelected) {
-                AppTheme.palette.base.getColor(0)
-            } else {
-                AppTheme.palette.gray.getColor(4)
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            icon?.let {
+                Icon(
+                    painter = it,
+                    contentDescription = text,
+                    tint = resolvedColor,
+                    modifier = Modifier.size(16.dp)
+                )
+                Spacer(modifier = Modifier.width(4.dp))
             }
-        )
+            Text(text = text, style = bodyTextMdMedium, color = resolvedColor)
+        }
     }
 }
 
