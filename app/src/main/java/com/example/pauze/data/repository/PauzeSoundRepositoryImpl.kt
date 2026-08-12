@@ -2,14 +2,15 @@ package com.example.pauze.data.repository
 
 import com.example.pauze.data.model.AudioGuideDto
 import com.example.pauze.data.model.AudioLikeToggleResultDto
-import com.example.pauze.data.model.AudioSaveResultDto
 import com.example.pauze.data.model.SoundCategory
+import com.example.pauze.data.model.SoundItem
 import com.example.pauze.data.model.getOrThrow
 import com.example.pauze.data.service.AudioGuideService
 import javax.inject.Inject
 
 class PauzeSoundRepositoryImpl @Inject constructor(
-    private val service: AudioGuideService
+    private val service: AudioGuideService,
+    private val localDataSource: PauzeSoundLocalDataSource
 ) : PauzeSoundRepository {
     override suspend fun getAllSounds(): List<AudioGuideDto> =
         service.getAllGuides().getOrThrow()
@@ -29,15 +30,19 @@ class PauzeSoundRepositoryImpl @Inject constructor(
         soundId: String
     ): AudioLikeToggleResultDto {
         requireAuthentication()
-        return service.toggleLike(audioId = soundId).getOrThrow()
+        return service.toggleLike(audioId = soundId).getOrThrow().also { result ->
+            localDataSource.updateDownloadedLike(soundId, result.isLiked)
+        }
     }
 
-    override suspend fun saveSound(
-        soundId: String
-    ): AudioSaveResultDto {
-        requireAuthentication()
-        return service.saveGuide(audioId = soundId).getOrThrow()
-    }
+    override suspend fun getDownloadedSounds(): List<SoundItem> =
+        localDataSource.getDownloadedSounds()
+
+    override suspend fun downloadSound(sound: SoundItem): String =
+        localDataSource.downloadSound(sound)
+
+    override suspend fun deleteDownloadedSound(soundId: String) =
+        localDataSource.deleteDownloadedSound(soundId)
 
     private fun requireAuthentication() {
         if (TokenRepository.accessToken.isNullOrBlank()) {
