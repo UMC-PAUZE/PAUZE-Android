@@ -79,7 +79,7 @@ fun OnboardingScreen(
                 }
                 append("을 \n매일 측정해요")
             },
-            "수면, 소음 노출, 사회 활동 등 일상 데이터를 바탕으로 현재 컨디션을 분석하고 맞춤형 알림을 드려요.",
+            "수면, 소음 노출, 사회 활동 등 일상 데이터를 바탕으로 \n 현재 컨디션을 분석하고 맞춤형 알림을 드려요.",
             painterResource(R.drawable.ic_pauze_yellow)
         )
         else -> Triple(
@@ -116,53 +116,73 @@ fun OnboardingScreen(
 
 @Composable
 fun OnboardingPage(
-    currentPage : Int,
+    currentPage: Int,
     title: AnnotatedString,
     description: String,
     icon: Painter,
     onNextClick: () -> Unit,
     onSkipClick: () -> Unit,
-){
+) {
     val buttonText = if (currentPage == 2) "시작하기" else "다음"
 
     Column(
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 24.dp)
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = 24.dp, vertical = 24.dp)
     ) {
-        Row(
+        Column(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(4.dp)
+            horizontalAlignment = Alignment.End,
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            repeat(3) { index ->
-                PhaseBar(
-                    isWaiting = index > currentPage,
-                    modifier = Modifier.weight(1f)
-                )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                repeat(3) { index ->
+                    PhaseBar(isWaiting = index > currentPage, modifier = Modifier.weight(1f))
+                }
             }
             Text(
                 text = "건너뛰기",
                 style = bodyTextMdBold,
-                color = AppTheme.palette.gray.getColor(4),
+                color = AppTheme.palette.gray.getColor(2),
                 modifier = Modifier
                     .clickable(onClick = onSkipClick)
-                    .padding(8.dp)
+                    .padding(vertical = 8.dp)
             )
         }
 
         Spacer(modifier = Modifier.height(80.dp))
 
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
             Image(painter = icon, contentDescription = "온보딩 아이콘", modifier = Modifier.size(160.dp))
-
             Spacer(modifier = Modifier.height(48.dp))
 
-            Text(text = title, style = headingMdBold, textAlign = Center)
+            Text(
+                text = title,
+                style = headingMdBold,
+                color = AppTheme.palette.gray.getColor(2),
+                textAlign = Center,
+                modifier = Modifier.fillMaxWidth()
+            )
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            Text(text = description, style = bodyTextMdRegular, textAlign = Center)
+            Text(
+                text = description,
+                style = bodyTextMdRegular,
+                color = AppTheme.palette.gray.getColor(2),
+                textAlign = Center,
+                modifier = Modifier.fillMaxWidth()
+            )
         }
 
-    }
+        Spacer(modifier = Modifier.weight(1f))
 
-    Button(label = buttonText, onClick = onNextClick, modifier = Modifier.fillMaxWidth())
+        Button(label = buttonText, onClick = onNextClick, modifier = Modifier.fillMaxWidth())
+    }
 }
