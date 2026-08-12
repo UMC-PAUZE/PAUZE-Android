@@ -264,11 +264,48 @@ class CurationBoardViewModel @Inject constructor(
         }
 
         sendEffect(CurationEffect.OpenArchive)
-        loadMyLikes()
-        loadMyBookmarks()
+    }
+
+    fun loadArchive() {
+        if (TokenRepository.accessToken.isNullOrBlank()) {
+            sendEffect(CurationEffect.NavigateToLogin)
+            return
+        }
+
+        val keyword = uiState.value.data.submittedArchiveKeyword
+            .takeIf { it.isNotBlank() }
+
+        loadMyLikes(keyword = keyword)
+        loadMyBookmarks(keyword = keyword)
+    }
+
+    fun updateArchiveKeyword(keyword: String) {
+        updateData { state ->
+            state.copy(archiveKeyword = keyword)
+        }
+    }
+
+    fun searchArchive(keyword: String = uiState.value.data.archiveKeyword) {
+        val submittedKeyword = keyword.trim()
+
+        updateData { state ->
+            state.copy(
+                archiveKeyword = keyword,
+                submittedArchiveKeyword = submittedKeyword,
+            )
+        }
+
+        loadMyLikes(
+            keyword = submittedKeyword.takeIf { it.isNotBlank() },
+        )
+        loadMyBookmarks(
+            keyword = submittedKeyword.takeIf { it.isNotBlank() },
+        )
     }
 
     fun loadMyLikes(
+        keyword: String? = uiState.value.data.submittedArchiveKeyword
+            .takeIf { it.isNotBlank() },
         page: Int = 1,
         size: Int = 10,
     ) {
@@ -326,6 +363,7 @@ class CurationBoardViewModel @Inject constructor(
             },
         ) {
             val result = curationRepository.getMyLikes(
+                keyword = keyword,
                 page = page,
                 size = size,
             )
@@ -412,11 +450,15 @@ class CurationBoardViewModel @Inject constructor(
         }
 
         loadMyLikes(
+            keyword = state.submittedArchiveKeyword
+                .takeIf { it.isNotBlank() },
             page = state.likesPage + 1,
         )
     }
 
     fun loadMyBookmarks(
+        keyword: String? = uiState.value.data.submittedArchiveKeyword
+            .takeIf { it.isNotBlank() },
         page: Int = 1,
         size: Int = 10,
     ) {
@@ -474,6 +516,7 @@ class CurationBoardViewModel @Inject constructor(
             },
         ) {
             val result = curationRepository.getMyBookmarks(
+                keyword = keyword,
                 page = page,
                 size = size,
             )
@@ -559,6 +602,8 @@ class CurationBoardViewModel @Inject constructor(
         }
 
         loadMyBookmarks(
+            keyword = state.submittedArchiveKeyword
+                .takeIf { it.isNotBlank() },
             page = state.bookmarksPage + 1,
         )
     }
