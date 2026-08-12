@@ -79,10 +79,12 @@ data class WithdrawRequest(
 data class MyPageState(
     val profile: UserMeResultDto? = null,
     val stats: Stats? = null,
+    val loadError: String? = null,
 )
 
 data class AccountInfoState(
     val email: String? = null,
     val joinedAt: String? = null,
     val socialTypes: List<String> = emptyList(),
+    val loadError: String? = null,
 )

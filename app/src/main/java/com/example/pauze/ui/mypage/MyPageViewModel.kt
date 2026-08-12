@@ -22,13 +22,17 @@ class MyPageViewModel @Inject constructor(
     uiState = BaseUiState(data = MyPageState())
 ) {
     fun refresh() {
-        launch {
+        launch(onFailure = { e ->
+            updateData { it.copy(loadError = e.message ?: "정보를 불러오지 못했습니다") }
+        }) {
             val profile = myPageRepository.getMyPage()
-            updateData { it.copy(profile = profile) }
+            uiState.value.data.copy(profile = profile, loadError = null)
         }
-        launch {
-            val detail = myPageRepository.getProfile()
-            updateData { it.copy(stats = detail.stats) }
+        launch(onFailure = { e ->
+            updateData { it.copy(loadError = e.message ?: "정보를 불러오지 못했습니다") }
+        }) {
+            val stats = myPageRepository.getProfile().stats
+            uiState.value.data.copy(stats = stats, loadError = null)
         }
     }
 
@@ -65,8 +69,7 @@ class MyPageViewModel @Inject constructor(
         val currentProfile = uiState.value.data.profile ?: return
         if (uiState.value.isLoading) return
         launch {
-            val updated = myPageRepository.updateSettings(request)
-            updateData { it.copy(profile = currentProfile.copy(settings = updated)) }
+            uiState.value.data.copy(profile = currentProfile.copy(settings = myPageRepository.updateSettings(request)))
         }
     }
 }

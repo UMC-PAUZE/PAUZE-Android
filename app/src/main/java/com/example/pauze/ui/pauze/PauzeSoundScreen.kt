@@ -79,6 +79,7 @@ fun PauzeSoundScreen(
                 sound = selectedSound,
                 onToggleLike = viewModel::toggleLike,
                 onToggleBookmark = viewModel::toggleBookmark,
+                isDownloading = selectedSound.id in state.downloadingSoundIds,
                 onBackClick = {
                     selectedSoundId = null
                     viewModel.navigateTo(detailOrigin)
@@ -147,7 +148,7 @@ fun PauzeSoundScreen(
                 Spacer(modifier = Modifier.height(32.dp))
 
                 when {
-                    uiState.isLoading && state.filteredSounds.isEmpty() -> {
+                    state.isSoundListLoading && state.filteredSounds.isEmpty() -> {
                         Box(
                             modifier = Modifier
                                 .weight(1f)
@@ -201,6 +202,7 @@ fun PauzeSoundScreen(
 
                             SoundList(
                                 sounds = state.filteredSounds,
+                                downloadingSoundIds = state.downloadingSoundIds,
                                 onItemClick = { sound ->
                                     viewModel.openDetail(sound.id, SoundDestination.LIST)
                                 },
@@ -249,6 +251,7 @@ private fun SoundMessage(
 @Composable
 fun SoundList(
     sounds: List<SoundItem>,
+    downloadingSoundIds: Set<String> = emptySet(),
     onItemClick: (SoundItem) -> Unit,
     onToggleLike: (String) -> Unit,
     onToggleBookmark: (String) -> Unit,
@@ -264,6 +267,7 @@ fun SoundList(
                 sound = sound,
                 onToggleLike = onToggleLike,
                 onToggleBookmark = onToggleBookmark,
+                isDownloading = sound.id in downloadingSoundIds,
                 onClick = { onItemClick(sound) }
             )
         }

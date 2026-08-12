@@ -43,6 +43,7 @@ import com.example.pauze.MainActivity
 import com.example.pauze.R
 import com.example.pauze.data.model.CreateTodayConditionRequest
 import com.example.pauze.data.model.CreateTodayConditionResult
+import com.example.pauze.data.model.GetTodayConditionResponseDto
 import com.example.pauze.data.model.SensitivityLevel
 import com.example.pauze.data.repository.TodayConditionRepository
 import com.example.pauze.ui.component.CondtionAnswer
@@ -419,9 +420,10 @@ private object PreviewTodayConditionRepository : TodayConditionRepository {
     ): CreateTodayConditionResult = CreateTodayConditionResult(
         conditionId = 1,
         sensitivityScore = 53,
-        sensitivityLevel = SensitivityLevel.NORMAL,
-        triggerCodes = emptyList()
+        sensitivityLevel = SensitivityLevel.NORMAL
     )
+
+    override suspend fun getTodayCondition(): GetTodayConditionResponseDto? = null
 }
 
 private fun Int.toSensitivityLevel(): SensitivityLevel = when (coerceIn(0, 100)) {
