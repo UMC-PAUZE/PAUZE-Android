@@ -1,8 +1,8 @@
 package com.example.pauze.ui.pauze
 
-import androidx.lifecycle.viewModelScope
 import com.example.pauze.R
 import com.example.pauze.data.model.AudioGuideDto
+import com.example.pauze.data.model.AudioLikeToggleResultDto
 import com.example.pauze.data.model.BaseUiState
 import com.example.pauze.data.model.PauzeSoundState
 import com.example.pauze.data.model.SoundCategory
@@ -15,11 +15,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import java.io.IOException
 import javax.inject.Inject
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
 import retrofit2.HttpException
 
 enum class SoundDestination {
@@ -41,110 +36,122 @@ sealed interface PauzeSoundEffect {
 @HiltViewModel
 class PauzeSoundViewModel @Inject constructor(
     private val repository: PauzeSoundRepository
-) : BaseViewModel<PauzeSoundEffect, Unit>(
-    uiState = BaseUiState(data = Unit)
+) : BaseViewModel<PauzeSoundEffect, PauzeSoundState>(
+    uiState = BaseUiState(data = PauzeSoundState())
 ) {
-    private val _state = MutableStateFlow(PauzeSoundState())
-    val state = _state.asStateFlow()
-    private var allSoundsJob: Job? = null
-    private var categorySoundsJob: Job? = null
+    private var isAllSoundsRequestRunning = false
+    private var categoryRequestVersion = 0
+    private var activeSoundListRequestCount = 0
 
     init {
-        restoreDownloadedSounds()
-        loadSounds(SoundCategory.ALL)
+        loadSounds(
+            category = SoundCategory.ALL,
+            restoreDownloads = true
+        )
     }
 
     fun updateSearchQuery(query: String) {
-        _state.update { it.copy(searchQuery = query) }
+        updateData { it.copy(searchQuery = query) }
     }
 
     fun selectCategory(category: SoundCategory) {
-        if (_state.value.selectedCategory == category) return
+        if (uiState.value.data.selectedCategory == category) return
 
         if (category == SoundCategory.ALL) {
-            categorySoundsJob?.cancel()
+            categoryRequestVersion++
         }
 
-        _state.update {
+        updateData {
             it.copy(
                 selectedCategory = category,
-                categorySounds = if (category == SoundCategory.ALL) null else emptyList(),
-                isLoading = true,
-                errorMessage = null
+                categorySounds = if (category == SoundCategory.ALL) null else emptyList()
             )
         }
         loadSounds(category)
     }
 
     fun updateStashSearchQuery(query: String) {
-        _state.update { it.copy(stashSearchQuery = query) }
+        updateData { it.copy(stashSearchQuery = query) }
     }
 
     fun selectStashTab(tab: SoundStashTab) {
-        _state.update { it.copy(selectedStashTab = tab) }
+        updateData { it.copy(selectedStashTab = tab) }
     }
 
     fun toggleLike(soundId: String) {
-        viewModelScope.launch {
-            try {
-                val result = repository.toggleLike(soundId)
+        clearError()
+        launch<AudioLikeToggleResultDto>(
+            onSuccess = { result ->
                 updateSound(soundId) { sound ->
                     sound.copy(isLiked = result.isLiked)
                 }
-            } catch (error: CancellationException) {
-                throw error
-            } catch (error: Throwable) {
-                showError(error)
+            },
+            block = {
+                repository.toggleLike(soundId)
             }
+        )
+    }
+
+    private fun finishBookmarkOperation(soundId: String) {
+        updateData { currentState ->
+            currentState.copy(
+                downloadingSoundIds = currentState.downloadingSoundIds - soundId
+            )
         }
     }
 
     fun toggleBookmark(soundId: String) {
         val sound = findSound(soundId) ?: return
-        if (soundId in _state.value.downloadingSoundIds) return
+        if (soundId in uiState.value.data.downloadingSoundIds) return
 
-        _state.update { currentState ->
+        updateData { currentState ->
             currentState.copy(
-                downloadingSoundIds = currentState.downloadingSoundIds + soundId,
-                errorMessage = null
+                downloadingSoundIds = currentState.downloadingSoundIds + soundId
             )
         }
+        clearError()
 
-        viewModelScope.launch {
-            try {
-                if (sound.isBookmarked) {
-                    repository.deleteDownloadedSound(soundId)
+        if (sound.isBookmarked) {
+            launch<Unit>(
+                onSuccess = {
                     updateSound(soundId) { currentSound ->
                         currentSound.copy(
                             isBookmarked = false,
                             localFilePath = null
                         )
                     }
-                } else {
-                    val localFilePath = repository.downloadSound(sound)
+                },
+                block = {
+                    try {
+                        repository.deleteDownloadedSound(soundId)
+                    } finally {
+                        finishBookmarkOperation(soundId)
+                    }
+                }
+            )
+        } else {
+            launch<String>(
+                onSuccess = { localFilePath ->
                     updateSound(soundId) { currentSound ->
                         currentSound.copy(
                             isBookmarked = true,
                             localFilePath = localFilePath
                         )
                     }
+                },
+                block = {
+                    try {
+                        repository.downloadSound(sound)
+                    } finally {
+                        finishBookmarkOperation(soundId)
+                    }
                 }
-            } catch (error: CancellationException) {
-                throw error
-            } catch (error: Throwable) {
-                showError(error)
-            } finally {
-                _state.update { currentState ->
-                    currentState.copy(
-                        downloadingSoundIds = currentState.downloadingSoundIds - soundId
-                    )
-                }
-            }
+            )
         }
     }
 
     fun retry() {
-        loadSounds(_state.value.selectedCategory)
+        loadSounds(uiState.value.data.selectedCategory)
     }
 
     fun openStash() {
@@ -163,51 +170,51 @@ class PauzeSoundViewModel @Inject constructor(
         sendEffect(PauzeSoundEffect.NavigateBack)
     }
 
-    private fun restoreDownloadedSounds() {
-        viewModelScope.launch {
-            try {
-                val downloadedSounds = repository.getDownloadedSounds()
-                _state.update { currentState ->
-                    currentState.copy(
-                        sounds = mergeDownloadedIntoAll(
-                            currentSounds = currentState.sounds,
-                            downloadedSounds = downloadedSounds
-                        )
-                    )
-                }
-            } catch (error: CancellationException) {
-                throw error
-            } catch (error: Throwable) {
-                showError(error)
-            }
-        }
-    }
-
-    private fun loadSounds(category: SoundCategory) {
-        if (category == SoundCategory.ALL && allSoundsJob?.isActive == true) {
+    private fun loadSounds(
+        category: SoundCategory,
+        restoreDownloads: Boolean = false
+    ) {
+        if (category == SoundCategory.ALL && isAllSoundsRequestRunning) {
             return
         }
-        if (category != SoundCategory.ALL) {
-            categorySoundsJob?.cancel()
+
+        val requestVersion = if (category == SoundCategory.ALL) {
+            isAllSoundsRequestRunning = true
+            0
+        } else {
+            ++categoryRequestVersion
         }
+        beginSoundListRequest()
+        clearError()
 
-        val job = viewModelScope.launch {
-            _state.update { currentState ->
-                if (currentState.selectedCategory == category) {
-                    currentState.copy(isLoading = true, errorMessage = null)
-                } else {
-                    currentState
-                }
-            }
+        launch(
+            block = {
+                val result = try {
+                    if (restoreDownloads) {
+                        val downloadedSounds = try {
+                            repository.getDownloadedSounds()
+                        } catch (error: CancellationException) {
+                            throw error
+                        } catch (_: Exception) {
+                            emptyList()
+                        }
+                        updateData { currentState ->
+                            currentState.copy(
+                                sounds = mergeDownloadedIntoAll(
+                                    currentSounds = currentState.sounds,
+                                    downloadedSounds = downloadedSounds
+                                )
+                            )
+                        }
+                    }
 
-            try {
-                val remoteSounds = if (category == SoundCategory.ALL) {
-                    repository.getAllSounds()
-                } else {
-                    repository.getSoundsByCategory(category)
-                }.map(AudioGuideDto::toSoundItem)
+                    val remoteSounds = if (category == SoundCategory.ALL) {
+                        repository.getAllSounds()
+                    } else {
+                        repository.getSoundsByCategory(category)
+                    }.map(AudioGuideDto::toSoundItem)
 
-                _state.update { currentState ->
+                    val currentState = uiState.value.data
                     val localSounds = currentState.sounds + currentState.categorySounds.orEmpty()
                     val mergedSounds = mergeRemoteWithLocal(remoteSounds, localSounds)
 
@@ -220,76 +227,72 @@ class PauzeSoundViewModel @Inject constructor(
                                 null
                             } else {
                                 currentState.categorySounds
-                            },
-                            isLoading = if (
-                                currentState.selectedCategory == SoundCategory.ALL
-                            ) {
-                                false
-                            } else {
-                                currentState.isLoading
                             }
                         )
                     } else {
-                        val isCurrentCategory = currentState.selectedCategory == category
+                        val isCurrentCategory =
+                            requestVersion == categoryRequestVersion &&
+                                currentState.selectedCategory == category
                         currentState.copy(
                             sounds = mergeIntoAll(currentState.sounds, mergedSounds),
                             categorySounds = if (isCurrentCategory) {
                                 mergedSounds
                             } else {
                                 currentState.categorySounds
-                            },
-                            isLoading = if (isCurrentCategory) {
-                                false
-                            } else {
-                                currentState.isLoading
                             }
                         )
                     }
-                }
-            } catch (error: CancellationException) {
-                throw error
-            } catch (error: Throwable) {
-                _state.update { currentState ->
-                    if (currentState.selectedCategory == category) {
-                        currentState.copy(
-                            isLoading = false,
-                            errorMessage = error.toUserMessage()
-                        )
-                    } else {
-                        currentState
+                } finally {
+                    if (category == SoundCategory.ALL) {
+                        isAllSoundsRequestRunning = false
                     }
+                    finishSoundListRequest()
                 }
+                result.copy(isSoundListLoading = activeSoundListRequestCount > 0)
             }
-        }
+        )
+    }
 
-        if (category == SoundCategory.ALL) {
-            allSoundsJob = job
-        } else {
-            categorySoundsJob = job
+    private fun beginSoundListRequest() {
+        activeSoundListRequestCount++
+        updateData { currentState ->
+            currentState.copy(isSoundListLoading = true)
+        }
+    }
+
+    private fun finishSoundListRequest() {
+        activeSoundListRequestCount = (activeSoundListRequestCount - 1).coerceAtLeast(0)
+        updateData { currentState ->
+            currentState.copy(
+                isSoundListLoading = activeSoundListRequestCount > 0
+            )
+        }
+    }
+
+    private fun clearError() {
+        if (uiState.value.error != null) {
+            updateState { currentState ->
+                currentState.copy(error = null)
+            }
         }
     }
 
     private fun updateSound(soundId: String, transform: (SoundItem) -> SoundItem) {
-        _state.update { currentState ->
+        updateData { currentState ->
             currentState.copy(
                 sounds = currentState.sounds.map { sound ->
                     if (sound.id == soundId) transform(sound) else sound
                 },
                 categorySounds = currentState.categorySounds?.map { sound ->
                     if (sound.id == soundId) transform(sound) else sound
-                },
-                errorMessage = null
+                }
             )
         }
     }
 
     private fun findSound(soundId: String): SoundItem? =
-        (_state.value.categorySounds.orEmpty() + _state.value.sounds)
+        (uiState.value.data.categorySounds.orEmpty() + uiState.value.data.sounds)
             .firstOrNull { it.id == soundId }
-
-    private fun showError(error: Throwable) {
-        _state.update { it.copy(errorMessage = error.toUserMessage()) }
-    }
 }
 
 internal fun mergeRemoteWithLocal(
@@ -362,7 +365,7 @@ private fun mergeIntoAll(
     return merged + updatedSounds.filterNot { it.id in existingIds }
 }
 
-private fun Throwable.toUserMessage(): String = when (this) {
+internal fun Throwable.toPauzeSoundErrorMessage(): String = when (this) {
     is AuthenticationRequiredException -> message ?: "로그인이 필요한 기능입니다."
     is HttpException -> when (code()) {
         400 -> "잘못된 요청입니다."
