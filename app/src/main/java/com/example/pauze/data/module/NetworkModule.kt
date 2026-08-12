@@ -6,6 +6,7 @@ import com.example.pauze.data.service.CurationService
 import com.example.pauze.data.service.MyPageService
 import com.example.pauze.data.service.ReportService
 import com.example.pauze.data.service.TodayConditionService
+import com.example.pauze.data.service.VisualGuideService
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -89,4 +90,11 @@ object NetworkModule {
     fun provideAudioGuideService(
         @PauzeBaseUrl retrofit: Retrofit
     ): AudioGuideService = retrofit.create(AudioGuideService::class.java)
+
+    // 시각 안정
+    @Provides
+    @Singleton
+    fun provideVisualGuideService(
+        @PauzeBaseUrl retrofit: Retrofit
+    ): VisualGuideService = retrofit.create(VisualGuideService::class.java)
 }
