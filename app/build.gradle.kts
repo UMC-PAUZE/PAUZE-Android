@@ -75,6 +75,7 @@ dependencies {
     implementation(libs.okhttp)
     implementation(libs.okhttp.logging.interceptor)
     implementation(libs.hilt.navigation.compose)
+    implementation(libs.androidx.media3.exoplayer)
     implementation("androidx.datastore:datastore-preferences:1.1.1")
 }
 
