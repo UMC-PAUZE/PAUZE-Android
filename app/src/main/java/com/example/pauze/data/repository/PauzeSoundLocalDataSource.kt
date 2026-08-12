@@ -121,12 +121,16 @@ class PauzeSoundLocalDataSource @Inject constructor(
         }
     }
 
-    fun updateDownloadedLike(soundId: String, isLiked: Boolean) {
+    suspend fun updateDownloadedLike(
+        soundId: String,
+        isLiked: Boolean
+    ) = withContext(Dispatchers.IO) {
         synchronized(metadataLock) {
-            if (soundId !in downloadedIds()) return
-            preferences.edit()
-                .putBoolean(soundId.key(FIELD_IS_LIKED), isLiked)
-                .apply()
+            if (soundId in downloadedIds()) {
+                preferences.edit()
+                    .putBoolean(soundId.key(FIELD_IS_LIKED), isLiked)
+                    .apply()
+            }
         }
     }
 
