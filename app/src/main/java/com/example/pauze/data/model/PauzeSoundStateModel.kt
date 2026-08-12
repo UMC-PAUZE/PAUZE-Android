@@ -12,6 +12,7 @@ data class PauzeSoundState(
     val selectedCategory: SoundCategory = SoundCategory.ALL,
     val stashSearchQuery: String = "",
     val selectedStashTab: SoundStashTab = SoundStashTab.LIKED,
+    val downloadingSoundIds: Set<String> = emptySet(),
     val isLoading: Boolean = false,
     val errorMessage: String? = null
 ) {

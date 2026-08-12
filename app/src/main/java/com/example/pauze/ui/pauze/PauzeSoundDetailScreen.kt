@@ -3,6 +3,7 @@ package com.example.pauze.ui.pauze
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
@@ -26,7 +27,8 @@ fun PauzeSoundDetailScreen(
     onToggleLike: (String) -> Unit,
     onToggleBookmark: (String) -> Unit,
     onBackClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    isDownloading: Boolean = false
 ) {
     Box(
         modifier = modifier
@@ -96,16 +98,25 @@ fun PauzeSoundDetailScreen(
 
             IconButton(
                 onClick = { onToggleBookmark(sound.id) },
+                enabled = !isDownloading,
                 modifier = Modifier.size(44.dp)
             ) {
-                Icon(
-                    painter = painterResource(
-                        if (sound.isBookmarked) R.drawable.ic_downloaded else R.drawable.ic_download
-                    ),
-                    contentDescription = if (sound.isBookmarked) "다운로드 완료" else "다운로드",
-                    tint = Color.Unspecified,
-                    modifier = Modifier.size(28.dp)
-                )
+                if (isDownloading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(24.dp),
+                        color = AppTheme.palette.primary.getColor(3),
+                        strokeWidth = 2.dp
+                    )
+                } else {
+                    Icon(
+                        painter = painterResource(
+                            if (sound.isBookmarked) R.drawable.ic_downloaded else R.drawable.ic_download
+                        ),
+                        contentDescription = if (sound.isBookmarked) "다운로드 완료" else "다운로드",
+                        tint = Color.Unspecified,
+                        modifier = Modifier.size(28.dp)
+                    )
+                }
             }
         }
 

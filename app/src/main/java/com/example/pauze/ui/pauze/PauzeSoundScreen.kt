@@ -35,7 +35,6 @@ import com.example.pauze.R
 import com.example.pauze.data.dummies.Sounds
 import com.example.pauze.data.model.AudioGuideDto
 import com.example.pauze.data.model.AudioLikeToggleResultDto
-import com.example.pauze.data.model.AudioSaveResultDto
 import com.example.pauze.data.model.SoundCategory
 import com.example.pauze.data.model.SoundItem
 import com.example.pauze.data.repository.PauzeSoundRepository
@@ -78,6 +77,7 @@ fun PauzeSoundScreen(
                 sound = selectedSound,
                 onToggleLike = viewModel::toggleLike,
                 onToggleBookmark = viewModel::toggleBookmark,
+                isDownloading = selectedSound.id in state.downloadingSoundIds,
                 onBackClick = {
                     selectedSoundId = null
                     viewModel.navigateTo(detailOrigin)
@@ -200,6 +200,7 @@ fun PauzeSoundScreen(
 
                             SoundList(
                                 sounds = state.filteredSounds,
+                                downloadingSoundIds = state.downloadingSoundIds,
                                 onItemClick = { sound ->
                                     viewModel.openDetail(sound.id, SoundDestination.LIST)
                                 },
@@ -248,6 +249,7 @@ private fun SoundMessage(
 @Composable
 fun SoundList(
     sounds: List<SoundItem>,
+    downloadingSoundIds: Set<String> = emptySet(),
     onItemClick: (SoundItem) -> Unit,
     onToggleLike: (String) -> Unit,
     onToggleBookmark: (String) -> Unit,
@@ -263,6 +265,7 @@ fun SoundList(
                 sound = sound,
                 onToggleLike = onToggleLike,
                 onToggleBookmark = onToggleBookmark,
+                isDownloading = sound.id in downloadingSoundIds,
                 onClick = { onItemClick(sound) }
             )
         }
@@ -296,12 +299,12 @@ internal object PreviewPauzeSoundRepository : PauzeSoundRepository {
             isLiked = true
         )
 
-    override suspend fun saveSound(soundId: String): AudioSaveResultDto =
-        AudioSaveResultDto(
-            audioId = soundId.toLongOrNull() ?: 0L,
-            isSaved = true,
-            audioUrl = ""
-        )
+    override suspend fun getDownloadedSounds(): List<SoundItem> = emptyList()
+
+    override suspend fun downloadSound(sound: SoundItem): String =
+        "/preview/${sound.id}.mp3"
+
+    override suspend fun deleteDownloadedSound(soundId: String) = Unit
 }
 
 private fun SoundItem.toAudioGuideDto(): AudioGuideDto = AudioGuideDto(

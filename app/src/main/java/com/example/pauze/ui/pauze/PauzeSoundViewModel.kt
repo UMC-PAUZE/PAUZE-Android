@@ -50,6 +50,7 @@ class PauzeSoundViewModel @Inject constructor(
     private var categorySoundsJob: Job? = null
 
     init {
+        restoreDownloadedSounds()
         loadSounds(SoundCategory.ALL)
     }
 
@@ -100,21 +101,44 @@ class PauzeSoundViewModel @Inject constructor(
 
     fun toggleBookmark(soundId: String) {
         val sound = findSound(soundId) ?: return
-        if (sound.isBookmarked) return
+        if (soundId in _state.value.downloadingSoundIds) return
+
+        _state.update { currentState ->
+            currentState.copy(
+                downloadingSoundIds = currentState.downloadingSoundIds + soundId,
+                errorMessage = null
+            )
+        }
 
         viewModelScope.launch {
             try {
-                val result = repository.saveSound(soundId)
-                updateSound(soundId) { currentSound ->
-                    currentSound.copy(
-                        isBookmarked = result.isSaved,
-                        audioUrl = result.audioUrl.ifBlank { currentSound.audioUrl }
-                    )
+                if (sound.isBookmarked) {
+                    repository.deleteDownloadedSound(soundId)
+                    updateSound(soundId) { currentSound ->
+                        currentSound.copy(
+                            isBookmarked = false,
+                            localFilePath = null
+                        )
+                    }
+                } else {
+                    val localFilePath = repository.downloadSound(sound)
+                    updateSound(soundId) { currentSound ->
+                        currentSound.copy(
+                            isBookmarked = true,
+                            localFilePath = localFilePath
+                        )
+                    }
                 }
             } catch (error: CancellationException) {
                 throw error
             } catch (error: Throwable) {
                 showError(error)
+            } finally {
+                _state.update { currentState ->
+                    currentState.copy(
+                        downloadingSoundIds = currentState.downloadingSoundIds - soundId
+                    )
+                }
             }
         }
     }
@@ -137,6 +161,26 @@ class PauzeSoundViewModel @Inject constructor(
 
     fun requestBack() {
         sendEffect(PauzeSoundEffect.NavigateBack)
+    }
+
+    private fun restoreDownloadedSounds() {
+        viewModelScope.launch {
+            try {
+                val downloadedSounds = repository.getDownloadedSounds()
+                _state.update { currentState ->
+                    currentState.copy(
+                        sounds = mergeDownloadedIntoAll(
+                            currentSounds = currentState.sounds,
+                            downloadedSounds = downloadedSounds
+                        )
+                    )
+                }
+            } catch (error: CancellationException) {
+                throw error
+            } catch (error: Throwable) {
+                showError(error)
+            }
+        }
     }
 
     private fun loadSounds(category: SoundCategory) {
@@ -248,20 +292,49 @@ class PauzeSoundViewModel @Inject constructor(
     }
 }
 
-private fun mergeRemoteWithLocal(
+internal fun mergeRemoteWithLocal(
     remoteSounds: List<SoundItem>,
     localSounds: List<SoundItem>
 ): List<SoundItem> {
     val localById = localSounds.associateBy(SoundItem::id)
+    val remoteIds = remoteSounds.mapTo(mutableSetOf(), SoundItem::id)
 
-    return remoteSounds.map { remote ->
+    val mergedRemoteSounds = remoteSounds.map { remote ->
         val local = localById[remote.id]
         remote.copy(
             isLiked = local?.isLiked ?: remote.isLiked,
             isBookmarked = local?.isBookmarked ?: remote.isBookmarked,
-            audioUrl = remote.audioUrl.ifBlank { local?.audioUrl.orEmpty() }
+            audioUrl = remote.audioUrl.ifBlank { local?.audioUrl.orEmpty() },
+            localFilePath = local?.localFilePath
         )
     }
+
+    val downloadedLocalOnlySounds = localById.values.filter { local ->
+        local.id !in remoteIds && local.localFilePath != null
+    }
+
+    return mergedRemoteSounds + downloadedLocalOnlySounds
+}
+
+private fun mergeDownloadedIntoAll(
+    currentSounds: List<SoundItem>,
+    downloadedSounds: List<SoundItem>
+): List<SoundItem> {
+    val downloadedById = downloadedSounds.associateBy(SoundItem::id)
+    val merged = currentSounds.map { currentSound ->
+        val downloaded = downloadedById[currentSound.id]
+        if (downloaded == null) {
+            currentSound
+        } else {
+            currentSound.copy(
+                isBookmarked = true,
+                localFilePath = downloaded.localFilePath,
+                audioUrl = currentSound.audioUrl.ifBlank { downloaded.audioUrl }
+            )
+        }
+    }
+    val currentIds = currentSounds.mapTo(mutableSetOf(), SoundItem::id)
+    return merged + downloadedSounds.filterNot { it.id in currentIds }
 }
 
 private fun AudioGuideDto.toSoundItem(): SoundItem = SoundItem(
@@ -275,7 +348,8 @@ private fun AudioGuideDto.toSoundItem(): SoundItem = SoundItem(
     } else {
         R.drawable.ic_empty_image
     },
-    audioUrl = fileUrl
+    audioUrl = fileUrl,
+    localFilePath = null
 )
 
 private fun mergeIntoAll(
