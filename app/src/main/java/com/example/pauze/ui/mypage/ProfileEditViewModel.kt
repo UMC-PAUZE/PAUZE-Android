@@ -66,6 +66,7 @@ class ProfileEditViewModel @Inject constructor(
     }
 
     fun onSaveClick() {
+        if (uiState.value.isLoading) return
         launch(
             onSuccess = { sendEffect(ProfileEditEffect.NavigateToBack) },
             onFailure = { e ->
@@ -73,11 +74,7 @@ class ProfileEditViewModel @Inject constructor(
             }
         ) {
             val imageFile = newProfileImageUri?.let { uriToFile(it) }
-            myPageRepository.updateProfile(
-                nickname = nickname,
-                introduction = bio,
-                profileImage = imageFile
-            )
+            myPageRepository.updateProfile(nickname = nickname, introduction = bio, profileImage = imageFile)
         }
     }
 
