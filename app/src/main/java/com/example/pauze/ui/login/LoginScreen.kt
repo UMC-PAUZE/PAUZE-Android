@@ -52,7 +52,9 @@ import com.example.pauze.ui.component.ModeBasedTextField
 import com.example.pauze.ui.component.TextFieldMode
 import com.example.pauze.ui.login.agreement.TermsAndPolicyScreen
 import com.example.pauze.ui.login.completed.SignUpCompletedScreen
+import com.example.pauze.ui.login.component.AccountLinkingDialog
 import com.example.pauze.ui.login.kakao.KakaoSignUpScreen
+import com.example.pauze.ui.login.linking.AccountLinkingScreen
 import com.example.pauze.ui.login.signup.SignUpScreen
 import com.example.pauze.ui.theme.AppTheme
 import com.example.pauze.ui.theme.MainPaletteTheme
@@ -87,6 +89,9 @@ class LoginActivity : ComponentActivity() {
                     composable<LoginNavDestination.Kakao> {
                         KakaoSignUpScreen(navController)
                     }
+                    composable<LoginNavDestination.Link> {
+                        AccountLinkingScreen(navController)
+                    }
                 }
             }
         }
@@ -105,6 +110,7 @@ fun LoginScreen(
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var isLoginFailed by remember { mutableStateOf(false) }
+    var showLinkDialog by remember { mutableStateOf(false) }
 
     // 로그인 성공 여부 collect하기
     LaunchedEffect(viewModel.effect) {
@@ -122,8 +128,14 @@ fun LoginScreen(
                 is LoginEffect.NavigateToAdditionalScreen -> {
                     navController.navigate(LoginNavDestination.Kakao(isAgreedToTerm = false, isAgreedToPolicy = false))
                 }
+                is LoginEffect.NavigateToLinkPage -> {
+                    navController.navigate(LoginNavDestination.Link)
+                }
                 is LoginEffect.IsLoginFailed -> {
                     isLoginFailed = true
+                }
+                is LoginEffect.ShowLinkDialog -> {
+                    showLinkDialog = true
                 }
             }
         }
@@ -208,7 +220,8 @@ fun LoginScreen(
                     color = Color(0xFFFEE500),
                     shape = RoundedCornerShape(size = 100.dp))
                 .clickable{
-                    viewModel.loginWithKakao()
+                    //viewModel.loginWithKakao()
+                    viewModel.showLinkDialog()
                 }
                 .padding(horizontal = 28.dp, vertical = 18.dp),
             contentAlignment = Alignment.Center
@@ -246,6 +259,12 @@ fun LoginScreen(
                 },
                 style = bodyTextMdBold,
                 color = AppTheme.palette.gray.getColor(2)
+            )
+        }
+        if(showLinkDialog){
+            AccountLinkingDialog(
+                onDismissRequest = { showLinkDialog = false },
+                onContinue = { viewModel.toLinkPage(); showLinkDialog = false }
             )
         }
     }

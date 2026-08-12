@@ -22,6 +22,7 @@ import androidx.lifecycle.ViewModel
 import com.example.pauze.ui.component.ModeBasedTextField
 import com.example.pauze.ui.component.TextFieldMode
 import com.example.pauze.ui.login.kakao.KakaoSignUpViewModel
+import com.example.pauze.ui.login.linking.LinkingViewModel
 import com.example.pauze.ui.login.signup.SignUpViewModel
 import com.example.pauze.ui.theme.AppTheme
 import com.example.pauze.ui.theme.bodyTextMdBold
@@ -31,27 +32,28 @@ import com.example.pauze.ui.theme.bodyTextSmRegular
 @Composable
 fun EnterVerificationCode(
     viewModel: ViewModel,
-    kakaoSignUp: Boolean
+    isLinking: Boolean
 ): Boolean{
     var isFocused by remember { mutableStateOf(false) }
 
     Column {
         isFocused = ModeBasedTextField(
             mode = TextFieldMode.Verif,
-            value = (viewModel as SignUpViewModel).code,
-            onValueChanged = {
-                viewModel.code = it
-            },
+            value = if(isLinking) (viewModel as LinkingViewModel).code else (viewModel as SignUpViewModel).code,
+            onValueChanged = { if(isLinking) (viewModel as LinkingViewModel).code = it else (viewModel as SignUpViewModel).code = it },
             imeAction = ImeAction.Done,
-            onCheckClick = { viewModel.verifyEmail()},
-            checkClickValue = { viewModel.isVerified }
+            onCheckClick = { /*(viewModel as SignUpViewModel).verifyEmail()*/},
+            checkClickValue = { if(isLinking) (viewModel as LinkingViewModel).isVerified else (viewModel as SignUpViewModel).isVerified }
         )
-        if(!isFocused && (!kakaoSignUp && viewModel.code != "")){
+        if(!isFocused && (isLinking && (viewModel as LinkingViewModel).code != "") || (!isLinking && (viewModel as SignUpViewModel).code != "")){
             Text(
-                if(!kakaoSignUp && viewModel.isVerified) "인증에 성공했습니다"
+                if((isLinking && (viewModel as LinkingViewModel).isVerified)
+                    || (!isLinking && (viewModel as SignUpViewModel).isVerified)) "인증에 성공했습니다"
                     else "인증에 실패했습니다",
                 style = bodyTextSmRegular,
-                color = if(!kakaoSignUp && (viewModel as SignUpViewModel).isVerified) AppTheme.palette.primary.getColor(4)
+                color = if((isLinking && (viewModel as LinkingViewModel).isVerified)
+                    || (!isLinking && (viewModel as SignUpViewModel).isVerified))
+                    AppTheme.palette.primary.getColor(4)
                     else AppTheme.palette.secondary.getColor(4)
             )
         }
@@ -61,7 +63,7 @@ fun EnterVerificationCode(
             horizontalArrangement = Arrangement.End
         ){
             Text(
-                (viewModel as SignUpViewModel).time,
+                if(isLinking) (viewModel as LinkingViewModel).time else (viewModel as SignUpViewModel).time,
                 style = bodyTextMdRegular,
                 color = AppTheme.palette.primary.getColor(5)
             )
@@ -69,12 +71,15 @@ fun EnterVerificationCode(
             Text(
                 "코드 재전송",
                 modifier = Modifier
-                    .clickable(onClick = { (viewModel as SignUpViewModel).sendEffectForTimer() })
+                    .clickable(onClick = {
+                        if(isLinking) (viewModel as LinkingViewModel).sendEffectForTimer()
+                        else (viewModel as SignUpViewModel).sendEffectForTimer()
+                    })
                     .padding(vertical = 8.dp),
                 style = bodyTextMdBold,
                 color = AppTheme.palette.primary.getColor(2)
             )
         }
     }
-    return !isFocused && (!kakaoSignUp && (viewModel as SignUpViewModel).isVerified)
+    return !isFocused && (isLinking && (viewModel as LinkingViewModel).isVerified) || (!isLinking && (viewModel as SignUpViewModel).isVerified)
 }

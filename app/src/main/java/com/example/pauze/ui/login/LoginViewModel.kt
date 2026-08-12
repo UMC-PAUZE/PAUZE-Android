@@ -19,7 +19,9 @@ sealed interface LoginEffect{
     object NavigateToHome : LoginEffect
     object NavigateToAdditionalScreen: LoginEffect
     object NavigateToSignUp : LoginEffect
+    object NavigateToLinkPage: LoginEffect
     object IsLoginFailed: LoginEffect
+    object ShowLinkDialog: LoginEffect
 }
 @HiltViewModel
 class LoginViewModel @Inject constructor(
@@ -45,10 +47,18 @@ class LoginViewModel @Inject constructor(
             repository.login(email, pwd)
         }
     }
+
+    fun showLinkDialog(){
+        sendEffect(LoginEffect.ShowLinkDialog)
+    }
     fun toGuestMode(){
         sendEffect(LoginEffect.NavigateToHome)
     }
     fun toSignUp(){
         sendEffect(LoginEffect.NavigateToSignUp)
+    }
+
+    fun toLinkPage(){
+        sendEffect(LoginEffect.NavigateToLinkPage)
     }
 }
