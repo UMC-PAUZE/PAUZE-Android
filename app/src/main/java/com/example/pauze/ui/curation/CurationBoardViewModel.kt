@@ -264,6 +264,14 @@ class CurationBoardViewModel @Inject constructor(
         }
 
         sendEffect(CurationEffect.OpenArchive)
+    }
+
+    fun loadArchive() {
+        if (TokenRepository.accessToken.isNullOrBlank()) {
+            sendEffect(CurationEffect.NavigateToLogin)
+            return
+        }
+
         loadMyLikes()
         loadMyBookmarks()
     }
