@@ -63,11 +63,28 @@ fun PauzeVisualScreen(
         PauzeVisualStep.SelectMethod -> PauzeVisualMethodSelectScreen(
             selectedMethod = selectedMethod,
             onMethodSelect = { selectedMethod = it },
+            isLoading = uiState.isLoading,
+            hasError = selectedMethod == PauzeVisualMethod.BreathingGuide &&
+                uiState.error != null,
             onNextClick = {
-                if (selectedMethod == PauzeVisualMethod.BreathingGuide) {
-                    viewModel.loadVisualGuide()
+                when (selectedMethod) {
+                    PauzeVisualMethod.BreathingGuide -> {
+                        viewModel.loadVisualGuide {
+                            step = PauzeVisualStep.SelectTime
+                        }
+                    }
+
+                    PauzeVisualMethod.Meditation -> {
+                        step = PauzeVisualStep.SelectTime
+                    }
+
+                    null -> Unit
                 }
-                step = PauzeVisualStep.SelectTime
+            },
+            onRetryClick = {
+                viewModel.loadVisualGuide {
+                    step = PauzeVisualStep.SelectTime
+                }
             },
             onBackClick = { step = PauzeVisualStep.Start }
         )

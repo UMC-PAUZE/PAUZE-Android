@@ -21,13 +21,32 @@ class PauzeVisualViewModel @Inject constructor(
 ) : BaseViewModel<PauzeVisualEffect, PauzeVisualState>(
     uiState = BaseUiState(data = PauzeVisualState())
 ) {
-    fun loadVisualGuide() {
-        if (uiState.value.isLoading || uiState.value.data.visualUrl != null) return
+    fun loadVisualGuide(onSuccess: () -> Unit) {
+        val currentUrl = uiState.value.data.visualUrl
 
-        launch {
-            PauzeVisualState(
-                visualUrl = visualGuideRepository.getVisualUrl()
-            )
+        if (!currentUrl.isNullOrBlank()) {
+            onSuccess()
+            return
+        }
+
+        if (uiState.value.isLoading) return
+
+        updateState { state ->
+            state.copy(error = null)
+        }
+
+        launch(
+            onSuccess = { visualUrl ->
+                updateData { state ->
+                    state.copy(visualUrl = visualUrl)
+                }
+                onSuccess()
+            },
+        ) {
+            visualGuideRepository.getVisualUrl()
+                .trim()
+                .takeIf { it.isNotEmpty() }
+                ?: throw IllegalStateException("시각 안정 가이드 URL이 비어 있습니다.")
         }
     }
 
