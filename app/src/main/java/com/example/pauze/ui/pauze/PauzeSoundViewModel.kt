@@ -275,13 +275,14 @@ class PauzeSoundViewModel @Inject constructor(
             .firstOrNull { it.id == soundId }
 }
 
-private fun mergeRemoteWithLocal(
+internal fun mergeRemoteWithLocal(
     remoteSounds: List<SoundItem>,
     localSounds: List<SoundItem>
 ): List<SoundItem> {
     val localById = localSounds.associateBy(SoundItem::id)
+    val remoteIds = remoteSounds.mapTo(mutableSetOf(), SoundItem::id)
 
-    return remoteSounds.map { remote ->
+    val mergedRemoteSounds = remoteSounds.map { remote ->
         val local = localById[remote.id]
         remote.copy(
             isLiked = local?.isLiked ?: remote.isLiked,
@@ -290,6 +291,12 @@ private fun mergeRemoteWithLocal(
             localFilePath = local?.localFilePath
         )
     }
+
+    val downloadedLocalOnlySounds = localById.values.filter { local ->
+        local.id !in remoteIds && local.localFilePath != null
+    }
+
+    return mergedRemoteSounds + downloadedLocalOnlySounds
 }
 
 private fun mergeDownloadedIntoAll(
