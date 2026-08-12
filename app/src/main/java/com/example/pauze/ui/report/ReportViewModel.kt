@@ -15,6 +15,7 @@ import com.example.pauze.data.model.TopTrigger
 import com.example.pauze.data.model.TriggerColorToken
 import com.example.pauze.data.model.TriggerUiState
 import com.example.pauze.data.model.WeeklyReportDto
+import com.example.pauze.data.model.isToday
 import com.example.pauze.data.model.toCondition
 import com.example.pauze.data.repository.ReportRepository
 import com.example.pauze.data.repository.TodayConditionRepository
@@ -47,32 +48,23 @@ class ReportViewModel @Inject constructor(
     }
 
     private fun fetchWeekly() {
-        launch(onFailure = { e ->
-            updateData { it.copy(weeklyError = e.message ?: "주간 리포트를 불러오지 못했습니다") }
-        }) {
-            uiState.value.data.copy(
-                weekly = reportRepository.getWeeklyReport(),
-                weeklyError = null
-            )
+        launch(onFailure = { e -> updateData { it.copy(weeklyError = e.message ?: "주간 리포트를 불러오지 못했습니다") } }) {
+            val weekly = reportRepository.getWeeklyReport()
+            uiState.value.data.copy(weekly = weekly, weeklyError = null)
         }
     }
 
     private fun fetchMonthly() {
-        launch(onFailure = { e ->
-            updateData { it.copy(monthlyError = e.message ?: "월간 리포트를 불러오지 못했습니다") }
-        }) {
-            uiState.value.data.copy(
-                monthly = reportRepository.getMonthlyReport(),
-                monthlyError = null
-            )
+        launch(onFailure = { e -> updateData { it.copy(monthlyError = e.message ?: "월간 리포트를 불러오지 못했습니다") } }) {
+            val monthly = reportRepository.getMonthlyReport()
+            uiState.value.data.copy(monthly = monthly, monthlyError = null)
         }
     }
 
-    private fun fetchTodayCondition() {
+    fun fetchTodayCondition() {
         launch(onFailure = {}) {
-            uiState.value.data.copy(
-                todayCondition = todayConditionRepository.getTodayCondition()?.toCondition()
-            )
+            val dto = todayConditionRepository.getTodayCondition()
+            uiState.value.data.copy(todayCondition = dto?.takeIf { it.isToday() }?.toCondition())
         }
     }
 

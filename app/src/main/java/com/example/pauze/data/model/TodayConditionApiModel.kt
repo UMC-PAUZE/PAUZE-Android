@@ -1,5 +1,9 @@
 package com.example.pauze.data.model
 
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.todayIn
+import kotlin.time.Clock
+
 data class CreateTodayConditionRequest(
     val sleepLevel: SleepLevel,
     val noiseLevel: NoiseLevel,
@@ -35,6 +39,9 @@ fun GetTodayConditionResponseDto.toCondition() = Condition(
     energy = energyLevel,
     sensitivity = sensitivityLevel
 )
+
+fun GetTodayConditionResponseDto.isToday(): Boolean =
+    conditionDate == Clock.System.todayIn(TimeZone.currentSystemDefault()).toString()
 
 const val TODAY_CONDITION_QUESTION_COUNT = 5
 

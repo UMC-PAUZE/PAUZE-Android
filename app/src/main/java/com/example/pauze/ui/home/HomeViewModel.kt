@@ -3,14 +3,12 @@ package com.example.pauze.ui.home
 import com.example.pauze.data.model.BaseUiState
 import com.example.pauze.data.model.GetTodayConditionResponseDto
 import com.example.pauze.data.model.HomeState
+import com.example.pauze.data.model.isToday
 import com.example.pauze.data.model.toCondition
 import com.example.pauze.data.repository.TodayConditionRepository
 import com.example.pauze.ui.BaseViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.todayIn
 import javax.inject.Inject
-import kotlin.time.Clock
 
 sealed interface HomeEffect {
     object MoveToTodayCondition: HomeEffect
@@ -45,11 +43,8 @@ class HomeViewModel @Inject constructor(
         sendEffect(HomeEffect.MoveToReportScreen)
     }
 
-    private fun GetTodayConditionResponseDto.toHomeState(): HomeState {
-        val today = Clock.System.todayIn(TimeZone.currentSystemDefault()).toString()
-        return HomeState(
-            condition = toCondition(),
-            isTodayConditionExists = conditionDate == today
-        )
-    }
+    private fun GetTodayConditionResponseDto.toHomeState() = HomeState(
+        condition = toCondition(),
+        isTodayConditionExists = isToday()
+    )
 }

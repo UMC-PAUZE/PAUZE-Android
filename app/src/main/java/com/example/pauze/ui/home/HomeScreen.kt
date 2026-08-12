@@ -31,6 +31,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.example.pauze.BottomNavDestination
@@ -64,6 +65,11 @@ fun HomeScreen(
 
     val bgPadding = 24
     val conditionBoxPadding = 16
+
+    LifecycleResumeEffect(Unit) {
+        viewModel.getCondition()
+        onPauseOrDispose { }
+    }
 
     LaunchedEffect(viewModel.effect) {
         viewModel.effect.collect { effect ->
