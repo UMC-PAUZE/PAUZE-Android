@@ -115,6 +115,12 @@ fun CurationBoardScreen(
         }
     }
 
+    LaunchedEffect(isArchiveScreenVisible) {
+        if (isArchiveScreenVisible) {
+            viewModel.loadArchive()
+        }
+    }
+
     DisposableEffect(activity) {
         val newIntentListener = Consumer<Intent> { newIntent ->
             deepLinkUri = newIntent.data

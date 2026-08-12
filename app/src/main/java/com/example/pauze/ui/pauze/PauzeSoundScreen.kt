@@ -20,7 +20,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -31,11 +30,11 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.pauze.R
 import com.example.pauze.data.dummies.Sounds
 import com.example.pauze.data.model.AudioGuideDto
 import com.example.pauze.data.model.AudioLikeToggleResultDto
-import com.example.pauze.data.model.AudioSaveResultDto
 import com.example.pauze.data.model.SoundCategory
 import com.example.pauze.data.model.SoundItem
 import com.example.pauze.data.repository.PauzeSoundRepository
@@ -53,7 +52,9 @@ fun PauzeSoundScreen(
     onBackClick: () -> Unit = {},
     viewModel: PauzeSoundViewModel = hiltViewModel()
 ) {
-    val state by viewModel.state.collectAsState()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val state = uiState.data
+    val errorMessage = uiState.error?.toPauzeSoundErrorMessage()
     var currentDestination by remember { mutableStateOf(SoundDestination.LIST) }
     var detailOrigin by remember { mutableStateOf(SoundDestination.LIST) }
     var selectedSoundId by remember { mutableStateOf<String?>(null) }
@@ -78,6 +79,7 @@ fun PauzeSoundScreen(
                 sound = selectedSound,
                 onToggleLike = viewModel::toggleLike,
                 onToggleBookmark = viewModel::toggleBookmark,
+                isDownloading = selectedSound.id in state.downloadingSoundIds,
                 onBackClick = {
                     selectedSoundId = null
                     viewModel.navigateTo(detailOrigin)
@@ -146,7 +148,7 @@ fun PauzeSoundScreen(
                 Spacer(modifier = Modifier.height(32.dp))
 
                 when {
-                    state.isLoading && state.filteredSounds.isEmpty() -> {
+                    state.isSoundListLoading && state.filteredSounds.isEmpty() -> {
                         Box(
                             modifier = Modifier
                                 .weight(1f)
@@ -159,9 +161,9 @@ fun PauzeSoundScreen(
                         }
                     }
 
-                    state.errorMessage != null && state.filteredSounds.isEmpty() -> {
+                    errorMessage != null && state.filteredSounds.isEmpty() -> {
                         SoundMessage(
-                            message = state.errorMessage.orEmpty(),
+                            message = errorMessage,
                             actionText = "다시 시도",
                             onActionClick = viewModel::retry,
                             modifier = Modifier
@@ -189,7 +191,7 @@ fun PauzeSoundScreen(
                                 .weight(1f)
                                 .width(312.dp)
                         ) {
-                            state.errorMessage?.let { message ->
+                            errorMessage?.let { message ->
                                 Text(
                                     text = message,
                                     style = bodyTextMdMedium,
@@ -200,6 +202,7 @@ fun PauzeSoundScreen(
 
                             SoundList(
                                 sounds = state.filteredSounds,
+                                downloadingSoundIds = state.downloadingSoundIds,
                                 onItemClick = { sound ->
                                     viewModel.openDetail(sound.id, SoundDestination.LIST)
                                 },
@@ -248,6 +251,7 @@ private fun SoundMessage(
 @Composable
 fun SoundList(
     sounds: List<SoundItem>,
+    downloadingSoundIds: Set<String> = emptySet(),
     onItemClick: (SoundItem) -> Unit,
     onToggleLike: (String) -> Unit,
     onToggleBookmark: (String) -> Unit,
@@ -263,6 +267,7 @@ fun SoundList(
                 sound = sound,
                 onToggleLike = onToggleLike,
                 onToggleBookmark = onToggleBookmark,
+                isDownloading = sound.id in downloadingSoundIds,
                 onClick = { onItemClick(sound) }
             )
         }
@@ -296,12 +301,12 @@ internal object PreviewPauzeSoundRepository : PauzeSoundRepository {
             isLiked = true
         )
 
-    override suspend fun saveSound(soundId: String): AudioSaveResultDto =
-        AudioSaveResultDto(
-            audioId = soundId.toLongOrNull() ?: 0L,
-            isSaved = true,
-            audioUrl = ""
-        )
+    override suspend fun getDownloadedSounds(): List<SoundItem> = emptyList()
+
+    override suspend fun downloadSound(sound: SoundItem): String =
+        "/preview/${sound.id}.mp3"
+
+    override suspend fun deleteDownloadedSound(soundId: String) = Unit
 }
 
 private fun SoundItem.toAudioGuideDto(): AudioGuideDto = AudioGuideDto(
