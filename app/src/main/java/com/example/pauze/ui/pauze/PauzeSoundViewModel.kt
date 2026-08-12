@@ -41,6 +41,7 @@ class PauzeSoundViewModel @Inject constructor(
 ) {
     private var isAllSoundsRequestRunning = false
     private var categoryRequestVersion = 0
+    private var activeSoundListRequestCount = 0
 
     init {
         loadSounds(
@@ -183,11 +184,12 @@ class PauzeSoundViewModel @Inject constructor(
         } else {
             ++categoryRequestVersion
         }
+        beginSoundListRequest()
         clearError()
 
         launch(
             block = {
-                try {
+                val result = try {
                     if (restoreDownloads) {
                         val downloadedSounds = try {
                             repository.getDownloadedSounds()
@@ -244,9 +246,27 @@ class PauzeSoundViewModel @Inject constructor(
                     if (category == SoundCategory.ALL) {
                         isAllSoundsRequestRunning = false
                     }
+                    finishSoundListRequest()
                 }
+                result.copy(isSoundListLoading = activeSoundListRequestCount > 0)
             }
         )
+    }
+
+    private fun beginSoundListRequest() {
+        activeSoundListRequestCount++
+        updateData { currentState ->
+            currentState.copy(isSoundListLoading = true)
+        }
+    }
+
+    private fun finishSoundListRequest() {
+        activeSoundListRequestCount = (activeSoundListRequestCount - 1).coerceAtLeast(0)
+        updateData { currentState ->
+            currentState.copy(
+                isSoundListLoading = activeSoundListRequestCount > 0
+            )
+        }
     }
 
     private fun clearError() {
