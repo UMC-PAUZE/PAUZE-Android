@@ -76,7 +76,7 @@ import java.util.TimeZone
 @Composable
 fun CurationBoardScreen(
     onPostClick: (Long) -> Unit = {},
-    onBookmarkListClick: () -> Unit = {},
+    onArchiveClick: () -> Unit = {},
     viewModel: CurationBoardViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -88,7 +88,7 @@ fun CurationBoardScreen(
         mutableStateOf(false)
     }
 
-    var isBookmarkScreenVisible by rememberSaveable {
+    var isArchiveScreenVisible by rememberSaveable {
         mutableStateOf(false)
     }
 
@@ -107,9 +107,9 @@ fun CurationBoardScreen(
                     isLoginRequiredDialogVisible = true
                 }
 
-                CurationEffect.OpenBookmarkList -> {
-                    isBookmarkScreenVisible = true
-                    onBookmarkListClick()
+                CurationEffect.OpenArchive -> {
+                    isArchiveScreenVisible = true
+                    onArchiveClick()
                 }
             }
         }
@@ -159,7 +159,10 @@ fun CurationBoardScreen(
     }
 
     val selectedPost = curationState.selectedPost
-    val filteredPosts = curationState.filteredPosts
+    val posts = curationState.posts
+    val hasActiveFilter =
+        curationState.submittedKeyword.isNotBlank() ||
+                curationState.selectedCategoryId != null
 
     val shouldLoadMorePosts by remember {
         derivedStateOf {
@@ -183,7 +186,7 @@ fun CurationBoardScreen(
         if (
             shouldLoadMorePosts &&
             selectedPost == null &&
-            !isBookmarkScreenVisible &&
+            !isArchiveScreenVisible &&
             !curationState.isPostsLoading &&
             curationState.hasNextPostsPage
         ) {
@@ -199,11 +202,11 @@ fun CurationBoardScreen(
 
     BackHandler(
         enabled = (
-                isBookmarkScreenVisible &&
+                isArchiveScreenVisible &&
                         selectedPost == null
                 ),
     ) {
-        isBookmarkScreenVisible = false
+        isArchiveScreenVisible = false
     }
 
     if (isLoginRequiredDialogVisible) {
@@ -262,18 +265,26 @@ fun CurationBoardScreen(
         return
     }
 
-    if (isBookmarkScreenVisible) {
-        CurationBookmarkScreen(
+    if (isArchiveScreenVisible) {
+        CurationArchiveScreen(
+            likedPosts =
+                curationState.likedPosts,
             bookmarkedPosts =
                 curationState.bookmarkedPosts,
-            isLoading =
+            isLikesLoading =
+                curationState.isLikesLoading,
+            isBookmarksLoading =
                 curationState.isBookmarksLoading,
-            hasNextPage =
+            hasNextLikesPage =
+                curationState.hasNextLikesPage,
+            hasNextBookmarksPage =
                 curationState.hasNextBookmarksPage,
-            onLoadMore =
+            onLoadMoreLikes =
+                viewModel::loadNextMyLikes,
+            onLoadMoreBookmarks =
                 viewModel::loadNextMyBookmarks,
             onBackClick = {
-                isBookmarkScreenVisible = false
+                isArchiveScreenVisible = false
             },
             onPostClick = { postId ->
                 viewModel.selectPost(postId)
@@ -308,11 +319,11 @@ fun CurationBoardScreen(
                             id = R.drawable
                                 .ic_curation_box,
                         ),
-                        contentDescription = "북마크 목록",
+                        contentDescription = "게시글 보관함",
                         modifier = Modifier
                             .fillMaxSize()
                             .clickable {
-                                viewModel.openBookmarkList()
+                                viewModel.openArchive()
                             },
                     )
                 },
@@ -349,14 +360,14 @@ fun CurationBoardScreen(
                             AppTheme.palette.primary.getColor(4),
                     )
                 }
-            } else if (curationState.posts.isEmpty()) {
-                CurationEmptyBoard(
+            } else if (posts.isEmpty() && hasActiveFilter) {
+                CurationEmptySearchResult(
                     modifier = Modifier
                         .fillMaxWidth()
                         .weight(1f),
                 )
-            } else if (filteredPosts.isEmpty()) {
-                CurationEmptySearchResult(
+            } else if (posts.isEmpty()) {
+                CurationEmptyBoard(
                     modifier = Modifier
                         .fillMaxWidth()
                         .weight(1f),
@@ -374,7 +385,7 @@ fun CurationBoardScreen(
                     ),
                 ) {
                     itemsIndexed(
-                        items = filteredPosts,
+                        items = posts,
                         key = { _, post ->
                             post.postId
                         },
@@ -396,7 +407,7 @@ fun CurationBoardScreen(
                             },
                         )
 
-                        if (index < filteredPosts.lastIndex) {
+                        if (index < posts.lastIndex) {
                             HorizontalDivider(
                                 thickness = 1.dp,
                                 color = AppTheme.palette.gray
@@ -705,19 +716,5 @@ internal fun formatRelativeTime(
 
         else ->
             "${difference / YEAR_MILLIS}년 전"
-    }
-}
-
-@Preview(
-    name = "큐레이션 게시판",
-    showBackground = true,
-)
-@Composable
-private fun CurationBoardScreenPreview() {
-    PAUZEAndroidTheme(
-        darkTheme = true,
-        dynamicColor = false,
-    ) {
-        CurationBoardScreen()
     }
 }

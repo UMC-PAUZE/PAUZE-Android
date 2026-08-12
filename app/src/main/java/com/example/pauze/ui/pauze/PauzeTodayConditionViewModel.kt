@@ -6,9 +6,10 @@ import com.example.pauze.data.model.ConditionQuestion
 import com.example.pauze.data.model.CreateTodayConditionRequest
 import com.example.pauze.data.model.EnergyLevel
 import com.example.pauze.data.model.NoiseLevel
-import com.example.pauze.data.model.SensitivityLevel
 import com.example.pauze.data.model.SleepLevel
 import com.example.pauze.data.model.SocialLevel
+import com.example.pauze.data.model.TODAY_CONDITION_QUESTION_COUNT
+import com.example.pauze.data.model.TodayConditionState
 import com.example.pauze.data.model.VisualLevel
 import com.example.pauze.data.repository.TodayConditionRepository
 import com.example.pauze.ui.BaseViewModel
@@ -21,24 +22,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import retrofit2.HttpException
-
-data class TodayConditionState(
-    val currentQuestionIndex: Int = 0,
-    val answers: List<Int?> = List(TODAY_CONDITION_QUESTION_COUNT) { null },
-    val conditionId: Long? = null,
-    val sensitivityScore: Int = 0,
-    val sensitivityLevel: SensitivityLevel? = null,
-    val triggerCodes: List<String> = emptyList(),
-    val showResult: Boolean = false,
-    val isSubmitting: Boolean = false,
-    val submissionError: String? = null
-) {
-    val isPreviousEnabled: Boolean
-        get() = currentQuestionIndex > 0 && !isSubmitting
-
-    val isNextEnabled: Boolean
-        get() = answers[currentQuestionIndex] != null && !isSubmitting
-}
 
 sealed interface TodayConditionEffect {
     data object ShowExitDialog : TodayConditionEffect
@@ -139,7 +122,6 @@ class PauzeTodayConditionViewModel @Inject constructor(
                         conditionId = result.conditionId,
                         sensitivityScore = result.sensitivityScore,
                         sensitivityLevel = result.sensitivityLevel,
-                        triggerCodes = result.triggerCodes,
                         showResult = true,
                         isSubmitting = false
                     )
@@ -173,8 +155,6 @@ class PauzeTodayConditionViewModel @Inject constructor(
         sendEffect(TodayConditionEffect.NavigateToPauzeStartActivity)
     }
 }
-
-private const val TODAY_CONDITION_QUESTION_COUNT = 5
 
 private val sleepLevelsByChoice = listOf(
     SleepLevel.LESS_4,
