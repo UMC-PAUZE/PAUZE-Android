@@ -10,6 +10,7 @@ import com.example.pauze.data.model.SoundItem
 import com.example.pauze.data.model.SoundStashTab
 import com.example.pauze.data.repository.AuthenticationRequiredException
 import com.example.pauze.data.repository.PauzeSoundRepository
+import com.example.pauze.data.repository.PauzeUsageRepository
 import com.example.pauze.ui.BaseViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.io.IOException
@@ -35,7 +36,8 @@ sealed interface PauzeSoundEffect {
 
 @HiltViewModel
 class PauzeSoundViewModel @Inject constructor(
-    private val repository: PauzeSoundRepository
+    private val repository: PauzeSoundRepository,
+    private val pauzeUsageRepository: PauzeUsageRepository
 ) : BaseViewModel<PauzeSoundEffect, PauzeSoundState>(
     uiState = BaseUiState(data = PauzeSoundState())
 ) {
@@ -168,6 +170,10 @@ class PauzeSoundViewModel @Inject constructor(
 
     fun requestBack() {
         sendEffect(PauzeSoundEffect.NavigateBack)
+    }
+
+    fun recordCompletedUsage() {
+        pauzeUsageRepository.recordCompletedUsage()
     }
 
     private fun loadSounds(

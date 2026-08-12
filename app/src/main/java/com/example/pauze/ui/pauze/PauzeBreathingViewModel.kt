@@ -8,7 +8,10 @@ import com.example.pauze.data.model.BaseUiState
 import com.example.pauze.data.model.BreathPattern
 import com.example.pauze.data.model.BreathPhase
 import com.example.pauze.data.model.BreathState
+import com.example.pauze.data.repository.PauzeUsageRepository
 import com.example.pauze.ui.BaseViewModel
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -18,7 +21,10 @@ sealed interface BreathingEffect {
     object ShowExitDialog: BreathingEffect
 }
 
-class PauzeBreathingViewModel: BaseViewModel<BreathingEffect, Unit>(
+@HiltViewModel
+class PauzeBreathingViewModel @Inject constructor(
+    private val pauzeUsageRepository: PauzeUsageRepository
+) : BaseViewModel<BreathingEffect, Unit>(
     uiState = BaseUiState(data = Unit)
 ) {
     val patterns = listOf(
@@ -86,6 +92,7 @@ class PauzeBreathingViewModel: BaseViewModel<BreathingEffect, Unit>(
                 }
                 currentCycle++
             }
+            pauzeUsageRepository.recordCompletedUsage()
             delay(1000)
             sendEffect(BreathingEffect.NavigateToBack)
         }

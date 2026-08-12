@@ -2,6 +2,7 @@ package com.example.pauze.ui.pauze
 
 import com.example.pauze.data.model.BaseUiState
 import com.example.pauze.data.repository.VisualGuideRepository
+import com.example.pauze.data.repository.PauzeUsageRepository
 import com.example.pauze.ui.BaseViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -17,7 +18,8 @@ sealed interface PauzeVisualEffect {
 
 @HiltViewModel
 class PauzeVisualViewModel @Inject constructor(
-    private val visualGuideRepository: VisualGuideRepository
+    private val visualGuideRepository: VisualGuideRepository,
+    private val pauzeUsageRepository: PauzeUsageRepository
 ) : BaseViewModel<PauzeVisualEffect, PauzeVisualState>(
     uiState = BaseUiState(data = PauzeVisualState())
 ) {
@@ -56,5 +58,9 @@ class PauzeVisualViewModel @Inject constructor(
 
     fun hideStopDialog() {
         sendEffect(PauzeVisualEffect.HideStopDialog)
+    }
+
+    fun recordCompletedUsage() {
+        pauzeUsageRepository.recordCompletedUsage()
     }
 }

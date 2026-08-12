@@ -21,6 +21,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -38,6 +39,7 @@ import com.example.pauze.R
 import com.example.pauze.ui.theme.AppTheme
 import com.example.pauze.ui.theme.bodyTextSmBold
 import com.example.pauze.ui.theme.bodyTextSmRegular
+import kotlinx.coroutines.delay
 
 private data class TimerOption(
     val label: String,
@@ -58,12 +60,26 @@ fun SoundPlay(
     modifier: Modifier = Modifier,
     progress: Float = 0.35f,
     currentTime: String = "03:32",
+    onUsageQualified: () -> Unit = {},
     onPreviousClick: () -> Unit = {},
     onPlayClick: () -> Unit = {},
     onNextClick: () -> Unit = {}
 ) {
     var selectedTimerIndex by rememberSaveable { mutableIntStateOf(0) }
     var isPlaying by rememberSaveable { mutableStateOf(false) }
+    var playedSeconds by rememberSaveable { mutableIntStateOf(0) }
+    var isUsageRecorded by rememberSaveable { mutableStateOf(false) }
+
+    LaunchedEffect(isPlaying, isUsageRecorded) {
+        while (isPlaying && !isUsageRecorded) {
+            delay(1000L)
+            playedSeconds++
+            if (playedSeconds >= MINIMUM_USAGE_SECONDS) {
+                isUsageRecorded = true
+                onUsageQualified()
+            }
+        }
+    }
 
     Box(
         modifier = modifier
@@ -215,3 +231,5 @@ fun SoundPlay(
         }
     }
 }
+
+private const val MINIMUM_USAGE_SECONDS = 60

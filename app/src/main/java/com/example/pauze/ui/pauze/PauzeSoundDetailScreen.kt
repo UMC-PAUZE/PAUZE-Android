@@ -26,6 +26,7 @@ fun PauzeSoundDetailScreen(
     sound: SoundItem,
     onToggleLike: (String) -> Unit,
     onToggleBookmark: (String) -> Unit,
+    onUsageQualified: () -> Unit,
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
     isDownloading: Boolean = false
@@ -122,6 +123,7 @@ fun PauzeSoundDetailScreen(
 
         // 4. 하단 타이머 및 재생 컨트롤러
         SoundPlay(
+            onUsageQualified = onUsageQualified,
             modifier = Modifier
                 .align(Alignment.BottomCenter)
                 .fillMaxWidth()
@@ -150,6 +152,7 @@ fun PauzeSoundDetailScreenPreview() {
             sound = mockSound,
             onToggleLike = { mockSound = mockSound.copy(isLiked = !mockSound.isLiked) },
             onToggleBookmark = { mockSound = mockSound.copy(isBookmarked = !mockSound.isBookmarked) },
+            onUsageQualified = {},
             onBackClick = {}
         )
     }

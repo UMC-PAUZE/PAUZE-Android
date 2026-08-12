@@ -130,7 +130,11 @@ fun MyPageScreen(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    StatCard(label = "총 측정", value = "${uiState.data.stats?.totalMeasurements ?: 0}회", modifier = Modifier.weight(1f))
+                    StatCard(
+                        label = "총 사용 횟수",
+                        value = "${uiState.data.totalPauzeUsageCount}회",
+                        modifier = Modifier.weight(1f)
+                    )
                     StatCard(label = "연속 측정", value = "${uiState.data.stats?.consecutiveDays ?: 0}일", modifier = Modifier.weight(1f))
                     StatCard(
                         label = "평균 민감지수",

@@ -26,7 +26,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.pauze.R
 import com.example.pauze.ui.component.Dialog
 import com.example.pauze.ui.component.Tab
@@ -41,7 +41,7 @@ import com.example.pauze.ui.pauze.component.PauzeBreathingCircle
 @Composable
 fun PauzeBreathingScreen(
     navController: NavController,
-    viewModel: PauzeBreathingViewModel = viewModel()
+    viewModel: PauzeBreathingViewModel = hiltViewModel()
 ) {
 
     var showExitDialog by remember { mutableStateOf(false) }
@@ -249,6 +249,9 @@ private fun BreathStepText(label: String, seconds: Int, isActive: Boolean){
 @Composable
 private fun PauzeBreathingPreview(){
     PAUZEAndroidTheme(darkTheme = true, dynamicColor = false){
-        PauzeBreathingScreen(rememberNavController())
+        PauzeBreathingScreen(
+            navController = rememberNavController(),
+            viewModel = PauzeBreathingViewModel(PreviewPauzeUsageRepository)
+        )
     }
 }

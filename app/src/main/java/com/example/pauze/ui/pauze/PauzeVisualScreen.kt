@@ -140,6 +140,7 @@ fun PauzeVisualScreen(
                     step = PauzeVisualStep.Start
                 },
                 onContinueClick = viewModel::hideStopDialog,
+                onUsageThresholdReached = viewModel::recordCompletedUsage,
                 onFinish = {
                     viewModel.hideStopDialog()
                     step = PauzeVisualStep.Start
@@ -155,6 +156,7 @@ fun PauzeVisualScreen(
                     step = PauzeVisualStep.Start
                 },
                 onContinueClick = viewModel::hideStopDialog,
+                onUsageThresholdReached = viewModel::recordCompletedUsage,
                 onFinish = {
                     viewModel.hideStopDialog()
                     step = PauzeVisualStep.Start

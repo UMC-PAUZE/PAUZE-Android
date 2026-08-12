@@ -32,7 +32,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -93,7 +93,7 @@ class PauzeStartActivity: ComponentActivity() {
 fun PauzeStartScreen(
     context: Context = LocalContext.current,
     navController: NavController = rememberNavController(),
-    viewModel: PauzeStartViewModel = viewModel<PauzeStartViewModel>()
+    viewModel: PauzeStartViewModel = hiltViewModel()
 ) {
     LaunchedEffect(viewModel.effect) {
         viewModel.effect.collect { effect ->
@@ -252,12 +252,17 @@ fun SelectionCard(
 @Composable
 private fun PauzeStartPreview(){
     PAUZEAndroidTheme(darkTheme = true, dynamicColor = false) {
+        val previewViewModel = PauzeStartViewModel(PreviewPauzeUsageRepository)
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .background(AppTheme.palette.gray.getColor(9))
         ){
-            PauzeStartScreen(LocalContext.current, rememberNavController())
+            PauzeStartScreen(
+                context = LocalContext.current,
+                navController = rememberNavController(),
+                viewModel = previewViewModel
+            )
         }
 
     }

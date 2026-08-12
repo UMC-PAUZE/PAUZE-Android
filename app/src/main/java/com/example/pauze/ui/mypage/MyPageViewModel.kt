@@ -6,6 +6,7 @@ import com.example.pauze.data.model.NotificationsUpdate
 import com.example.pauze.data.model.StabilityContentUpdate
 import com.example.pauze.data.model.UpdateSettingsRequest
 import com.example.pauze.data.repository.MyPageRepository
+import com.example.pauze.data.repository.PauzeUsageRepository
 import com.example.pauze.ui.BaseViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -17,7 +18,8 @@ sealed interface MyPageEffect {
 
 @HiltViewModel
 class MyPageViewModel @Inject constructor(
-    private val myPageRepository: MyPageRepository
+    private val myPageRepository: MyPageRepository,
+    private val pauzeUsageRepository: PauzeUsageRepository
 ) : BaseViewModel<MyPageEffect, MyPageState>(
     uiState = BaseUiState(data = MyPageState())
 ) {
@@ -33,6 +35,17 @@ class MyPageViewModel @Inject constructor(
         }) {
             val stats = myPageRepository.getProfile().stats
             uiState.value.data.copy(stats = stats, loadError = null)
+        }
+        launch(onFailure = { e ->
+            updateData {
+                it.copy(usageLoadError = e.message ?: "PAUZE 사용 횟수를 불러오지 못했습니다")
+            }
+        }) {
+            val statistics = pauzeUsageRepository.getStatistics()
+            uiState.value.data.copy(
+                totalPauzeUsageCount = statistics.usageCount,
+                usageLoadError = null
+            )
         }
     }
 

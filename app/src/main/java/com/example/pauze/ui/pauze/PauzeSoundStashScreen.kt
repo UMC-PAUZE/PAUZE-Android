@@ -105,7 +105,10 @@ fun PauzeSoundStashScreen(
 @Composable
 private fun PauzeSoundStashScreenPreview() {
     val previewViewModel = remember {
-        PauzeSoundViewModel(repository = PreviewPauzeSoundRepository)
+        PauzeSoundViewModel(
+            repository = PreviewPauzeSoundRepository,
+            pauzeUsageRepository = PreviewPauzeUsageRepository
+        )
     }
 
     MainPaletteTheme {

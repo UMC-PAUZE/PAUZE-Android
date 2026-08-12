@@ -79,7 +79,9 @@ data class WithdrawRequest(
 data class MyPageState(
     val profile: UserMeResultDto? = null,
     val stats: Stats? = null,
+    val totalPauzeUsageCount: Long = 0,
     val loadError: String? = null,
+    val usageLoadError: String? = null,
 )
 
 data class AccountInfoState(
