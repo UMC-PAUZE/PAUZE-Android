@@ -120,13 +120,13 @@ class PauzeSoundViewModel @Inject constructor(
                             localFilePath = null
                         )
                     }
-                    finishBookmarkOperation(soundId)
-                },
-                onFailure = {
-                    finishBookmarkOperation(soundId)
                 },
                 block = {
-                    repository.deleteDownloadedSound(soundId)
+                    try {
+                        repository.deleteDownloadedSound(soundId)
+                    } finally {
+                        finishBookmarkOperation(soundId)
+                    }
                 }
             )
         } else {
@@ -138,13 +138,13 @@ class PauzeSoundViewModel @Inject constructor(
                             localFilePath = localFilePath
                         )
                     }
-                    finishBookmarkOperation(soundId)
-                },
-                onFailure = {
-                    finishBookmarkOperation(soundId)
                 },
                 block = {
-                    repository.downloadSound(sound)
+                    try {
+                        repository.downloadSound(sound)
+                    } finally {
+                        finishBookmarkOperation(soundId)
+                    }
                 }
             )
         }
