@@ -136,7 +136,11 @@ fun MainScreen(
                     )
                     IconButton(
                         onClick = {
-                            context.startActivity(Intent(context, PauzeStartActivity::class.java))
+                            context.startActivity(
+                                Intent(context, PauzeStartActivity::class.java).apply {
+                                    flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+                                }
+                            )
                         }
                     ) {
                         Image(

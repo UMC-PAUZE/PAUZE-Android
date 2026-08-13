@@ -4,13 +4,14 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 
 // 시각 안정 화면 단계
@@ -31,8 +32,10 @@ enum class PauzeVisualMethod {
 @Composable
 fun PauzeVisualScreen(
     navController: NavController,
-    viewModel: PauzeVisualViewModel = viewModel()
+    viewModel: PauzeVisualViewModel = hiltViewModel()
 ) {
+    val uiState by viewModel.uiState.collectAsState()
+
     var step by remember { mutableStateOf(PauzeVisualStep.SelectMethod) }
     var selectedMethod by remember { mutableStateOf<PauzeVisualMethod?>(null) }
     var selectedHour by remember { mutableStateOf(0) }
@@ -60,7 +63,29 @@ fun PauzeVisualScreen(
         PauzeVisualStep.SelectMethod -> PauzeVisualMethodSelectScreen(
             selectedMethod = selectedMethod,
             onMethodSelect = { selectedMethod = it },
-            onNextClick = { step = PauzeVisualStep.SelectTime },
+            isLoading = uiState.isLoading,
+            hasError = selectedMethod == PauzeVisualMethod.BreathingGuide &&
+                uiState.error != null,
+            onNextClick = {
+                when (selectedMethod) {
+                    PauzeVisualMethod.BreathingGuide -> {
+                        viewModel.loadVisualGuide {
+                            step = PauzeVisualStep.SelectTime
+                        }
+                    }
+
+                    PauzeVisualMethod.Meditation -> {
+                        step = PauzeVisualStep.SelectTime
+                    }
+
+                    null -> Unit
+                }
+            },
+            onRetryClick = {
+                viewModel.loadVisualGuide {
+                    step = PauzeVisualStep.SelectTime
+                }
+            },
             onBackClick = { step = PauzeVisualStep.Start }
         )
 
@@ -107,6 +132,7 @@ fun PauzeVisualScreen(
         PauzeVisualStep.Running -> when (selectedMethod) {
             PauzeVisualMethod.BreathingGuide -> PauzeVisualBreathingRunningScreen(
                 totalSeconds = totalSeconds,
+                visualUrl = uiState.data.visualUrl,
                 showStopDialog = showStopDialog,
                 onShowStopDialog = viewModel::showStopDialog,
                 onStopClick = {
@@ -114,6 +140,7 @@ fun PauzeVisualScreen(
                     step = PauzeVisualStep.Start
                 },
                 onContinueClick = viewModel::hideStopDialog,
+                onUsageThresholdReached = viewModel::recordCompletedUsage,
                 onFinish = {
                     viewModel.hideStopDialog()
                     step = PauzeVisualStep.Start
@@ -129,6 +156,7 @@ fun PauzeVisualScreen(
                     step = PauzeVisualStep.Start
                 },
                 onContinueClick = viewModel::hideStopDialog,
+                onUsageThresholdReached = viewModel::recordCompletedUsage,
                 onFinish = {
                     viewModel.hideStopDialog()
                     step = PauzeVisualStep.Start

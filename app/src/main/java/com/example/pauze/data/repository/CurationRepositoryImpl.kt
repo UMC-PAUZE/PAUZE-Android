@@ -8,6 +8,7 @@ import com.example.pauze.data.model.CurationPostBookmarkResultDto
 import com.example.pauze.data.model.CurationPostLikeResultDto
 import com.example.pauze.data.model.MyBookmarkListResultDto
 import kotlinx.coroutines.CancellationException
+import com.example.pauze.data.model.MyLikeListResultDto
 
 class CurationRepositoryImpl @Inject constructor(
     private val curationService: CurationService,
@@ -117,11 +118,13 @@ class CurationRepositoryImpl @Inject constructor(
     }
 
     override suspend fun getMyBookmarks(
+        keyword: String?,
         page: Int,
         size: Int,
     ): MyBookmarkListResultDto {
         return try {
             val response = curationService.getMyBookmarks(
+                keyword = keyword,
                 page = page,
                 size = size,
             )
@@ -151,5 +154,34 @@ class CurationRepositoryImpl @Inject constructor(
             "$operation 중 오류가 발생했습니다: ${cause.message}",
             cause,
         )
+    }
+
+    override suspend fun getMyLikes(
+        keyword: String?,
+        page: Int,
+        size: Int,
+    ): MyLikeListResultDto {
+        return try {
+            val response = curationService.getMyLikes(
+                keyword = keyword,
+                page = page,
+                size = size,
+            )
+
+            if (!response.isSuccess) {
+                throw IllegalStateException(
+                    "${response.code}: ${response.message}",
+                )
+            }
+
+            response.result
+                ?: throw IllegalStateException(
+                    "${response.code}: 좋아요 목록 결과가 비어 있습니다.",
+                )
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            throw requestException("좋아요 목록 조회", e)
+        }
     }
 }

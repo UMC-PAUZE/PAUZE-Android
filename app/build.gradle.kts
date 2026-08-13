@@ -94,6 +94,9 @@ dependencies {
     implementation("com.jakewharton.retrofit:retrofit2-kotlinx-serialization-converter:1.0.0")
     implementation("com.kakao.sdk:v2-user:2.11.0")
     implementation("org.jetbrains.kotlin:kotlin-stdlib:2.3.20")
+    implementation(libs.androidx.media3.exoplayer)
+    implementation("androidx.datastore:datastore-preferences:1.1.1")
+    implementation("com.airbnb.android:lottie-compose:6.5.2")
 }
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {

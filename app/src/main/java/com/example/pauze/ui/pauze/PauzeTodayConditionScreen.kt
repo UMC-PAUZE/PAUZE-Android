@@ -23,7 +23,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -39,10 +38,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.pauze.MainActivity
 import com.example.pauze.R
 import com.example.pauze.data.model.CreateTodayConditionRequest
 import com.example.pauze.data.model.CreateTodayConditionResult
+import com.example.pauze.data.model.GetTodayConditionResponseDto
 import com.example.pauze.data.model.SensitivityLevel
 import com.example.pauze.data.repository.TodayConditionRepository
 import com.example.pauze.ui.component.CondtionAnswer
@@ -80,8 +81,11 @@ fun PauzeTodayCondition(
     viewModel: PauzeTodayConditionViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
-    val conditionState by viewModel.state.collectAsState()
-    val conditionQuestions by viewModel.conditionQuestions.collectAsState()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val conditionState = uiState.data
+    val conditionQuestions = conditionState.conditionQuestions
+    val submissionError = conditionState.submissionError
+        ?: uiState.error?.toTodayConditionMessage()
     var showExitDialog by rememberSaveable { mutableStateOf(false) }
     val currentQuestion = conditionQuestions[conditionState.currentQuestionIndex]
 
@@ -99,7 +103,11 @@ fun PauzeTodayCondition(
                     )
                 }
                 TodayConditionEffect.NavigateToPauzeStartActivity -> {
-                    context.startActivity(Intent(context, PauzeStartActivity::class.java))
+                    context.startActivity(
+                        Intent(context, PauzeStartActivity::class.java).apply {
+                            flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+                        }
+                    )
                 }
             }
         }
@@ -176,7 +184,7 @@ fun PauzeTodayCondition(
 
         Spacer(modifier = Modifier.weight(1f))
 
-        conditionState.submissionError?.let { message ->
+        submissionError?.let { message ->
             Text(
                 text = message,
                 style = bodyTextMdRegular,
@@ -196,20 +204,20 @@ fun PauzeTodayCondition(
         ) {
             ConditionNavigationButton(
                 text = "이전",
-                enabled = conditionState.isPreviousEnabled,
+                enabled = conditionState.isPreviousEnabled && !uiState.isLoading,
                 modifier = Modifier.weight(1f),
                 onClick = viewModel::moveToPreviousQuestion
             )
             ConditionNavigationButton(
                 text = if (
-                    conditionState.isSubmitting &&
+                    uiState.isLoading &&
                     conditionState.currentQuestionIndex == conditionQuestions.lastIndex
                 ) {
                     "저장 중..."
                 } else {
                     "다음"
                 },
-                enabled = conditionState.isNextEnabled,
+                enabled = conditionState.isNextEnabled && !uiState.isLoading,
                 modifier = Modifier.weight(1f),
                 onClick = viewModel::moveToNextQuestion
             )
@@ -416,9 +424,10 @@ private object PreviewTodayConditionRepository : TodayConditionRepository {
     ): CreateTodayConditionResult = CreateTodayConditionResult(
         conditionId = 1,
         sensitivityScore = 53,
-        sensitivityLevel = SensitivityLevel.NORMAL,
-        triggerCodes = emptyList()
+        sensitivityLevel = SensitivityLevel.NORMAL
     )
+
+    override suspend fun getTodayCondition(): GetTodayConditionResponseDto? = null
 }
 
 private fun Int.toSensitivityLevel(): SensitivityLevel = when (coerceIn(0, 100)) {

@@ -22,13 +22,6 @@
             android:label="@string/app_name"
             android:theme="@style/Theme.PAUZEAndroid">
 
-            <!-- 앱 아이콘으로 실행 -->
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-
             <!-- 큐레이션 딥링크로 실행 -->
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
@@ -74,6 +67,21 @@
                     android:scheme="kakao${KAKAO_KEY}" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".ui.splash.SplashActivity"
+            android:exported="true"
+            android:label="@string/app_name"
+            android:theme="@style/Theme.PAUZEAndroid">
+
+            <!-- 앱 아이콘으로 실행 -->
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+
+        </activity>
+
     </application>
 
 </manifest>

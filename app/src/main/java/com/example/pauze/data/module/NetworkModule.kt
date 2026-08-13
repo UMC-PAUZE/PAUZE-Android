@@ -5,9 +5,11 @@ import com.example.pauze.data.service.AudioGuideService
 import com.example.pauze.data.service.AuthService
 import com.example.pauze.data.service.CurationService
 import com.example.pauze.data.service.MyPageService
+import com.example.pauze.data.service.PauzeUsageService
 import com.example.pauze.data.service.ReportService
 import com.example.pauze.data.service.TodayConditionService
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
+import com.example.pauze.data.service.VisualGuideService
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -118,4 +120,19 @@ object NetworkModule {
     @Provides
     @Singleton
     fun provideAuthService(@AuthRetrofit retrofit: Retrofit): AuthService = retrofit.create(AuthService::class.java)
+
+    // 시각 안정
+    @Provides
+    @Singleton
+    fun provideVisualGuideService(
+        @PauzeBaseUrl retrofit: Retrofit
+    ): VisualGuideService = retrofit.create(VisualGuideService::class.java)
+
+    // PAUZE 사용 횟수
+    @Provides
+    @Singleton
+    fun providePauzeUsageService(
+        @PauzeBaseUrl retrofit: Retrofit
+    ): PauzeUsageService = retrofit.create(PauzeUsageService::class.java)
+
 }

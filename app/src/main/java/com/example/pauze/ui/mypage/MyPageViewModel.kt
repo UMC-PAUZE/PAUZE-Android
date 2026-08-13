@@ -6,6 +6,7 @@ import com.example.pauze.data.model.NotificationsUpdate
 import com.example.pauze.data.model.StabilityContentUpdate
 import com.example.pauze.data.model.UpdateSettingsRequest
 import com.example.pauze.data.repository.MyPageRepository
+import com.example.pauze.data.repository.PauzeUsageRepository
 import com.example.pauze.ui.BaseViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -17,20 +18,33 @@ sealed interface MyPageEffect {
 
 @HiltViewModel
 class MyPageViewModel @Inject constructor(
-    private val myPageRepository: MyPageRepository
+    private val myPageRepository: MyPageRepository,
+    private val pauzeUsageRepository: PauzeUsageRepository
 ) : BaseViewModel<MyPageEffect, MyPageState>(
     uiState = BaseUiState(data = MyPageState())
 ) {
-//    fun refresh() {
-//        launch {
-//            val profile = myPageRepository.getMyPage()
-//            updateData { it.copy(profile = profile) }
-//        }
-//        launch {
-//            val detail = myPageRepository.getProfile()
-//            updateData { it.copy(stats = detail.stats) }
-//        }
-//    }
+    fun refresh() {
+        launch(onFailure = { e ->
+            updateData { it.copy(loadError = e.message ?: "정보를 불러오지 못했습니다") }
+        }) {
+            val profile = myPageRepository.getMyPage()
+            val resolvedUsageCount = profile.pauzeUsageCount
+                ?: runCatching {
+                    pauzeUsageRepository.getStatistics().usageCount
+                }.getOrNull()
+
+            uiState.value.data.copy(
+                profile = profile.copy(pauzeUsageCount = resolvedUsageCount),
+                loadError = null
+            )
+        }
+        launch(onFailure = { e ->
+            updateData { it.copy(loadError = e.message ?: "정보를 불러오지 못했습니다") }
+        }) {
+            val stats = myPageRepository.getProfile().stats
+            uiState.value.data.copy(stats = stats, loadError = null)
+        }
+    }
 
     val dailyReminder: Boolean
         get() = uiState.value.data.profile?.settings?.notifications?.reminderAlarmActive ?: true
@@ -64,12 +78,8 @@ class MyPageViewModel @Inject constructor(
     private fun updateSettings(request: UpdateSettingsRequest) {
         val currentProfile = uiState.value.data.profile ?: return
         if (uiState.value.isLoading) return
-        launch(
-            onSuccess = { updated ->
-                updateData { it.copy(profile = currentProfile.copy(settings = updated)) }
-            }
-        ) {
-            myPageRepository.updateSettings(request)
+        launch {
+            uiState.value.data.copy(profile = currentProfile.copy(settings = myPageRepository.updateSettings(request)))
         }
     }
 }

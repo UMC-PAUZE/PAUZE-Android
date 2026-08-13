@@ -10,6 +10,7 @@ import com.example.pauze.data.model.CurationPostBookmarkResultDto
 import com.example.pauze.data.model.CurationPostLikeResultDto
 import com.example.pauze.data.model.MyBookmarkListResultDto
 import retrofit2.http.PATCH
+import com.example.pauze.data.model.MyLikeListResultDto
 
 interface CurationService {
 
@@ -38,7 +39,15 @@ interface CurationService {
 
     @GET("users/me/bookmarks")
     suspend fun getMyBookmarks(
+        @Query("keyword") keyword: String? = null,
         @Query("page") page: Int = 1,
         @Query("size") size: Int = 10,
     ): BaseResponse<MyBookmarkListResultDto>
+
+    @GET("users/me/likes")
+    suspend fun getMyLikes(
+        @Query("keyword") keyword: String? = null,
+        @Query("page") page: Int = 1,
+        @Query("size") size: Int = 10,
+    ): BaseResponse<MyLikeListResultDto>
 }

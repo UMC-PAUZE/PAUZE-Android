@@ -1,8 +1,10 @@
 package com.example.pauze.ui.pauze
 
+import android.net.Uri
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
@@ -11,23 +13,76 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.media3.common.AudioAttributes
+import androidx.media3.common.C
+import androidx.media3.common.MediaItem
+import androidx.media3.common.Player
+import androidx.media3.exoplayer.ExoPlayer
 import com.example.pauze.R
 import com.example.pauze.data.model.SoundItem
 import com.example.pauze.ui.component.SoundPlay
 import com.example.pauze.ui.component.TopBar
 import com.example.pauze.ui.theme.*
+import java.io.File
 
 @Composable
 fun PauzeSoundDetailScreen(
     sound: SoundItem,
     onToggleLike: (String) -> Unit,
     onToggleBookmark: (String) -> Unit,
+    onUsageQualified: () -> Unit,
     onBackClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    isDownloading: Boolean = false
 ) {
+    val context = LocalContext.current
+    val playbackUri = remember(sound.id, sound.audioUrl, sound.localFilePath) {
+        sound.localFilePath
+            ?.takeIf(String::isNotBlank)
+            ?.let(::File)
+            ?.takeIf(File::exists)
+            ?.let(Uri::fromFile)
+            ?: sound.audioUrl
+                .takeIf(String::isNotBlank)
+                ?.let(Uri::parse)
+    }
+    val player = remember(context, playbackUri) {
+        playbackUri?.let { uri ->
+            ExoPlayer.Builder(context).build().apply {
+                setAudioAttributes(
+                    AudioAttributes.Builder()
+                        .setUsage(C.USAGE_MEDIA)
+                        .setContentType(C.AUDIO_CONTENT_TYPE_MUSIC)
+                        .build(),
+                    true
+                )
+                setMediaItem(MediaItem.fromUri(uri))
+                prepare()
+            }
+        }
+    }
+    var isPlayerPlaying by remember(player) {
+        mutableStateOf(player?.isPlaying == true)
+    }
+
+    DisposableEffect(player) {
+        val listener = object : Player.Listener {
+            override fun onIsPlayingChanged(isPlaying: Boolean) {
+                isPlayerPlaying = isPlaying
+            }
+        }
+
+        player?.addListener(listener)
+        onDispose {
+            player?.removeListener(listener)
+            player?.release()
+        }
+    }
+
     Box(
         modifier = modifier
             .fillMaxSize()
@@ -96,21 +151,46 @@ fun PauzeSoundDetailScreen(
 
             IconButton(
                 onClick = { onToggleBookmark(sound.id) },
+                enabled = !isDownloading,
                 modifier = Modifier.size(44.dp)
             ) {
-                Icon(
-                    painter = painterResource(
-                        if (sound.isBookmarked) R.drawable.ic_downloaded else R.drawable.ic_download
-                    ),
-                    contentDescription = if (sound.isBookmarked) "다운로드 완료" else "다운로드",
-                    tint = Color.Unspecified,
-                    modifier = Modifier.size(28.dp)
-                )
+                if (isDownloading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(24.dp),
+                        color = AppTheme.palette.primary.getColor(3),
+                        strokeWidth = 2.dp
+                    )
+                } else {
+                    Icon(
+                        painter = painterResource(
+                            if (sound.isBookmarked) R.drawable.ic_downloaded else R.drawable.ic_download
+                        ),
+                        contentDescription = if (sound.isBookmarked) "다운로드 완료" else "다운로드",
+                        tint = Color.Unspecified,
+                        modifier = Modifier.size(28.dp)
+                    )
+                }
             }
         }
 
         // 4. 하단 타이머 및 재생 컨트롤러
         SoundPlay(
+            isPlaying = isPlayerPlaying,
+            isPlaybackAvailable = player != null,
+            usageSessionId = sound.id,
+            onUsageQualified = onUsageQualified,
+            onPlayClick = {
+                player?.let { currentPlayer ->
+                    if (currentPlayer.isPlaying) {
+                        currentPlayer.pause()
+                    } else {
+                        if (currentPlayer.playbackState == Player.STATE_ENDED) {
+                            currentPlayer.seekTo(0L)
+                        }
+                        currentPlayer.play()
+                    }
+                }
+            },
             modifier = Modifier
                 .align(Alignment.BottomCenter)
                 .fillMaxWidth()
@@ -139,6 +219,7 @@ fun PauzeSoundDetailScreenPreview() {
             sound = mockSound,
             onToggleLike = { mockSound = mockSound.copy(isLiked = !mockSound.isLiked) },
             onToggleBookmark = { mockSound = mockSound.copy(isBookmarked = !mockSound.isBookmarked) },
+            onUsageQualified = {},
             onBackClick = {}
         )
     }

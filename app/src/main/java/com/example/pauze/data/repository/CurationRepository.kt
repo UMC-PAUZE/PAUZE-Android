@@ -5,6 +5,7 @@ import com.example.pauze.data.model.CurationPostDetailDto
 import com.example.pauze.data.model.CurationPostBookmarkResultDto
 import com.example.pauze.data.model.CurationPostLikeResultDto
 import com.example.pauze.data.model.MyBookmarkListResultDto
+import com.example.pauze.data.model.MyLikeListResultDto
 
 interface CurationRepository {
 
@@ -28,7 +29,14 @@ interface CurationRepository {
     ): CurationPostBookmarkResultDto
 
     suspend fun getMyBookmarks(
+        keyword: String? = null,
         page: Int = 1,
         size: Int = 10,
     ): MyBookmarkListResultDto
+
+    suspend fun getMyLikes(
+        keyword: String? = null,
+        page: Int = 1,
+        size: Int = 10,
+    ): MyLikeListResultDto
 }

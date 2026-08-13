@@ -9,31 +9,37 @@ data class SoundItem(
     val isLiked: Boolean,
     val isBookmarked: Boolean,
     val imageResId: Int,
-    val audioUrl: String = ""
+    val audioUrl: String = "",
+    val localFilePath: String? = null
 )
 
 enum class SoundCategory(val displayName: String) {
     ALL("전체"),
     NATURE_SOUND("자연소리"),
     ASMR("ASMR"),
-    NOISE("노이즈")
+    NOISE("노이즈");
+
+    companion object {
+        fun fromCode(code: String): SoundCategory? = entries.firstOrNull { category ->
+            category != ALL && category.name.equals(code.trim(), ignoreCase = true)
+        }
+    }
 }
 
 @Serializable
 data class AudioGuideDto(
     val audioId: Long,
     val audioTitle: String,
-    val categoryId: Double,
-    val categoryName: String,
-    val fileUrl: String,
+    val categoryCode: String,
+    val audioUrl: String,
     val isLiked: Boolean = false
 )
 
 @Serializable
-data class AudioSaveResultDto(
-    val audioId: Long,
-    val isSaved: Boolean,
-    val audioUrl: String
+data class AudioGuidePageDto(
+    val content: List<AudioGuideDto>,
+    val nextCursor: String?,
+    val hasNext: Boolean
 )
 
 @Serializable

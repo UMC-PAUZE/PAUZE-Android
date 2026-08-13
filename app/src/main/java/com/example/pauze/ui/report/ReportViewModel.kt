@@ -3,7 +3,6 @@ package com.example.pauze.ui.report
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import com.example.pauze.data.dummies.ReportDummyData
 import com.example.pauze.data.model.AverageScoreUiState
 import com.example.pauze.data.model.BaseUiState
 import com.example.pauze.data.model.ChartBar
@@ -16,7 +15,10 @@ import com.example.pauze.data.model.TopTrigger
 import com.example.pauze.data.model.TriggerColorToken
 import com.example.pauze.data.model.TriggerUiState
 import com.example.pauze.data.model.WeeklyReportDto
+import com.example.pauze.data.model.isToday
+import com.example.pauze.data.model.toCondition
 import com.example.pauze.data.repository.ReportRepository
+import com.example.pauze.data.repository.TodayConditionRepository
 import com.example.pauze.ui.BaseViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -27,45 +29,59 @@ sealed interface ReportEffect  {
 }
 @HiltViewModel
 class ReportViewModel @Inject constructor(
-    private val reportRepository: ReportRepository
+    private val reportRepository: ReportRepository,
+    private val todayConditionRepository: TodayConditionRepository
 ) : BaseViewModel<ReportEffect, ReportState>(
     uiState = BaseUiState(data = ReportState())
 ) {
     var selectedPeriod by mutableStateOf(ReportPeriod.WEEKLY)
         private set
 
-//    init {
-//        fetchWeekly()
-//        fetchMonthly()
-//    }
+    private var pendingFetchCount = 0
+    fun refresh() {
+        if (pendingFetchCount > 0) return
+        pendingFetchCount = 3
+        fetchWeekly()
+        fetchMonthly()
+        fetchTodayCondition()
+    }
 
     fun selectPeriod(period: ReportPeriod) {
         selectedPeriod = period
     }
 
-//    private fun fetchWeekly() {
-//        launch {
-//            try {
-//                val weekly = reportRepository.getWeeklyReport()
-//                updateData { it.copy(weekly = weekly, weeklyError = null) }
-//            } catch (e: Exception) {
-//                updateData { it.copy(weeklyError = e.message ?: "주간 리포트를 불러오지 못했습니다") }
-//            }
-//        }
-//    }
-//
-//    private fun fetchMonthly() {
-//        launch {
-//            try {
-//                val monthly = reportRepository.getMonthlyReport()
-//                updateData { it.copy(monthly = monthly, monthlyError = null) }
-//            } catch (e: Exception) {
-//                updateData { it.copy(monthlyError = e.message ?: "월간 리포트를 불러오지 못했습니다") }
-//            }
-//        }
-//    }
+    private fun fetchWeekly() {
+        launch(onFailure = { e ->
+            pendingFetchCount--
+            updateData { it.copy(weeklyError = e.message ?: "주간 리포트를 불러오지 못했습니다") }
+        }) {
+            val weekly = reportRepository.getWeeklyReport()
+            pendingFetchCount--
+            uiState.value.data.copy(weekly = weekly, weeklyError = null)
+        }
+    }
 
-    val todayCondition: Condition? = ReportDummyData.todayCondition // todo: 오늘의 컨디션 api 연동 시 교체
+    private fun fetchMonthly() {
+        launch(onFailure = { e ->
+            pendingFetchCount--
+            updateData { it.copy(monthlyError = e.message ?: "월간 리포트를 불러오지 못했습니다") }
+        }) {
+            val monthly = reportRepository.getMonthlyReport()
+            pendingFetchCount--
+            uiState.value.data.copy(monthly = monthly, monthlyError = null)
+        }
+    }
+
+    fun fetchTodayCondition() {
+        launch(onFailure = { pendingFetchCount-- }) {
+            val dto = todayConditionRepository.getTodayCondition()
+            pendingFetchCount--
+            uiState.value.data.copy(todayCondition = dto?.takeIf { it.isToday() }?.toCondition())
+        }
+    }
+
+    val todayCondition: Condition?
+        get() = uiState.value.data.todayCondition
 
     val averageScore: AverageScoreUiState?
         get() = if (selectedPeriod == ReportPeriod.WEEKLY) {
@@ -92,7 +108,7 @@ class ReportViewModel @Inject constructor(
         sendEffect(ReportEffect.NavigateToConditionInput)
     }
 
-    fun onGuestLoginClick(){
+    fun onGuestLoginClick() {
         sendEffect(ReportEffect.NavigateToLogin)
     }
 }

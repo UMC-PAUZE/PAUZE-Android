@@ -15,6 +15,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -23,10 +24,16 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.media3.common.AudioAttributes
+import androidx.media3.common.C
+import androidx.media3.common.MediaItem
+import androidx.media3.common.Player
+import androidx.media3.exoplayer.ExoPlayer
 import com.example.pauze.R
 import com.example.pauze.data.model.BreathPhase
 import com.example.pauze.ui.component.Dialog
@@ -37,19 +44,23 @@ import com.example.pauze.ui.theme.bodyTextMdMedium
 import com.example.pauze.ui.theme.bodyTextXlBold
 import com.example.pauze.ui.theme.headingLgBold
 import kotlinx.coroutines.delay
+import kotlin.math.ceil
 
 private const val INHALE_SECONDS = 4
 private const val HOLD_SECONDS = 7
 private const val EXHALE_SECONDS = 8
 private const val BREATH_CYCLE_SECONDS = INHALE_SECONDS + HOLD_SECONDS + EXHALE_SECONDS
+private const val VISUAL_USAGE_RATIO = 0.4
 
 @Composable
 fun PauzeVisualBreathingRunningScreen(
     totalSeconds: Int,
+    visualUrl: String?,
     showStopDialog: Boolean,
     onShowStopDialog: () -> Unit,
     onStopClick: () -> Unit,
     onContinueClick: () -> Unit,
+    onUsageThresholdReached: () -> Unit,
     onFinish: () -> Unit
 ) {
     var remainingSeconds by remember(totalSeconds) {
@@ -57,6 +68,43 @@ fun PauzeVisualBreathingRunningScreen(
     }
     var isPlaying by remember {
         mutableStateOf(true)
+    }
+    var isUsageRecorded by remember(totalSeconds) {
+        mutableStateOf(false)
+    }
+
+    val context = LocalContext.current
+    val player = remember(visualUrl) {
+        visualUrl
+            ?.takeIf { it.isNotBlank() }
+            ?.let { url ->
+                ExoPlayer.Builder(context).build().apply {
+                    setAudioAttributes(
+                        AudioAttributes.Builder()
+                            .setUsage(C.USAGE_MEDIA)
+                            .setContentType(C.AUDIO_CONTENT_TYPE_MUSIC)
+                            .build(),
+                        true
+                    )
+                    setMediaItem(MediaItem.fromUri(url))
+                    repeatMode = Player.REPEAT_MODE_ONE
+                    prepare()
+                }
+            }
+    }
+
+    LaunchedEffect(player, isPlaying, showStopDialog) {
+        if (isPlaying && !showStopDialog) {
+            player?.play()
+        } else {
+            player?.pause()
+        }
+    }
+
+    DisposableEffect(player) {
+        onDispose {
+            player?.release()
+        }
     }
 
     LaunchedEffect(totalSeconds, showStopDialog, isPlaying) {
@@ -73,6 +121,16 @@ fun PauzeVisualBreathingRunningScreen(
     }
 
     val elapsedSeconds = totalSeconds - remainingSeconds
+    val usageThresholdSeconds = ceil(totalSeconds * VISUAL_USAGE_RATIO).toInt()
+        .coerceAtLeast(1)
+
+    LaunchedEffect(elapsedSeconds, usageThresholdSeconds) {
+        if (!isUsageRecorded && elapsedSeconds >= usageThresholdSeconds) {
+            isUsageRecorded = true
+            onUsageThresholdReached()
+        }
+    }
+
     val breathAnimationState = calculateBreathAnimationState(elapsedSeconds)
     val minute = remainingSeconds / 60
     val second = remainingSeconds % 60
