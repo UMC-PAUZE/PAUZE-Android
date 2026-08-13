@@ -2,6 +2,7 @@ package com.example.pauze.data.module
 
 import com.example.pauze.BuildConfig
 import com.example.pauze.data.service.AudioGuideService
+import com.example.pauze.data.service.AuthService
 import com.example.pauze.data.service.CurationService
 import com.example.pauze.data.service.MyPageService
 import com.example.pauze.data.service.PauzeUsageService
@@ -105,5 +106,12 @@ object NetworkModule {
     fun providePauzeUsageService(
         @PauzeBaseUrl retrofit: Retrofit
     ): PauzeUsageService = retrofit.create(PauzeUsageService::class.java)
+
+    // 임시 로그인 API 연결
+    @Provides
+    @Singleton
+    fun provideAuthService(
+        @PauzeBaseUrl retrofit: Retrofit
+    ): AuthService = retrofit.create(AuthService::class.java)
 
 }

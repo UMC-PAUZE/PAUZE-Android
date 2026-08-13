@@ -1,7 +1,6 @@
 package com.example.pauze.ui.pauze
 
 import com.example.pauze.data.model.BaseUiState
-import com.example.pauze.data.repository.PauzeUsageRepository
 import com.example.pauze.ui.BaseViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -15,9 +14,7 @@ sealed interface PauzeStartEffect {
 }
 
 @HiltViewModel
-class PauzeStartViewModel @Inject constructor(
-    private val pauzeUsageRepository: PauzeUsageRepository
-) : BaseViewModel<PauzeStartEffect, Unit>(
+class PauzeStartViewModel @Inject constructor() : BaseViewModel<PauzeStartEffect, Unit>(
     uiState = BaseUiState(data = Unit)
 ) {
     private var isGuideNavigationRequested = false
@@ -28,8 +25,12 @@ class PauzeStartViewModel @Inject constructor(
     fun onGuideClick() {
         if (isGuideNavigationRequested) return
         isGuideNavigationRequested = true
-        pauzeUsageRepository.recordCompletedUsage()
         sendEffect(PauzeStartEffect.NavigateToGuide)
     }
+
+    fun onGuideNavigationHandled() {
+        isGuideNavigationRequested = false
+    }
+
     fun onBackClick() = sendEffect(PauzeStartEffect.NavigateToHome)
 }
