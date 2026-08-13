@@ -85,6 +85,7 @@ fun PauzeTodayCondition(
     val conditionState = uiState.data
     val conditionQuestions = conditionState.conditionQuestions
     val submissionError = conditionState.submissionError
+        ?: uiState.error?.toTodayConditionMessage()
     var showExitDialog by rememberSaveable { mutableStateOf(false) }
     val currentQuestion = conditionQuestions[conditionState.currentQuestionIndex]
 
@@ -203,20 +204,20 @@ fun PauzeTodayCondition(
         ) {
             ConditionNavigationButton(
                 text = "이전",
-                enabled = conditionState.isPreviousEnabled,
+                enabled = conditionState.isPreviousEnabled && !uiState.isLoading,
                 modifier = Modifier.weight(1f),
                 onClick = viewModel::moveToPreviousQuestion
             )
             ConditionNavigationButton(
                 text = if (
-                    conditionState.isSubmitting &&
+                    uiState.isLoading &&
                     conditionState.currentQuestionIndex == conditionQuestions.lastIndex
                 ) {
                     "저장 중..."
                 } else {
                     "다음"
                 },
-                enabled = conditionState.isNextEnabled,
+                enabled = conditionState.isNextEnabled && !uiState.isLoading,
                 modifier = Modifier.weight(1f),
                 onClick = viewModel::moveToNextQuestion
             )

@@ -36,7 +36,7 @@ class PauzeSoundViewModelTest {
     }
 
     @Test
-    fun `같은 항목은 원격 정보를 기준으로 로컬 상태와 경로를 반영한다`() {
+    fun `같은 항목은 서버 좋아요와 로컬 다운로드 상태를 함께 반영한다`() {
         val remoteSound = sound(
             id = "same",
             title = "서버 제목",
@@ -57,7 +57,7 @@ class PauzeSoundViewModelTest {
 
         assertEquals("서버 제목", result.title)
         assertEquals("https://pauze.cloud/same.mp3", result.audioUrl)
-        assertTrue(result.isLiked)
+        assertFalse(result.isLiked)
         assertTrue(result.isBookmarked)
         assertEquals("/files/pauze_audio/same.mp3", result.localFilePath)
         assertFalse(result.title == localSound.title)

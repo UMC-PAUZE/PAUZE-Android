@@ -1,7 +1,7 @@
 package com.example.pauze.data.repository
 
-import com.example.pauze.data.model.AudioGuideDto
 import com.example.pauze.data.model.AudioLikeToggleResultDto
+import com.example.pauze.data.model.AudioGuidePageDto
 import com.example.pauze.data.model.SoundCategory
 import com.example.pauze.data.model.SoundItem
 import com.example.pauze.data.model.getOrThrow
@@ -12,18 +12,21 @@ class PauzeSoundRepositoryImpl @Inject constructor(
     private val service: AudioGuideService,
     private val localDataSource: PauzeSoundLocalDataSource
 ) : PauzeSoundRepository {
-    override suspend fun getAllSounds(): List<AudioGuideDto> =
-        service.getAllGuides().getOrThrow()
+    override suspend fun getSounds(
+        category: SoundCategory,
+        cursor: String?
+    ): AudioGuidePageDto = service.getGuides(
+        categoryCode = category.takeUnless { it == SoundCategory.ALL }?.name,
+        cursor = cursor,
+        size = PAGE_SIZE
+    ).getOrThrow()
 
-    override suspend fun getSoundsByCategory(
-        category: SoundCategory
-    ): List<AudioGuideDto> {
-        require(category != SoundCategory.ALL) {
-            "전체 카테고리는 전체 조회 API를 사용해야 합니다."
-        }
-
-        return service.getGuidesByCategory(categoryCode = category.name)
-            .getOrThrow()
+    override suspend fun getLikedSounds(cursor: String?): AudioGuidePageDto {
+        requireAuthentication()
+        return service.getLikedGuides(
+            cursor = cursor,
+            size = PAGE_SIZE
+        ).getOrThrow()
     }
 
     override suspend fun toggleLike(
@@ -48,6 +51,10 @@ class PauzeSoundRepositoryImpl @Inject constructor(
         if (TokenRepository.accessToken.isNullOrBlank()) {
             throw AuthenticationRequiredException()
         }
+    }
+
+    private companion object {
+        const val PAGE_SIZE = 8
     }
 }
 
