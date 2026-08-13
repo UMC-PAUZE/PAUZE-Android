@@ -16,14 +16,9 @@ class LoginViewModel(): BaseViewModel<LoginEffect, Boolean>(
         launch {
             // todo: 카카오 로그인 구현
             val result = true
-            updateState {
-                it.copy(data = result)
-            }
-            if(uiState.value.data){
-                sendEffect(LoginEffect.NavigateToAdditionalScreen)
-            } else {
-                sendEffect(LoginEffect.ShowDialog)
-            }
+            if (result) sendEffect(LoginEffect.NavigateToAdditionalScreen)
+            else sendEffect(LoginEffect.ShowDialog)
+            result
         }
     }
 
@@ -31,14 +26,9 @@ class LoginViewModel(): BaseViewModel<LoginEffect, Boolean>(
         launch {
             // todo: 로그인 로직 구현
             val result = false
-            updateState {
-                it.copy(data = result)
-            }
-            if(uiState.value.data){
-                sendEffect(LoginEffect.NavigateToHome)
-            } else {
-                sendEffect(LoginEffect.ShowDialog)
-            }
+            if (result) sendEffect(LoginEffect.NavigateToHome)
+            else sendEffect(LoginEffect.ShowDialog)
+            result
         }
     }
 

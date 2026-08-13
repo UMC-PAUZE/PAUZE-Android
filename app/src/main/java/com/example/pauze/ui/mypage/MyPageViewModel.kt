@@ -28,24 +28,21 @@ class MyPageViewModel @Inject constructor(
             updateData { it.copy(loadError = e.message ?: "정보를 불러오지 못했습니다") }
         }) {
             val profile = myPageRepository.getMyPage()
-            uiState.value.data.copy(profile = profile, loadError = null)
+            val resolvedUsageCount = profile.pauzeUsageCount
+                ?: runCatching {
+                    pauzeUsageRepository.getStatistics().usageCount
+                }.getOrNull()
+
+            uiState.value.data.copy(
+                profile = profile.copy(pauzeUsageCount = resolvedUsageCount),
+                loadError = null
+            )
         }
         launch(onFailure = { e ->
             updateData { it.copy(loadError = e.message ?: "정보를 불러오지 못했습니다") }
         }) {
             val stats = myPageRepository.getProfile().stats
             uiState.value.data.copy(stats = stats, loadError = null)
-        }
-        launch(onFailure = { e ->
-            updateData {
-                it.copy(usageLoadError = e.message ?: "PAUZE 사용 횟수를 불러오지 못했습니다")
-            }
-        }) {
-            val statistics = pauzeUsageRepository.getStatistics()
-            uiState.value.data.copy(
-                totalPauzeUsageCount = statistics.usageCount,
-                usageLoadError = null
-            )
         }
     }
 

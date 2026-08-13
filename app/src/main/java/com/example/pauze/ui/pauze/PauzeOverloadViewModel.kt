@@ -4,14 +4,20 @@ import com.example.pauze.R
 import com.example.pauze.data.model.BaseUiState
 import com.example.pauze.data.model.InstantAction
 import com.example.pauze.data.model.RestGuide
+import com.example.pauze.data.repository.PauzeUsageRepository
 import com.example.pauze.ui.BaseViewModel
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 
 sealed interface PauzeOverloadEffect {
     object BackStack: PauzeOverloadEffect
     object NavigateToFind: PauzeOverloadEffect
 }
 
-class PauzeOverloadViewModel: BaseViewModel<PauzeOverloadEffect, Unit>(
+@HiltViewModel
+class PauzeOverloadViewModel @Inject constructor(
+    private val pauzeUsageRepository: PauzeUsageRepository
+): BaseViewModel<PauzeOverloadEffect, Unit>(
     uiState = BaseUiState(data = Unit)
 ) {
     val instantActions = listOf<InstantAction>(
@@ -74,5 +80,9 @@ class PauzeOverloadViewModel: BaseViewModel<PauzeOverloadEffect, Unit>(
     }
     fun navigateToFind(){
         sendEffect(PauzeOverloadEffect.NavigateToFind)
+    }
+
+    fun onRestGuideCompleted() {
+        pauzeUsageRepository.recordCompletedUsage()
     }
 }
