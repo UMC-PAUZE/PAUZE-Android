@@ -109,6 +109,7 @@ fun PauzeStartScreen(
                 }
                 is PauzeStartEffect.NavigateToGuide -> {
                     navController.navigate(PauzeNavDestination.Overload)
+                    viewModel.onGuideNavigationHandled()
                 }
                 is PauzeStartEffect.NavigateToHome -> {
                     context.startActivity(
@@ -256,7 +257,7 @@ fun SelectionCard(
 @Composable
 private fun PauzeStartPreview(){
     PAUZEAndroidTheme(darkTheme = true, dynamicColor = false) {
-        val previewViewModel = PauzeStartViewModel(PreviewPauzeUsageRepository)
+        val previewViewModel = PauzeStartViewModel()
         Box(
             modifier = Modifier
                 .fillMaxSize()

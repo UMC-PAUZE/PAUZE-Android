@@ -34,8 +34,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.pauze.MainActivity
 import com.example.pauze.R
@@ -54,7 +54,7 @@ import com.example.pauze.ui.theme.bodyTextXlBold
 fun PauzeOverloadScreen(
     context: Context,
     navController: NavController,
-    viewModel: PauzeOverloadViewModel = viewModel()
+    viewModel: PauzeOverloadViewModel = hiltViewModel()
 ){
     val instantActions = viewModel.instantActions
     val restGuideList = viewModel.restGuideList
@@ -101,7 +101,10 @@ fun PauzeOverloadScreen(
             modifier = Modifier.fillMaxWidth().weight(1f)
         ) {
             items(restGuideList.size) { index ->
-                RestGuide(guide = restGuideList.get(index))
+                RestGuide(
+                    guide = restGuideList[index],
+                    onCompleted = viewModel::onRestGuideCompleted
+                )
             }
             item {
                 Spacer(modifier = Modifier.height(48.dp))
@@ -138,8 +141,13 @@ fun InstantActions(action: InstantAction){
 }
 
 @Composable
-fun RestGuide(guide: RestGuide){
-    var isExpanded by remember { mutableStateOf(false) }
+fun RestGuide(
+    guide: RestGuide,
+    onCompleted: () -> Unit = {}
+){
+    var isExpanded by remember(guide.title) { mutableStateOf(false) }
+    var isCompletionRecorded by remember(guide.title) { mutableStateOf(false) }
+
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -167,7 +175,14 @@ fun RestGuide(guide: RestGuide){
                 }
                 Spacer(modifier = Modifier.weight(1f))
                 Icon(
-                    modifier = Modifier.clickable(onClick = {isExpanded = !isExpanded}),
+                    modifier = Modifier.clickable {
+                        val willExpand = !isExpanded
+                        isExpanded = willExpand
+                        if (willExpand && !isCompletionRecorded) {
+                            isCompletionRecorded = true
+                            onCompleted()
+                        }
+                    },
                     painter = if(isExpanded) painterResource(R.drawable.ic_arrow_up)
                         else painterResource(R.drawable.ic_arrow_down),
                     contentDescription = "여닫기 버튼",

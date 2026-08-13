@@ -132,7 +132,7 @@ fun MyPageScreen(
                 ) {
                     StatCard(
                         label = "총 사용 횟수",
-                        value = "${uiState.data.totalPauzeUsageCount}회",
+                        value = uiState.data.profile?.pauzeUsageCount?.let { "${it}회" } ?: "-",
                         modifier = Modifier.weight(1f)
                     )
                     StatCard(label = "연속 측정", value = "${uiState.data.stats?.consecutiveDays ?: 0}일", modifier = Modifier.weight(1f))

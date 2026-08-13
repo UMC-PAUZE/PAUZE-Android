@@ -14,6 +14,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.launch
 
 sealed interface BreathingEffect {
@@ -43,6 +44,8 @@ class PauzeBreathingViewModel @Inject constructor(
         private set
     var isPlaying by mutableStateOf(true)
         private set
+    var isCompleted by mutableStateOf(false)
+        private set
 
     private var timerJob: Job? = null
 
@@ -67,6 +70,7 @@ class PauzeBreathingViewModel @Inject constructor(
         timerJob?.cancel()
         currentCycle = 0
         isPlaying = resume
+        isCompleted = false
 
         val pattern = patterns[selectedTabIndex]
         val phases = buildList {
@@ -80,22 +84,32 @@ class PauzeBreathingViewModel @Inject constructor(
             for (sec in 3 downTo 1) {
                 waitWhilePaused()
                 breathState = BreathState(BreathPhase.READY, sec)
-                delay(1000)
+                delayAndWaitIfPaused()
             }
             while (currentCycle < totalCycle) {
                 for ((phase, duration) in phases) {
                     for (sec in 1..duration) {
                         waitWhilePaused()
                         breathState = BreathState(phase, sec)
-                        delay(1000)
+                        delayAndWaitIfPaused()
                     }
                 }
                 currentCycle++
             }
-            pauzeUsageRepository.recordCompletedUsage()
+
+            ensureActive()
+            if (!isCompleted) {
+                isCompleted = true
+                pauzeUsageRepository.recordCompletedUsage()
+            }
             delay(1000)
             sendEffect(BreathingEffect.NavigateToBack)
         }
+    }
+
+    private suspend fun delayAndWaitIfPaused() {
+        delay(1000)
+        waitWhilePaused()
     }
 
     private suspend fun waitWhilePaused() {
@@ -105,8 +119,8 @@ class PauzeBreathingViewModel @Inject constructor(
     }
 
     fun onBackClick() {
-        if (breathState.phase == BreathPhase.READY) {
-            sendEffect(BreathingEffect.NavigateToBack)
+        if (isCompleted || breathState.phase == BreathPhase.READY) {
+            cancelTimerAndNavigateBack()
         } else {
             isPlaying = false
             sendEffect(BreathingEffect.ShowExitDialog)
@@ -117,5 +131,14 @@ class PauzeBreathingViewModel @Inject constructor(
         isPlaying = true
     }
 
-    fun onExitConfirm() = sendEffect(BreathingEffect.NavigateToBack)
+    fun onExitConfirm() {
+        cancelTimerAndNavigateBack()
+    }
+
+    private fun cancelTimerAndNavigateBack() {
+        timerJob?.cancel()
+        timerJob = null
+        isPlaying = false
+        sendEffect(BreathingEffect.NavigateToBack)
+    }
 }

@@ -105,4 +105,5 @@ object NetworkModule {
     fun providePauzeUsageService(
         @PauzeBaseUrl retrofit: Retrofit
     ): PauzeUsageService = retrofit.create(PauzeUsageService::class.java)
+
 }
