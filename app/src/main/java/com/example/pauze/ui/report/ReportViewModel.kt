@@ -37,7 +37,10 @@ class ReportViewModel @Inject constructor(
     var selectedPeriod by mutableStateOf(ReportPeriod.WEEKLY)
         private set
 
+    private var pendingFetchCount = 0
     fun refresh() {
+        if (pendingFetchCount > 0) return
+        pendingFetchCount = 3
         fetchWeekly()
         fetchMonthly()
         fetchTodayCondition()
@@ -48,22 +51,31 @@ class ReportViewModel @Inject constructor(
     }
 
     private fun fetchWeekly() {
-        launch(onFailure = { e -> updateData { it.copy(weeklyError = e.message ?: "주간 리포트를 불러오지 못했습니다") } }) {
+        launch(onFailure = { e ->
+            pendingFetchCount--
+            updateData { it.copy(weeklyError = e.message ?: "주간 리포트를 불러오지 못했습니다") }
+        }) {
             val weekly = reportRepository.getWeeklyReport()
+            pendingFetchCount--
             uiState.value.data.copy(weekly = weekly, weeklyError = null)
         }
     }
 
     private fun fetchMonthly() {
-        launch(onFailure = { e -> updateData { it.copy(monthlyError = e.message ?: "월간 리포트를 불러오지 못했습니다") } }) {
+        launch(onFailure = { e ->
+            pendingFetchCount--
+            updateData { it.copy(monthlyError = e.message ?: "월간 리포트를 불러오지 못했습니다") }
+        }) {
             val monthly = reportRepository.getMonthlyReport()
+            pendingFetchCount--
             uiState.value.data.copy(monthly = monthly, monthlyError = null)
         }
     }
 
     fun fetchTodayCondition() {
-        launch(onFailure = {}) {
+        launch(onFailure = { pendingFetchCount-- }) {
             val dto = todayConditionRepository.getTodayCondition()
+            pendingFetchCount--
             uiState.value.data.copy(todayCondition = dto?.takeIf { it.isToday() }?.toCondition())
         }
     }
