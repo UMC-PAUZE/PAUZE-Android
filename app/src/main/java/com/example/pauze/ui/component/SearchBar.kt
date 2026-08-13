@@ -13,6 +13,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -26,6 +28,7 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.pauze.R
@@ -37,6 +40,7 @@ import com.example.pauze.ui.theme.bodyTextMdRegular
 fun SearchBar(
     query: String,
     onQueryChange: (String) -> Unit,
+    onSearch: () -> Unit = {},
     modifier: Modifier = Modifier,
     placeholder: String = "원하는 소리를 검색해보세요"
 ) {
@@ -81,6 +85,12 @@ fun SearchBar(
             ),
             cursorBrush = SolidColor(AppTheme.palette.primary.getColor(3)),
             singleLine = true,
+            keyboardOptions = KeyboardOptions(
+                imeAction = ImeAction.Search,
+            ),
+            keyboardActions = KeyboardActions(
+                onSearch = { onSearch() },
+            ),
             modifier = Modifier
                 .weight(1f)
                 .onFocusChanged { focusState ->
@@ -118,7 +128,9 @@ fun SearchBar(
             } else {
                 AppTheme.palette.gray.getColor(5)
             },
-            modifier = Modifier.size(24.dp)
+            modifier = Modifier
+                .size(24.dp)
+                .clickable(onClick = onSearch)
         )
     }
 }

@@ -39,12 +39,14 @@ interface CurationService {
 
     @GET("users/me/bookmarks")
     suspend fun getMyBookmarks(
+        @Query("keyword") keyword: String? = null,
         @Query("page") page: Int = 1,
         @Query("size") size: Int = 10,
     ): BaseResponse<MyBookmarkListResultDto>
 
     @GET("users/me/likes")
     suspend fun getMyLikes(
+        @Query("keyword") keyword: String? = null,
         @Query("page") page: Int = 1,
         @Query("size") size: Int = 10,
     ): BaseResponse<MyLikeListResultDto>

@@ -277,6 +277,10 @@ fun CurationBoardScreen(
                 curationState.likedPosts,
             bookmarkedPosts =
                 curationState.bookmarkedPosts,
+            searchKeyword =
+                curationState.archiveKeyword,
+            submittedSearchKeyword =
+                curationState.submittedArchiveKeyword,
             isLikesLoading =
                 curationState.isLikesLoading,
             isBookmarksLoading =
@@ -289,6 +293,11 @@ fun CurationBoardScreen(
                 viewModel::loadNextMyLikes,
             onLoadMoreBookmarks =
                 viewModel::loadNextMyBookmarks,
+            onSearchKeywordChange =
+                viewModel::updateArchiveKeyword,
+            onSearch = {
+                viewModel.searchArchive()
+            },
             onBackClick = {
                 isArchiveScreenVisible = false
             },

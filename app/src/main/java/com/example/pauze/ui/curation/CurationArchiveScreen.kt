@@ -55,12 +55,16 @@ enum class CurationArchiveTab {
 fun CurationArchiveScreen(
     likedPosts: List<CurationPost>,
     bookmarkedPosts: List<CurationPost>,
+    searchKeyword: String = "",
+    submittedSearchKeyword: String = "",
     isLikesLoading: Boolean = false,
     isBookmarksLoading: Boolean = false,
     hasNextLikesPage: Boolean = false,
     hasNextBookmarksPage: Boolean = false,
     onLoadMoreLikes: () -> Unit = {},
     onLoadMoreBookmarks: () -> Unit = {},
+    onSearchKeywordChange: (String) -> Unit = {},
+    onSearch: () -> Unit = {},
     onBackClick: () -> Unit = {},
     onPostClick: (Long) -> Unit = {},
     onLikeClick: (Long) -> Unit = {},
@@ -71,27 +75,9 @@ fun CurationArchiveScreen(
         mutableStateOf(CurationArchiveTab.BOOKMARKS)
     }
 
-    // 검색 API에 keyword가 추가되면 ViewModel 상태로 이동
-    var searchKeyword by rememberSaveable {
-        mutableStateOf("")
-    }
-
-    val archivePosts = when (selectedTab) {
+    val posts = when (selectedTab) {
         CurationArchiveTab.LIKES -> likedPosts
         CurationArchiveTab.BOOKMARKS -> bookmarkedPosts
-    }
-
-    val normalizedSearchKeyword = searchKeyword.trim()
-    val posts = archivePosts.filter { post ->
-        normalizedSearchKeyword.isBlank() ||
-                post.title.contains(
-                    normalizedSearchKeyword,
-                    ignoreCase = true,
-                ) ||
-                post.summary.contains(
-                    normalizedSearchKeyword,
-                    ignoreCase = true,
-                )
     }
 
     val isLoading = when (selectedTab) {
@@ -175,8 +161,13 @@ fun CurationArchiveScreen(
             SearchBar(
                 query = searchKeyword,
                 onQueryChange = { keyword ->
-                    searchKeyword = keyword
+                    onSearchKeywordChange(keyword)
+
+                    if (keyword.isBlank()) {
+                        onSearch()
+                    }
                 },
+                onSearch = onSearch,
                 placeholder = "북마크한 글을 검색해보세요",
                 modifier = Modifier
                     .fillMaxWidth()
@@ -238,6 +229,8 @@ fun CurationArchiveScreen(
                 posts.isEmpty() -> {
                     CurationArchiveEmptyContent(
                         selectedTab = selectedTab,
+                        isSearchResult =
+                            submittedSearchKeyword.isNotBlank(),
                         modifier = Modifier
                             .fillMaxWidth()
                             .weight(1f),
@@ -340,9 +333,12 @@ private fun CurationArchiveLoadingContent(
 @Composable
 private fun CurationArchiveEmptyContent(
     selectedTab: CurationArchiveTab,
+    isSearchResult: Boolean,
     modifier: Modifier = Modifier,
 ) {
-    val title = when (selectedTab) {
+    val title = if (isSearchResult) {
+        "검색 결과가 없어요"
+    } else when (selectedTab) {
         CurationArchiveTab.LIKES ->
             "좋아요한 글이 없어요"
 
@@ -350,7 +346,9 @@ private fun CurationArchiveEmptyContent(
             "북마크한 글이 없어요"
     }
 
-    val description = when (selectedTab) {
+    val description = if (isSearchResult) {
+        "다른 검색어로 다시 검색해보세요."
+    } else when (selectedTab) {
         CurationArchiveTab.LIKES ->
             "발견 탭에서 마음에 드는 글에 좋아요를 눌러보세요."
 
