@@ -1,8 +1,28 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.hilt.android)
+    id("kotlin-kapt")
+    id("org.jetbrains.kotlin.plugin.serialization") version "2.4.10"
 }
+val localProperties = Properties()
+val localPropertiesFile = project.rootProject.file("local.properties")
+if (localPropertiesFile.isFile) {
+    localPropertiesFile.inputStream().use(localProperties::load)
+}
+
+val kakaoKey = listOfNotNull(
+    providers.gradleProperty("KAKAO_KEY").orNull,
+    providers.environmentVariable("KAKAO_KEY").orNull,
+    localProperties.getProperty("KAKAO_KEY")
+).firstOrNull { it.isNotBlank() }?.trim()
+    ?: error(
+        "KAKAO_KEY is required. Set -PKAKAO_KEY=..., the KAKAO_KEY " +
+                "environment variable, or KAKAO_KEY in local.properties."
+    )
 
 android {
     namespace = "com.example.pauze"
@@ -10,12 +30,15 @@ android {
 
     defaultConfig {
         applicationId = "com.example.pauze"
-        minSdk = 24
+        minSdk = 26
         targetSdk = 36
         versionCode = 1
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        buildConfigField("String", "KAKAO_KEY", "\"$kakaoKey\"")
+        manifestPlaceholders["KAKAO_KEY"] = kakaoKey
     }
 
     buildTypes {
@@ -28,14 +51,19 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_21
     }
-    kotlinOptions {
-        jvmTarget = "11"
-    }
+
     buildFeatures {
         compose = true
+        buildConfig = true
+    }
+
+    sourceSets {
+        getByName("main") {
+            java.srcDir(layout.buildDirectory.dir("generated/source/buildConfig/main"))
+        }
     }
 }
 
@@ -49,6 +77,14 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+    implementation(libs.androidx.ui.text)
+    implementation(libs.material3)
+    implementation(libs.ui)
+    implementation(libs.androidx.lifecycle.viewmodel.ktx)
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
+    implementation(libs.androidx.navigation.compose)
+    implementation(libs.androidx.datastore.core)
+    implementation("androidx.datastore:datastore-preferences:1.2.1")
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -56,4 +92,28 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+    implementation("io.github.darkokoa:datetime-wheel-picker:1.3.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.8.0")
+    implementation("io.coil-kt:coil-compose:2.7.0")
+    implementation(libs.hilt.android)
+    kapt(libs.hilt.compiler)
+    kapt("org.jetbrains.kotlin:kotlin-metadata-jvm:2.4.10")
+    implementation(libs.retrofit)
+    implementation(libs.retrofit.converter.gson)
+    implementation(libs.okhttp)
+    implementation(libs.okhttp.logging.interceptor)
+    implementation(libs.hilt.navigation.compose)
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.11.0")
+    implementation("com.jakewharton.retrofit:retrofit2-kotlinx-serialization-converter:1.0.0")
+    implementation("com.kakao.sdk:v2-user:2.11.0")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib:2.3.20")
+    implementation(libs.androidx.media3.exoplayer)
+    implementation("androidx.datastore:datastore-preferences:1.1.1")
+    implementation("com.airbnb.android:lottie-compose:6.5.2")
+}
+
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
+    compilerOptions {
+        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21)
+    }
 }
