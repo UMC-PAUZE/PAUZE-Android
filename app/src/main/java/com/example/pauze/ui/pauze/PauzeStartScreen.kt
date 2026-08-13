@@ -111,7 +111,11 @@ fun PauzeStartScreen(
                     navController.navigate(PauzeNavDestination.Overload)
                 }
                 is PauzeStartEffect.NavigateToHome -> {
-                   context.startActivity(Intent(context, MainActivity::class.java))
+                    context.startActivity(
+                        Intent(context, MainActivity::class.java).apply {
+                            flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+                        }
+                    )
                 }
             }
         }
