@@ -42,6 +42,7 @@ data class Stats(
     val totalMeasurements: Int?,
     val consecutiveDays: Int?,
     val averageSensitivity: Double?,
+    val pauzeCount: Long? = null,
 )
 
 //user/me/profile - 수정
@@ -79,9 +80,7 @@ data class WithdrawRequest(
 data class MyPageState(
     val profile: UserMeResultDto? = null,
     val stats: Stats? = null,
-    val totalPauzeUsageCount: Long = 0,
     val loadError: String? = null,
-    val usageLoadError: String? = null,
 )
 
 data class AccountInfoState(
