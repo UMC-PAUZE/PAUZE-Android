@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -6,6 +8,21 @@ plugins {
     id("kotlin-kapt")
     id("org.jetbrains.kotlin.plugin.serialization") version "2.4.10"
 }
+val localProperties = Properties()
+val localPropertiesFile = project.rootProject.file("local.properties")
+if (localPropertiesFile.isFile) {
+    localPropertiesFile.inputStream().use(localProperties::load)
+}
+
+val kakaoKey = listOfNotNull(
+    providers.gradleProperty("KAKAO_KEY").orNull,
+    providers.environmentVariable("KAKAO_KEY").orNull,
+    localProperties.getProperty("KAKAO_KEY")
+).firstOrNull { it.isNotBlank() }?.trim()
+    ?: error(
+        "KAKAO_KEY is required. Set -PKAKAO_KEY=..., the KAKAO_KEY " +
+                "environment variable, or KAKAO_KEY in local.properties."
+    )
 
 android {
     namespace = "com.example.pauze"
@@ -13,12 +30,15 @@ android {
 
     defaultConfig {
         applicationId = "com.example.pauze"
-        minSdk = 24
+        minSdk = 26
         targetSdk = 36
         versionCode = 1
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        buildConfigField("String", "KAKAO_KEY", "\"$kakaoKey\"")
+        manifestPlaceholders["KAKAO_KEY"] = kakaoKey
     }
 
     buildTypes {
@@ -39,6 +59,12 @@ android {
         compose = true
         buildConfig = true
     }
+
+    sourceSets {
+        getByName("main") {
+            java.srcDir(layout.buildDirectory.dir("generated/source/buildConfig/main"))
+        }
+    }
 }
 
 dependencies {
@@ -57,6 +83,8 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.navigation.compose)
+    implementation(libs.androidx.datastore.core)
+    implementation("androidx.datastore:datastore-preferences:1.2.1")
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -75,6 +103,10 @@ dependencies {
     implementation(libs.okhttp)
     implementation(libs.okhttp.logging.interceptor)
     implementation(libs.hilt.navigation.compose)
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.11.0")
+    implementation("com.jakewharton.retrofit:retrofit2-kotlinx-serialization-converter:1.0.0")
+    implementation("com.kakao.sdk:v2-user:2.11.0")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib:2.3.20")
     implementation(libs.androidx.media3.exoplayer)
     implementation("androidx.datastore:datastore-preferences:1.1.1")
     implementation("com.airbnb.android:lottie-compose:6.5.2")

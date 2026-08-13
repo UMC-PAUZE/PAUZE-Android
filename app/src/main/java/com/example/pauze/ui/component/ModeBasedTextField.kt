@@ -57,7 +57,7 @@ fun ModeBasedTextField(
     isError: Boolean = false,
     checkPasswordSame: () -> Boolean = { true },
     onCheckClick: () -> Unit = {},
-    checkClickValue: () -> Boolean = { false }
+    checkClickValue: Boolean? = null
 ): Boolean {
     val focusManager = LocalFocusManager.current
     var isFocused by remember { mutableStateOf(false) }
@@ -78,7 +78,6 @@ fun ModeBasedTextField(
                 color = when {
                     isError -> AppTheme.palette.secondary.getColor(4)
                     value == "" -> AppTheme.palette.gray.getColor(6)
-                    mode == TextFieldMode.Verif && isFocused -> AppTheme.palette.primary.getColor(3)
                     (mode == TextFieldMode.UserName && (value.length == 1
                             || nameCheck
                             || value.trim() != value))
@@ -86,11 +85,14 @@ fun ModeBasedTextField(
                             && !isFocused
                             && (value.length > 1 && value.length < 8
                             || !pwdCheck))
-                            || (mode == TextFieldMode.Nickname && nickNameCheck)
+                            || (mode == TextFieldMode.Nickname && (nickNameCheck || checkClickValue == false))
                             || (mode == TextFieldMode.SetPwd && !checkPasswordSame())
-                            || ((mode == TextFieldMode.SetEmail || mode == TextFieldMode.Verif) && !checkClickValue())
+                            || ((mode == TextFieldMode.SetEmail && checkClickValue == true || mode == TextFieldMode.Verif && checkClickValue == false))
                                  -> AppTheme.palette.secondary.getColor(4)
-                    (mode == TextFieldMode.Nickname || mode == TextFieldMode.Bio) && isFocused
+                    (mode == TextFieldMode.Nickname
+                            || mode == TextFieldMode.Bio
+                            || (mode == TextFieldMode.Verif && checkClickValue == true))
+                            && isFocused
                         -> AppTheme.palette.primary.getColor(3)
                     isFocused -> AppTheme.palette.gray.getColor(3)
                     else -> AppTheme.palette.gray.getColor(6)
@@ -203,6 +205,14 @@ fun ModeBasedTextField(
                                 ActionButton(actions = Actions.Reset) { onValueChanged("") }
                                 Spacer(modifier = Modifier.width(8.dp))
                                 ActionButton(actions = Actions.VerifCheck) {
+                                    onCheckClick()
+                                    isFocused = false
+                                }
+                            }
+                            TextFieldMode.Nickname -> Row(
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                ActionButton(actions = Actions.EmailCheck) {
                                     onCheckClick()
                                     isFocused = false
                                 }

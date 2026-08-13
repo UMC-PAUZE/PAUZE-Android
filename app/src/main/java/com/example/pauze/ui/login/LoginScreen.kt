@@ -8,6 +8,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -37,6 +38,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat.startActivity
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
@@ -50,7 +52,9 @@ import com.example.pauze.ui.component.ModeBasedTextField
 import com.example.pauze.ui.component.TextFieldMode
 import com.example.pauze.ui.login.agreement.TermsAndPolicyScreen
 import com.example.pauze.ui.login.completed.SignUpCompletedScreen
+import com.example.pauze.ui.login.component.AccountLinkingDialog
 import com.example.pauze.ui.login.kakao.KakaoSignUpScreen
+import com.example.pauze.ui.login.linking.AccountLinkingScreen
 import com.example.pauze.ui.login.signup.SignUpScreen
 import com.example.pauze.ui.theme.AppTheme
 import com.example.pauze.ui.theme.MainPaletteTheme
@@ -58,7 +62,9 @@ import com.example.pauze.ui.theme.bodyTextMdBold
 import com.example.pauze.ui.theme.bodyTextMdMedium
 import com.example.pauze.ui.theme.bodyTextSmRegular
 import com.example.pauze.ui.theme.bodyTextXlBold
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class LoginActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -83,6 +89,9 @@ class LoginActivity : ComponentActivity() {
                     composable<LoginNavDestination.Kakao> {
                         KakaoSignUpScreen(navController)
                     }
+                    composable<LoginNavDestination.Link> {
+                        AccountLinkingScreen(navController)
+                    }
                 }
             }
         }
@@ -94,13 +103,14 @@ class LoginActivity : ComponentActivity() {
 fun LoginScreen(
     context: Context,
     navController: NavController,
-    viewModel: LoginViewModel = viewModel()     // todo: Hilt로 변경
+    viewModel: LoginViewModel = hiltViewModel()
 ){
 
     val focusManager = LocalFocusManager.current
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-    var showDialog by rememberSaveable { mutableStateOf(false) }
+    var isLoginFailed by remember { mutableStateOf(false) }
+    var showLinkDialog by remember { mutableStateOf(false) }
 
     // 로그인 성공 여부 collect하기
     LaunchedEffect(viewModel.effect) {
@@ -118,8 +128,14 @@ fun LoginScreen(
                 is LoginEffect.NavigateToAdditionalScreen -> {
                     navController.navigate(LoginNavDestination.Kakao(isAgreedToTerm = false, isAgreedToPolicy = false))
                 }
-                is LoginEffect.ShowDialog -> {
-                    showDialog = true
+                is LoginEffect.NavigateToLinkPage -> {
+                    navController.navigate(LoginNavDestination.Link)
+                }
+                is LoginEffect.IsLoginFailed -> {
+                    isLoginFailed = true
+                }
+                is LoginEffect.ShowLinkDialog -> {
+                    showLinkDialog = true
                 }
             }
         }
@@ -147,16 +163,20 @@ fun LoginScreen(
         ModeBasedTextField(
             mode = TextFieldMode.Email,
             value = email,
-            onValueChanged = { email = it },
-            imeAction = ImeAction.Next
+            onValueChanged = { email = it; isLoginFailed = false },
+            imeAction = ImeAction.Next,
+            isError = isLoginFailed
         )
+        if(isLoginFailed) LoginFailedText()
         Spacer(modifier = Modifier.height(12.dp))
         ModeBasedTextField(
             mode = TextFieldMode.Pwd,
             value = password,
-            onValueChanged = { password = it },
-            imeAction = ImeAction.Done
+            onValueChanged = { password = it; isLoginFailed = false },
+            imeAction = ImeAction.Done,
+            isError = isLoginFailed
         )
+        if(isLoginFailed) LoginFailedText()
         Spacer(modifier = Modifier.height(32.dp))
         Button(
             "로그인",
@@ -240,14 +260,22 @@ fun LoginScreen(
                 color = AppTheme.palette.gray.getColor(2)
             )
         }
-
-        if(showDialog){
-            Dialog(
-                title = "로그인 오류",
-                content = "이메일이나 비밀번호가 일치하지 않습니다",
-                btnCancel = "다시 입력하기",
-                onDismissRequest = { showDialog = false}
+        if(showLinkDialog){
+            AccountLinkingDialog(
+                onDismissRequest = { showLinkDialog = false },
+                onContinue = { viewModel.toLinkPage(); showLinkDialog = false }
             )
         }
+    }
+}
+
+@Composable
+fun LoginFailedText(){
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalAlignment = Alignment.Start
+    ) {
+        Spacer(modifier = Modifier.height(4.dp))
+        Text("아이디나 비밀번호가 일치하지 않습니다", style = bodyTextSmRegular, color = AppTheme.palette.secondary.getColor(4))
     }
 }

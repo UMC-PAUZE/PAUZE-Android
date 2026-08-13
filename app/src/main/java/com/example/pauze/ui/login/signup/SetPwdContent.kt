@@ -24,8 +24,6 @@ import java.util.regex.Pattern
 fun SetPwdContent(
     viewModel: SignUpViewModel
 ): Boolean{
-
-    val focusManager = LocalFocusManager.current
     var isPwdFocused by remember { mutableStateOf(false) }
     val pwdCheck = Pattern.matches("^(?=.*[0-9])(?=.*[a-zA-Z])(?=.*[!@#$%^&*]).+$", viewModel.password)
 
@@ -64,11 +62,7 @@ fun SetPwdContent(
                 color = AppTheme.palette.secondary.getColor(4)
             )
         }
-        Spacer(modifier = Modifier.height(48.dp))
-        AgreementCheckbox(viewModel, viewModel.isAgreedToTerm, true, focusManager, false)
-        Spacer(modifier = Modifier.height(12.dp))
-        AgreementCheckbox(viewModel, viewModel.isAgreedToPolicy, false, focusManager, false)
     }
 
-    return viewModel.password.length > 7 && pwdCheck && viewModel.isAgreedToTerm && viewModel.isAgreedToPolicy
+    return viewModel.password.length > 7 && pwdCheck && viewModel.password == viewModel.pwdCheck
 }

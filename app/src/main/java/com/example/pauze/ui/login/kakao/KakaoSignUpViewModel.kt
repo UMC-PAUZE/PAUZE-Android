@@ -1,5 +1,6 @@
 package com.example.pauze.ui.login.kakao
 
+import android.os.Build
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -9,23 +10,39 @@ import com.example.pauze.ui.BaseViewModel
 import android.os.CountDownTimer
 import android.os.Handler
 import android.os.Looper
+import androidx.annotation.RequiresApi
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.datastore.dataStore
+import com.example.pauze.data.datastore.AuthDataStore
 import com.example.pauze.data.model.BaseUiState
+import com.example.pauze.data.model.TermAgreement
+import com.example.pauze.data.repository.AuthRepository
 import com.example.pauze.ui.login.LoginNavDestination
 import com.example.pauze.ui.login.signup.SignUpEffect
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.datetime.LocalDate
+import javax.inject.Inject
 
 sealed interface KakaoSignUpEffect {
-    object RestartVerifTimer: KakaoSignUpEffect
     object BackStack: KakaoSignUpEffect
     data class NavigateToPolicy(val isTermOfUse: Boolean): KakaoSignUpEffect
     object NavigateToCompleted: KakaoSignUpEffect
+    object ShowBirthdayPicker: KakaoSignUpEffect
 }
 
-class KakaoSignUpViewModel(
-    savedStateHandle: SavedStateHandle
+@HiltViewModel
+class KakaoSignUpViewModel @Inject constructor(
+    savedStateHandle: SavedStateHandle,
+    private val dataStore: AuthDataStore,
+    private val repository: AuthRepository
 ): BaseViewModel<KakaoSignUpEffect, Unit>(
     uiState = BaseUiState(data = Unit)
 ){
+    var name by mutableStateOf("")
+    var nickname by mutableStateOf("")
+    var isNicknameAvailable by mutableStateOf<Boolean?>(null)
+    var birthday by mutableStateOf<LocalDate?>(null)
+    var showBirthdayPicker by mutableStateOf(false)
     private val isInitiallyAgreedToTerm = savedStateHandle.toRoute<LoginNavDestination.Kakao>().isAgreedToTerm
     var isAgreedToTerm by mutableStateOf(isInitiallyAgreedToTerm)
         private set
@@ -33,21 +50,43 @@ class KakaoSignUpViewModel(
     var isAgreedToPolicy by mutableStateOf(isInitiallyAgreedToPolicy)
         private set
 
-    var phase by mutableIntStateOf(0)
-    var name by mutableStateOf("")
-    var nickname by mutableStateOf("")
-    var email by mutableStateOf("")
-    var verifCode by mutableStateOf("")
-    var time by mutableStateOf("00:00")
-    private var countDownTimer: CountDownTimer? = null
-
-    // todo: 데이터 연결 시 uiState로 처리
-    var isEmailNoExisted by mutableStateOf(true)
-    fun checkEmailAlreadyExistOrNot(): Boolean = isEmailNoExisted
-    fun toggleEmailExist(){
-        isEmailNoExisted = !isEmailNoExisted
+    fun checkNicknameAvailable(){
+        launch(
+            onSuccess = { result ->
+                if(result == null){
+                    isNicknameAvailable = false
+                    return@launch
+                }
+                isNicknameAvailable = true
+                nickname = result.nickname
+            },
+            onFailure = {
+                return@launch
+            }
+        ) {
+            repository.isNicknameAvailable(nickname)
+        }
     }
-    fun checkVerifCodeRight(): Boolean = verifCode == "643590"
+
+    fun kakaoSignUp(){
+        launch(
+            onSuccess = {
+                sendEffect(KakaoSignUpEffect.NavigateToCompleted)
+            }
+        ) {
+            val accessToken = dataStore.getKakaoAccessToken() ?: return@launch null
+            repository.kakaoSignUp(
+                name = name,
+                nickname = nickname,
+                birth = birthday.toString().replace("-", ""),
+                kakaoAccessToken = accessToken,
+                termAgreements = listOf(
+                    TermAgreement(2, isAgreedToTerm),
+                    TermAgreement(3, isAgreedToPolicy)
+                )
+            )
+        }
+    }
 
     fun updateIsAgreedToTerm(isAgreed: Boolean){
         isAgreedToTerm = isAgreed
@@ -57,42 +96,15 @@ class KakaoSignUpViewModel(
         isAgreedToPolicy = isAgreed
     }
 
-    fun updatePhase(){
-        phase = phase + 1
-        if(phase == 1){
-            startTimer()
-        }
-    }
-
-    fun startTimer(){
-        countDownTimer?.cancel()
-        countDownTimer = object : CountDownTimer(300000L, 1000L){
-            override fun onFinish() {
-                time = "00:00"
-            }
-
-            override fun onTick(millisUntilFinished: Long) {
-                val totalSeconds = millisUntilFinished / 1000
-                val minuteLeft = totalSeconds / 60
-                val secondLeft = totalSeconds % 60
-                val formattedSeconds = if(secondLeft < 10) "0${secondLeft}" else secondLeft
-                time = "0${minuteLeft} : $formattedSeconds"
-            }
-        }.start()
-    }
-
-    fun sendEffectForTimer(){
-        sendEffect(KakaoSignUpEffect.RestartVerifTimer)
-    }
     fun backStack(){
         sendEffect(KakaoSignUpEffect.BackStack)
     }
 
-    fun signUp(){
-        sendEffect(KakaoSignUpEffect.NavigateToCompleted)
-    }
-
     fun checkPolicy(isTermOfUse: Boolean){
         sendEffect(KakaoSignUpEffect.NavigateToPolicy(isTermOfUse))
+    }
+
+    fun showBirthdayPicker(){
+        sendEffect(KakaoSignUpEffect.ShowBirthdayPicker)
     }
 }

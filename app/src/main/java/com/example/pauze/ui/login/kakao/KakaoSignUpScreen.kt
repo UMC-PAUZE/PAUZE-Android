@@ -17,23 +17,35 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusManager
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
+import com.example.pauze.ui.component.BirthdayBottomSheet
+import com.example.pauze.ui.component.BirthdayPicker
 import com.example.pauze.ui.component.Button
+import com.example.pauze.ui.component.ModeBasedTextField
+import com.example.pauze.ui.component.SetBirthday
+import com.example.pauze.ui.component.TextFieldMode
 import com.example.pauze.ui.component.TopBar
 import com.example.pauze.ui.login.component.EnterVerificationCode
 import com.example.pauze.ui.login.LoginNavDestination
 import com.example.pauze.ui.login.component.AgreementCheckbox
 import com.example.pauze.ui.theme.AppTheme
+import com.example.pauze.ui.theme.bodyTextSmRegular
 import com.example.pauze.ui.theme.headingMdMedium
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.format
+import kotlinx.datetime.format.char
 
 @Composable
 fun KakaoSignUpScreen(
     navController: NavController,
-    viewModel: KakaoSignUpViewModel = viewModel()
+    viewModel: KakaoSignUpViewModel = hiltViewModel()
 ){
     val focusManager = LocalFocusManager.current
     val currentBackStackEntry by navController.currentBackStackEntryAsState()
@@ -54,9 +66,6 @@ fun KakaoSignUpScreen(
 
         viewModel.effect.collect { effect ->
             when(effect){
-                is KakaoSignUpEffect.RestartVerifTimer -> {
-                    viewModel.startTimer()
-                }
                 is KakaoSignUpEffect.BackStack -> {
                     navController.popBackStack()
                 }
@@ -65,6 +74,9 @@ fun KakaoSignUpScreen(
                 }
                 is KakaoSignUpEffect.NavigateToCompleted -> {
                     navController.navigate(LoginNavDestination.Completed(viewModel.name))
+                }
+                is KakaoSignUpEffect.ShowBirthdayPicker -> {
+                    viewModel.showBirthdayPicker = true
                 }
             }
         }
@@ -82,35 +94,99 @@ fun KakaoSignUpScreen(
      ){
         Spacer(modifier = Modifier.height(16.dp))
         TopBar(
-            if(viewModel.phase == 0) "추가 정보 입력" else "회원가입",
+            "추가 정보 입력",
             onBackClick = { viewModel.backStack() }
         )
         Column(modifier = Modifier.padding(24.dp)){
             Text(
-                if(viewModel.phase == 0) "서비스 이용을 위해 아래 정보를\n추가로 입력해주세요"
-                else "인증코드를 입력하고\n이용약관에 동의해주세요",
-                modifier = Modifier.padding(horizontal = 24.dp),
+                "서비스 이용을 위해 아래 정보를\n추가로 입력해주세요",
                 style = headingMdMedium,
                 color = AppTheme.palette.gray.getColor(2)
             )
             Spacer(modifier = Modifier.height(48.dp))
-            if(viewModel.phase == 0) {
-                AdditionalInfoContent(viewModel)
-            } else {
-                isCompleted = EnterVerificationCode(viewModel, true)
-                Spacer(modifier = Modifier.height(24.dp))
-                AgreementCheckbox(viewModel, viewModel.isAgreedToTerm, true, focusManager, true)
-                Spacer(modifier = Modifier.height(12.dp))
-                AgreementCheckbox(viewModel, viewModel.isAgreedToPolicy, false, focusManager, true)
-                Spacer(modifier = Modifier.weight(1f))
-                Button(
-                    if(isCompleted) "시작하기" else "다음",
-                    modifier = Modifier.fillMaxWidth(),
-                    onClick = { viewModel.signUp() },
-                    enabled = isCompleted && viewModel.isAgreedToTerm && viewModel.isAgreedToPolicy,
-                )
-                Spacer(modifier = Modifier.height(40.dp))
-            }
+            isCompleted = AdditionalInfoContent(focusManager, viewModel)
+            Spacer(modifier = Modifier.height(48.dp))
+            AgreementCheckbox(viewModel, viewModel.isAgreedToTerm, true, focusManager, true)
+            Spacer(modifier = Modifier.height(12.dp))
+            AgreementCheckbox(viewModel, viewModel.isAgreedToPolicy, false, focusManager, true)
+            Spacer(modifier = Modifier.weight(1f))
+            Button(
+                "가입 완료하기",
+                modifier = Modifier.fillMaxWidth(),
+                onClick = { viewModel.kakaoSignUp() },
+                enabled = isCompleted && viewModel.isAgreedToTerm && viewModel.isAgreedToPolicy,
+            )
+            Spacer(modifier = Modifier.height(40.dp))
         }
     }
+}
+
+@Composable
+fun AdditionalInfoContent(
+    focusManager: FocusManager,
+    viewModel: KakaoSignUpViewModel
+): Boolean {
+    var tempDay by remember { mutableStateOf<LocalDate?>(null)}
+    val customDateFormat = LocalDate.Format{
+        year()
+        char('-')
+        monthNumber()
+        char('-')
+        day()
+    }
+
+    Column {
+        ModeBasedTextField(
+            mode = TextFieldMode.UserName,
+            value = viewModel.name,
+            onValueChanged = { viewModel.name = it },
+            imeAction = ImeAction.Next
+        )
+        Text(
+            "2자 이상 입력해주세요",
+            style = bodyTextSmRegular,
+            color = if(viewModel.name.length == 1)
+                AppTheme.palette.secondary.getColor(4)
+            else AppTheme.palette.gray.getColor(5)
+        )
+        Spacer(modifier = Modifier.height(12.dp))
+        ModeBasedTextField(
+            mode = TextFieldMode.Nickname,
+            value = viewModel.nickname,
+            onCheckClick = { viewModel.checkNicknameAvailable() },
+            onValueChanged = { viewModel.nickname = it },
+            imeAction = ImeAction.Done
+        )
+        Text(
+            when (viewModel.isNicknameAvailable) {
+                true -> "사용 가능한 닉네임입니다"
+                false -> "이미 사용된 닉네임입니다"
+                else -> "10자 이내로 입력해주세요"
+            },
+            style = bodyTextSmRegular,
+            color = if(viewModel.nickname.length > 10
+                || viewModel.isNicknameAvailable == false)
+                AppTheme.palette.secondary.getColor(4)
+            else if(viewModel.isNicknameAvailable == true)
+                AppTheme.palette.primary.getColor(4)
+            else AppTheme.palette.gray.getColor(5)
+        )
+        Spacer(modifier = Modifier.height(12.dp))
+        SetBirthday(
+            birthday = viewModel.birthday?.format(customDateFormat) ?: "생년월일을 입력해주세요",
+            onClick = {
+                focusManager.clearFocus()
+                viewModel.showBirthdayPicker()
+            }
+        )
+
+        if(viewModel.showBirthdayPicker){
+            BirthdayBottomSheet(
+                onDismissRequest = { viewModel.showBirthdayPicker = false },
+                onDateChanged = { tempDay = it },
+                onClick = { viewModel.birthday = tempDay; viewModel.showBirthdayPicker = false }
+            )
+        }
+    }
+    return viewModel.name.length > 1 && viewModel.nickname.length < 10 && viewModel.isNicknameAvailable == true && viewModel.birthday != null
 }

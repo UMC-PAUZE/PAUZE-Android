@@ -13,4 +13,6 @@ sealed interface LoginNavDestination {
     data class Completed(val name: String): LoginNavDestination
     @Serializable
     data class Kakao(val isAgreedToTerm: Boolean, val isAgreedToPolicy: Boolean): LoginNavDestination
+    @Serializable
+    object Link: LoginNavDestination
 }
