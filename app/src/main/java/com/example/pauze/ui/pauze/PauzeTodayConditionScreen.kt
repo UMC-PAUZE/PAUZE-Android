@@ -81,8 +81,9 @@ fun PauzeTodayCondition(
     viewModel: PauzeTodayConditionViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
-    val conditionState by viewModel.state.collectAsStateWithLifecycle()
-    val conditionQuestions by viewModel.conditionQuestions.collectAsStateWithLifecycle()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val conditionState = uiState.data
+    val conditionQuestions = conditionState.conditionQuestions
     val submissionError = conditionState.submissionError
     var showExitDialog by rememberSaveable { mutableStateOf(false) }
     val currentQuestion = conditionQuestions[conditionState.currentQuestionIndex]

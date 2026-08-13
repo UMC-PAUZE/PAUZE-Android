@@ -4,6 +4,7 @@ import com.example.pauze.BuildConfig
 import com.example.pauze.data.service.AudioGuideService
 import com.example.pauze.data.service.CurationService
 import com.example.pauze.data.service.MyPageService
+import com.example.pauze.data.service.PauzeUsageService
 import com.example.pauze.data.service.ReportService
 import com.example.pauze.data.service.TodayConditionService
 import com.example.pauze.data.service.VisualGuideService
@@ -97,4 +98,11 @@ object NetworkModule {
     fun provideVisualGuideService(
         @PauzeBaseUrl retrofit: Retrofit
     ): VisualGuideService = retrofit.create(VisualGuideService::class.java)
+
+    // PAUZE 사용 횟수
+    @Provides
+    @Singleton
+    fun providePauzeUsageService(
+        @PauzeBaseUrl retrofit: Retrofit
+    ): PauzeUsageService = retrofit.create(PauzeUsageService::class.java)
 }
