@@ -29,11 +29,13 @@ interface CurationRepository {
     ): CurationPostBookmarkResultDto
 
     suspend fun getMyBookmarks(
+        keyword: String? = null,
         page: Int = 1,
         size: Int = 10,
     ): MyBookmarkListResultDto
 
     suspend fun getMyLikes(
+        keyword: String? = null,
         page: Int = 1,
         size: Int = 10,
     ): MyLikeListResultDto

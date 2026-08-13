@@ -118,11 +118,13 @@ class CurationRepositoryImpl @Inject constructor(
     }
 
     override suspend fun getMyBookmarks(
+        keyword: String?,
         page: Int,
         size: Int,
     ): MyBookmarkListResultDto {
         return try {
             val response = curationService.getMyBookmarks(
+                keyword = keyword,
                 page = page,
                 size = size,
             )
@@ -155,11 +157,13 @@ class CurationRepositoryImpl @Inject constructor(
     }
 
     override suspend fun getMyLikes(
+        keyword: String?,
         page: Int,
         size: Int,
     ): MyLikeListResultDto {
         return try {
             val response = curationService.getMyLikes(
+                keyword = keyword,
                 page = page,
                 size = size,
             )

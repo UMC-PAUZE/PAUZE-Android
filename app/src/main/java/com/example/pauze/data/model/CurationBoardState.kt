@@ -10,6 +10,9 @@ data class CurationBoardState(
     val postsTotalPages: Int = 1,
     val isPostsLoading: Boolean = false,
 
+    val archiveKeyword: String = "",
+    val submittedArchiveKeyword: String = "",
+
     val likedPosts: List<CurationPost> = emptyList(),
     val likesPage: Int = 0,
     val likesTotalPages: Int = 1,

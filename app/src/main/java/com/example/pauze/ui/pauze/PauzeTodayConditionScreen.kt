@@ -81,11 +81,9 @@ fun PauzeTodayCondition(
     viewModel: PauzeTodayConditionViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val conditionState = uiState.data
-    val conditionQuestions = conditionState.conditionQuestions
+    val conditionState by viewModel.state.collectAsStateWithLifecycle()
+    val conditionQuestions by viewModel.conditionQuestions.collectAsStateWithLifecycle()
     val submissionError = conditionState.submissionError
-        ?: uiState.error?.toTodayConditionMessage()
     var showExitDialog by rememberSaveable { mutableStateOf(false) }
     val currentQuestion = conditionQuestions[conditionState.currentQuestionIndex]
 
@@ -103,7 +101,11 @@ fun PauzeTodayCondition(
                     )
                 }
                 TodayConditionEffect.NavigateToPauzeStartActivity -> {
-                    context.startActivity(Intent(context, PauzeStartActivity::class.java))
+                    context.startActivity(
+                        Intent(context, PauzeStartActivity::class.java).apply {
+                            flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+                        }
+                    )
                 }
             }
         }
@@ -200,20 +202,20 @@ fun PauzeTodayCondition(
         ) {
             ConditionNavigationButton(
                 text = "이전",
-                enabled = conditionState.isPreviousEnabled && !uiState.isLoading,
+                enabled = conditionState.isPreviousEnabled,
                 modifier = Modifier.weight(1f),
                 onClick = viewModel::moveToPreviousQuestion
             )
             ConditionNavigationButton(
                 text = if (
-                    uiState.isLoading &&
+                    conditionState.isSubmitting &&
                     conditionState.currentQuestionIndex == conditionQuestions.lastIndex
                 ) {
                     "저장 중..."
                 } else {
                     "다음"
                 },
-                enabled = conditionState.isNextEnabled && !uiState.isLoading,
+                enabled = conditionState.isNextEnabled,
                 modifier = Modifier.weight(1f),
                 onClick = viewModel::moveToNextQuestion
             )

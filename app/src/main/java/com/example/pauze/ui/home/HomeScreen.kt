@@ -78,8 +78,10 @@ fun HomeScreen(
                     context.startActivity(Intent(context, PauzeTodayConditionActivity::class.java))
                 }
                 is HomeEffect.MoveToBreathingBtn -> {
-                    val intent = Intent(context, PauzeStartActivity::class.java)
-                    intent.putExtra("Pauze Destination", "PauzeBreathing")
+                    val intent = Intent(context, PauzeStartActivity::class.java).apply {
+                        flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+                        putExtra("Pauze Destination", "PauzeBreathing")
+                    }
                     context.startActivity(intent)
                 }
                 is HomeEffect.MoveToReportScreen -> {
