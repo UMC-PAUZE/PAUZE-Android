@@ -48,17 +48,23 @@ fun SetNameAndNickname(
         ModeBasedTextField(
             mode = TextFieldMode.Nickname,
             value = viewModel.nickname,
-            onCheckClick = { /*추후 구현*/},
+            onCheckClick = { viewModel.checkNicknameAvailable() },
+            checkClickValue = viewModel.isNicknameAvailable,
             onValueChanged = { viewModel.nickname = it },
             imeAction = ImeAction.Done
         )
-        Text(
-            "10자 이내로 입력해주세요",
-            style = bodyTextSmRegular,
-            color = if(viewModel.nickname.length > 10)
-                AppTheme.palette.secondary.getColor(4)
-            else AppTheme.palette.gray.getColor(5)
-        )
+        if(viewModel.isNicknameAvailable != null) {
+            Text(
+                if(viewModel.nickname.length > 10) "10자 이내로 입력해주세요"
+                else if(viewModel.isNicknameAvailable == false) "이미 사용된 닉네임입니다"
+                else "사용 가능한 닉네임입니다",
+                style = bodyTextSmRegular,
+                color = if(viewModel.nickname.length > 10
+                    || viewModel.isNicknameAvailable == false)
+                    AppTheme.palette.secondary.getColor(4)
+                else AppTheme.palette.gray.getColor(5)
+            )
+        }
     }
-    return viewModel.name.length > 1 && viewModel.nickname.length < 10
+    return viewModel.name.length > 1 && viewModel.nickname.length < 10 && viewModel.isNicknameAvailable == true
 }

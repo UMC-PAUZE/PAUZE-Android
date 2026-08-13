@@ -15,9 +15,10 @@ import com.example.pauze.data.model.LocalLoginResult
 import com.example.pauze.data.model.LocalSignUpRequest
 import com.example.pauze.data.model.LocalSignUpResult
 import com.example.pauze.data.model.NicknameAvailableResult
-import com.example.pauze.data.model.RefreshRequest
+import com.example.pauze.data.model.RefreshOrLogoutRequest
 import com.example.pauze.data.model.SendCodeForLinkingRequest
 import com.example.pauze.data.model.SendCodeForLinkingResult
+import com.example.pauze.data.model.SendCodeForSignUpRequest
 import com.example.pauze.data.model.SendCodeForSignUpResult
 import com.example.pauze.data.model.Token
 import com.example.pauze.data.model.User
@@ -33,7 +34,7 @@ interface AuthService {
     @GET("auth/email/availability")
     suspend fun isEmailAvailable(@Query("email") email: String): BaseResponse<EmailAvailableResult>
     @POST("auth/email/code")
-    suspend fun sendCodeForSignUp(@Body email: String): BaseResponse<SendCodeForSignUpResult>
+    suspend fun sendCodeForSignUp(@Body result: SendCodeForSignUpRequest): BaseResponse<SendCodeForSignUpResult>
     @POST("auth/link/email-code")
     suspend fun sendCodeForLinking(@Body request: SendCodeForLinkingRequest): BaseResponse<SendCodeForLinkingResult>
     @POST("auth/email/verify")
@@ -55,7 +56,7 @@ interface AuthService {
     @POST("auth/link")
     suspend fun linkAccount(@Body request: LinkAccountRequest): BaseResponse<LinkAccountResult>
     @POST("auth/refresh")
-    suspend fun refreshToken(@Body request: RefreshRequest): BaseResponse<Token>
+    suspend fun refreshToken(@Body request: RefreshOrLogoutRequest): BaseResponse<Token>
     @POST("auth/logout")
-    suspend fun logout(@Body refreshToken: String?): BaseResponse<Unit>
+    suspend fun logout(@Body request: RefreshOrLogoutRequest?): BaseResponse<Unit>
 }

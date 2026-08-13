@@ -20,7 +20,7 @@ interface AuthRepository {
     suspend fun sendCodeForSignUp(email: String): SendCodeForSignUpResult?
     suspend fun sendCodeForLinking(email: String, kakaoAccessToken: String): SendCodeForLinkingResult?
     suspend fun verifyEmail(email: String, code: String): VerifyEmailResult?
-    suspend fun isNicknameAvailable(email: String): NicknameAvailableResult?
+    suspend fun isNicknameAvailable(nickname: String): NicknameAvailableResult?
     suspend fun localSignUp(name: String, nickname: String, birth: String, email: String, password: String, termsAgreement: List<TermsAgreement>): LocalSignUpResult?
     suspend fun login(email: String, password: String): LocalLoginResult?
     suspend fun kakaoSignUp(name: String, nickname: String, birth: String, kakaoAccessToken: String): KakaoSignUpResult?

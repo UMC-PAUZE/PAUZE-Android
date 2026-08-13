@@ -20,7 +20,7 @@ class LinkingViewModel: BaseViewModel<LinkingEffect, Unit>(
     var email by mutableStateOf("")
     var phase by mutableIntStateOf(0)
     var code by mutableStateOf("")
-    var isVerified by mutableStateOf(true)
+    var isVerified by mutableStateOf<Boolean?>(null)
     var time by mutableStateOf("00:00")
     private var countDownTimer: CountDownTimer? = null
 

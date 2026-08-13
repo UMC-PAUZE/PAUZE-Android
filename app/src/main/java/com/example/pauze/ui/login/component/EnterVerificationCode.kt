@@ -42,17 +42,26 @@ fun EnterVerificationCode(
             value = if(isLinking) (viewModel as LinkingViewModel).code else (viewModel as SignUpViewModel).code,
             onValueChanged = { if(isLinking) (viewModel as LinkingViewModel).code = it else (viewModel as SignUpViewModel).code = it },
             imeAction = ImeAction.Done,
-            onCheckClick = { /*(viewModel as SignUpViewModel).verifyEmail()*/},
-            checkClickValue = { if(isLinking) (viewModel as LinkingViewModel).isVerified else (viewModel as SignUpViewModel).isVerified }
+            onCheckClick = { (viewModel as SignUpViewModel).verifyEmail() },
+            checkClickValue = if(isLinking) (viewModel as LinkingViewModel).isVerified else (viewModel as SignUpViewModel).isVerified
         )
-        if(!isFocused && (isLinking && (viewModel as LinkingViewModel).code != "") || (!isLinking && (viewModel as SignUpViewModel).code != "")){
+
+        if(isLinking && (viewModel as LinkingViewModel).code.isEmpty()){
+            viewModel.isVerified = null
+        } else if (!isLinking && (viewModel as SignUpViewModel).code.isEmpty()){
+            viewModel.isVerified = null
+        }
+
+        if(!isFocused
+            && (isLinking && (viewModel as LinkingViewModel).code != "" && viewModel.isVerified != null)
+            || (!isLinking && (viewModel as SignUpViewModel).code != "" && viewModel.isVerified != null)){
             Text(
-                if((isLinking && (viewModel as LinkingViewModel).isVerified)
-                    || (!isLinking && (viewModel as SignUpViewModel).isVerified)) "인증에 성공했습니다"
+                if((isLinking && (viewModel as LinkingViewModel).isVerified == true)
+                    || (!isLinking && (viewModel as SignUpViewModel).isVerified == true)) "인증에 성공했습니다"
                     else "인증에 실패했습니다",
                 style = bodyTextSmRegular,
-                color = if((isLinking && (viewModel as LinkingViewModel).isVerified)
-                    || (!isLinking && (viewModel as SignUpViewModel).isVerified))
+                color = if((isLinking && (viewModel as LinkingViewModel).isVerified == true)
+                    || (!isLinking && (viewModel as SignUpViewModel).isVerified == true))
                     AppTheme.palette.primary.getColor(4)
                     else AppTheme.palette.secondary.getColor(4)
             )
@@ -72,8 +81,14 @@ fun EnterVerificationCode(
                 "코드 재전송",
                 modifier = Modifier
                     .clickable(onClick = {
-                        if(isLinking) (viewModel as LinkingViewModel).sendEffectForTimer()
-                        else (viewModel as SignUpViewModel).sendEffectForTimer()
+                        if(isLinking) {
+                            (viewModel as LinkingViewModel).sendEffectForTimer()
+                            //viewModel.sendCodeForSignUp()
+                        }
+                        else {
+                            (viewModel as SignUpViewModel).sendEffectForTimer()
+                            viewModel.sendCodeForSignUp()
+                        }
                     })
                     .padding(vertical = 8.dp),
                 style = bodyTextMdBold,
@@ -81,5 +96,5 @@ fun EnterVerificationCode(
             )
         }
     }
-    return !isFocused && (isLinking && (viewModel as LinkingViewModel).isVerified) || (!isLinking && (viewModel as SignUpViewModel).isVerified)
+    return !isFocused && (isLinking && (viewModel as LinkingViewModel).isVerified == true) || (!isLinking && (viewModel as SignUpViewModel).isVerified == true)
 }

@@ -70,6 +70,12 @@ fun SignUpScreen(
                 is SignUpEffect.NavigateToCompleted -> {
                     navController.navigate(LoginNavDestination.Completed(viewModel.name))
                 }
+                is SignUpEffect.NavigateToLink -> {
+                    navController.navigate(LoginNavDestination.Link)
+                }
+                is SignUpEffect.ShowLinkDialog -> {
+                    viewModel.showLinkDialog = true
+                }
                 is SignUpEffect.ShowBirthdayPicker -> {
                     viewModel.showBirthdayPicker = true
                 }

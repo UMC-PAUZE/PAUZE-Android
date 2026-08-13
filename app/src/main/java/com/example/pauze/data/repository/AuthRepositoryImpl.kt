@@ -18,12 +18,11 @@ import com.example.pauze.data.model.LocalLoginResult
 import com.example.pauze.data.model.LocalSignUpRequest
 import com.example.pauze.data.model.LocalSignUpResult
 import com.example.pauze.data.model.NicknameAvailableResult
-import com.example.pauze.data.model.RefreshRequest
 import com.example.pauze.data.model.SendCodeForLinkingRequest
 import com.example.pauze.data.model.SendCodeForLinkingResult
+import com.example.pauze.data.model.SendCodeForSignUpRequest
 import com.example.pauze.data.model.SendCodeForSignUpResult
 import com.example.pauze.data.model.TermsAgreement
-import com.example.pauze.data.model.Token
 import com.example.pauze.data.model.VerifyEmailRequest
 import com.example.pauze.data.model.VerifyEmailResult
 import com.example.pauze.data.service.AuthService
@@ -51,7 +50,7 @@ class AuthRepositoryImpl @Inject constructor(
 
     override suspend fun sendCodeForSignUp(email: String): SendCodeForSignUpResult? {
         try {
-            val response = service.sendCodeForSignUp(email)
+            val response = service.sendCodeForSignUp(SendCodeForSignUpRequest(email))
             return response.result
         } catch (e: CancellationException){
             println("작업이 사용자에 의해 취소되었습니다, ${e.message}")
@@ -88,9 +87,9 @@ class AuthRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun isNicknameAvailable(email: String): NicknameAvailableResult? {
+    override suspend fun isNicknameAvailable(nickname: String): NicknameAvailableResult? {
         try {
-            val response = service.isNicknameAvailable(email)
+            val response = service.isNicknameAvailable(nickname)
             return response.result
         } catch (e: CancellationException){
             println("작업이 사용자에 의해 취소되었습니다, ${e.message}")

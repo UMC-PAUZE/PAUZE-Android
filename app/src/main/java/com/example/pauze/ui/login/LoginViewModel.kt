@@ -1,14 +1,8 @@
 package com.example.pauze.ui.login
 
 import android.content.Context
-import android.util.Log
-import android.util.Log.println
-import androidx.compose.runtime.mutableStateOf
 import com.example.pauze.data.model.BaseUiState
-import com.example.pauze.data.model.KakaoLoginRequest
 import com.example.pauze.data.model.KakaoLoginResult
-import com.example.pauze.data.model.LocalLoginResult
-import com.example.pauze.data.model.LoginState
 import com.example.pauze.data.repository.AuthRepository
 import com.example.pauze.ui.BaseViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -27,15 +21,30 @@ sealed interface LoginEffect{
 class LoginViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
     private val repository: AuthRepository
-): BaseViewModel<LoginEffect, LoginState>(
-    uiState = BaseUiState(data = LoginState())
+): BaseViewModel<LoginEffect, Unit>(
+    uiState = BaseUiState(data = Unit)
 ) {
-        fun loginWithKakao(){
+    fun loginWithKakao(){
         launch(
-            onSuccess = { sendEffect(LoginEffect.NavigateToAdditionalScreen) },
+            onSuccess = { result ->
+                if(result == null) return@launch
+                when(result){
+                    is KakaoLoginResult.LoginSuccess -> {
+                        sendEffect(LoginEffect.NavigateToHome)
+                    }
+                    is KakaoLoginResult.SignUp -> {
+                        sendEffect(LoginEffect.NavigateToAdditionalScreen)
+                    }
+                    is KakaoLoginResult.HasLocalAccount -> {
+                        sendEffect(LoginEffect.ShowLinkDialog)
+                    }
+                    else -> {
+                        return@launch
+                    }
+                }
+            }
         ) {
             repository.kakaoLogin(context)
-
         }
     }
 

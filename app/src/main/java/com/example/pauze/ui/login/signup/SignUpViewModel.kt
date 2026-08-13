@@ -10,9 +10,7 @@ import kotlinx.datetime.LocalDate
 import android.os.CountDownTimer
 import androidx.compose.runtime.mutableIntStateOf
 import com.example.pauze.data.model.BaseUiState
-import com.example.pauze.data.model.LocalSignUpRequest
-import com.example.pauze.data.model.LocalSignUpResult
-import com.example.pauze.data.model.SignUpState
+import com.example.pauze.data.model.SendCodeForSignUpResult
 import com.example.pauze.data.model.TermsAgreement
 import com.example.pauze.data.repository.AuthRepository
 import com.example.pauze.ui.login.LoginNavDestination
@@ -24,6 +22,8 @@ sealed interface SignUpEffect {
     object BackStack: SignUpEffect
     data class NavigateToPolicy(val isTermOfUse: Boolean): SignUpEffect
     object NavigateToCompleted: SignUpEffect
+    object NavigateToLink: SignUpEffect
+    object ShowLinkDialog: SignUpEffect
     object ShowBirthdayPicker: SignUpEffect
 }
 
@@ -31,9 +31,35 @@ sealed interface SignUpEffect {
 class SignUpViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val repository: AuthRepository
-): BaseViewModel<SignUpEffect, SignUpState>(
-    uiState = BaseUiState(data = SignUpState())
+): BaseViewModel<SignUpEffect, Unit>(
+    uiState = BaseUiState(data = Unit)
 ){
+    var phase by mutableIntStateOf(0)
+
+    // phase 0
+    var email by mutableStateOf("")
+    var isEmailExists by mutableStateOf<Boolean?>(null)
+    var emailAvailableStatus by mutableStateOf("")
+
+    // phase 1
+    var code by mutableStateOf("")
+    var time by mutableStateOf("00:00")
+    private var countDownTimer: CountDownTimer? = null
+    var isVerified by mutableStateOf<Boolean?>(null)
+    var showLinkDialog by mutableStateOf(false)
+
+    // phase 2
+    var password by mutableStateOf("")
+    var pwdCheck by mutableStateOf("")
+
+    // phase 3
+    var name by mutableStateOf("")
+    var nickname by mutableStateOf("")
+    var isNicknameAvailable by mutableStateOf<Boolean?>(null)
+
+    // phase 4
+    var birthday by mutableStateOf<LocalDate?>(null)
+    var showBirthdayPicker by mutableStateOf(false)
     private val isInitiallyAgreedToTerm = savedStateHandle.toRoute<LoginNavDestination.SignUp>().isAgreedToTerm
     var isAgreedToTerm by mutableStateOf(isInitiallyAgreedToTerm)
         private set
@@ -41,59 +67,113 @@ class SignUpViewModel @Inject constructor(
     var isAgreedToPolicy by mutableStateOf(isInitiallyAgreedToPolicy)
         private set
 
-    var phase by mutableIntStateOf(0)
-    var name by mutableStateOf("")
-    var nickname by mutableStateOf("")
-    var birthday by mutableStateOf<LocalDate?>(null)
-    var email by mutableStateOf("")
-    var password by mutableStateOf("")
-    var pwdCheck by mutableStateOf("")
-    var showBirthdayPicker by mutableStateOf(false)
-    var code by mutableStateOf("")
-    var isVerified by mutableStateOf(true)
-    var time by mutableStateOf("00:00")
-    private var countDownTimer: CountDownTimer? = null
-
-    // todo: 데이터 연결 시 uiState로 처리
-    var isEmailNoExisted by mutableStateOf(true)
-    fun checkEmailAlreadyExistOrNot(): Boolean = isEmailNoExisted
-    fun toggleEmailExist(){
-        isEmailNoExisted = !isEmailNoExisted
+    fun checkEmailAvailable(){
+        launch(
+            onSuccess = { result ->
+                if(result == null){
+                    return@launch
+                }
+                when(result.status){
+                    "AVAILABLE" -> {
+                        isEmailExists = false
+                    }
+                    "LOCAL" -> {
+                        isEmailExists = true
+                    }
+                    "KAKAO" -> {
+                        isEmailExists = true
+                    }
+                }
+                emailAvailableStatus = result.status
+            },
+            onFailure = {
+                return@launch
+            }
+        ) {
+            repository.isEmailAvailable(email)
+        }
     }
+
+    fun sendCodeForSignUp(){
+        launch(
+            onSuccess = { result ->
+                if(result == null) return@launch
+                when(result){
+                    is SendCodeForSignUpResult.KakaoExists -> {
+                        isVerified = true
+                        sendEffect(SignUpEffect.ShowLinkDialog)
+                    }
+                    is SendCodeForSignUpResult.Success -> {
+                        isVerified = true
+                    }
+                    else -> {
+                        return@launch
+                    }
+                }
+            },
+            onFailure = {
+                return@launch
+            }
+        ) {
+            repository.sendCodeForSignUp(email)
+        }
+    }
+
+    fun verifyEmail(){
+        launch(
+            onSuccess = { result ->
+                if(result == null){
+                    isVerified = false
+                    return@launch
+                }
+                isVerified = true
+            },
+            onFailure = {
+                return@launch
+            }
+        ) {
+            repository.verifyEmail(email, code)
+        }
+    }
+
+    fun checkNicknameAvailable(){
+        launch(
+            onSuccess = { result ->
+                if(result == null){
+                    isNicknameAvailable = false
+                    return@launch
+                }
+                isNicknameAvailable = true
+                nickname = result.nickname
+            },
+            onFailure = {
+                return@launch
+            }
+        ) {
+            repository.isNicknameAvailable(nickname)
+        }
+    }
+
     fun signUp(){
         launch(
             onSuccess = {
                 sendEffect(SignUpEffect.NavigateToCompleted)
             }
         ) {
-//            repository.localSignUp(
-//                LocalSignUpRequest(
-//                    name = name,
-//                    nickname = nickname,
-//                    birth = birthday.toString().replace("-", ""),
-//                    email = email,
-//                    password = password,
-//                    termAgreement = listOf<TermsAgreement>(
-//                        TermsAgreement(0, isAgreedToTerm),
-//                        TermsAgreement(1, isAgreedToPolicy)
-//                    )
-//                )
-//            )
+            repository.localSignUp(
+                name = name,
+                nickname = nickname,
+                birth = birthday.toString().replace("-", ""),
+                email = email,
+                password = password,
+                termsAgreement = listOf(
+                    TermsAgreement(2, isAgreedToTerm),
+                    TermsAgreement(3, isAgreedToPolicy)
+                )
+            )
         }
     }
 
-    fun verifyEmail(){
-        launch(
-            onSuccess = {
-                isVerified = true
-            },
-            onFailure = {
-                isVerified = false
-            }
-        ) {
-            repository.verifyEmail(email, code)
-        }
-    }
     fun updateIsAgreedToTerm(isAgreed: Boolean){
         isAgreedToTerm = isAgreed
     }
@@ -130,9 +210,14 @@ class SignUpViewModel @Inject constructor(
     fun backStack(){
         sendEffect(SignUpEffect.BackStack)
     }
-
     fun checkPolicy(isTermOfUse: Boolean){
         sendEffect(SignUpEffect.NavigateToPolicy(isTermOfUse))
+    }
+    fun navigateToLink(){
+        sendEffect(SignUpEffect.NavigateToLink)
+    }
+    fun showLinkDialog(){
+        sendEffect(SignUpEffect.ShowLinkDialog)
     }
     fun showBirthdayPicker(){
         sendEffect(SignUpEffect.ShowBirthdayPicker)

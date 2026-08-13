@@ -11,6 +11,11 @@ data class EmailAvailableResult(
     val email: String
 )
 
+@Serializable
+data class SendCodeForSignUpRequest(
+    val email: String,
+)
+
 @Serializable(with = SendCodeForSignUpResultSerializer::class)
 sealed interface SendCodeForSignUpResult {
     @Serializable
@@ -168,7 +173,7 @@ data class LinkAccountResult(
 )
 
 @Serializable
-data class RefreshRequest(
+data class RefreshOrLogoutRequest(
     val refreshToken: String
 )
 

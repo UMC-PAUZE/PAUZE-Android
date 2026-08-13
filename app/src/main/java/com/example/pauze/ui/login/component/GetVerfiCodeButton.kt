@@ -14,11 +14,17 @@ import com.example.pauze.ui.theme.AppTheme
 @Composable
 fun GetVerifCodeButton(
     viewModel: ViewModel,
-    kakaoSignUp: Boolean
+    isLinking: Boolean
 ){
     Button(
         "인증코드 받기",
-        onClick = { (viewModel as SignUpViewModel).updatePhase() },
+        onClick = {
+            if(isLinking){
+                // todo: 잠시 후 구현
+            }else {
+                (viewModel as SignUpViewModel).sendCodeForSignUp()
+                viewModel.updatePhase()
+            } },
         modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp),
         color = AppTheme.palette.gray.getColor(7),
         contentColor = AppTheme.palette.gray.getColor(2)

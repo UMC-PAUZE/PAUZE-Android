@@ -86,7 +86,7 @@ fun AccountLinkingScreen(
                 onValueChanged = { viewModel.email = it },
                 imeAction = ImeAction.Done,
                 onCheckClick = { viewModel.updatePhase() },
-                checkClickValue = { true },
+                checkClickValue = true,
             )
         } else {
             isVerified = EnterVerificationCode(viewModel, true)

@@ -11,9 +11,11 @@ import android.os.Handler
 import android.os.Looper
 import androidx.compose.runtime.mutableIntStateOf
 import com.example.pauze.data.model.BaseUiState
+import com.example.pauze.data.repository.AuthRepository
 import com.example.pauze.ui.login.LoginNavDestination
 import com.example.pauze.ui.login.signup.SignUpEffect
 import kotlinx.datetime.LocalDate
+import javax.inject.Inject
 
 sealed interface KakaoSignUpEffect {
     object BackStack: KakaoSignUpEffect
@@ -22,11 +24,16 @@ sealed interface KakaoSignUpEffect {
     object ShowBirthdayPicker: KakaoSignUpEffect
 }
 
-class KakaoSignUpViewModel(
-    savedStateHandle: SavedStateHandle
+class KakaoSignUpViewModel @Inject constructor(
+    savedStateHandle: SavedStateHandle,
+    private val repository: AuthRepository
 ): BaseViewModel<KakaoSignUpEffect, Unit>(
     uiState = BaseUiState(data = Unit)
 ){
+    var name by mutableStateOf("")
+    var nickname by mutableStateOf("")
+    var birthday by mutableStateOf<LocalDate?>(null)
+    var showBirthdayPicker by mutableStateOf(false)
     private val isInitiallyAgreedToTerm = savedStateHandle.toRoute<LoginNavDestination.Kakao>().isAgreedToTerm
     var isAgreedToTerm by mutableStateOf(isInitiallyAgreedToTerm)
         private set
@@ -34,11 +41,15 @@ class KakaoSignUpViewModel(
     var isAgreedToPolicy by mutableStateOf(isInitiallyAgreedToPolicy)
         private set
 
-    var name by mutableStateOf("")
-    var nickname by mutableStateOf("")
-    var birthday by mutableStateOf<LocalDate?>(null)
-    var showBirthdayPicker by mutableStateOf(false)
+    fun kakaoSignUp(){
+        launch(
+            onSuccess = {
 
+            }
+        ) {
+            repository.kakaoSignUp(name, nickname, birthday, accessToken)
+        }
+    }
     fun updateIsAgreedToTerm(isAgreed: Boolean){
         isAgreedToTerm = isAgreed
     }
