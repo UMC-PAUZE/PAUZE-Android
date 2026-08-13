@@ -7,7 +7,6 @@ data class UserMeResultDto(
     val profileImageUrl: String?,
     val socialTypes: List<String>,
     val settings: Settings,
-    val pauzeUsageCount: Long? = null,
 )
 
 data class Settings(
