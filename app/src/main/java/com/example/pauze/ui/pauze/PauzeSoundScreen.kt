@@ -34,6 +34,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.pauze.R
 import com.example.pauze.data.dummies.Sounds
 import com.example.pauze.data.model.AudioGuideDto
+import com.example.pauze.data.model.AudioGuidePageDto
 import com.example.pauze.data.model.AudioLikeToggleResultDto
 import com.example.pauze.data.model.SoundCategory
 import com.example.pauze.data.model.SoundItem
@@ -72,7 +73,9 @@ fun PauzeSoundScreen(
         }
     }
 
-    val selectedSound = state.sounds.firstOrNull { it.id == selectedSoundId }
+    val selectedSound = (
+        state.categorySounds.orEmpty() + state.sounds + state.likedSounds
+        ).firstOrNull { it.id == selectedSoundId }
     when {
         selectedSound != null -> {
             PauzeSoundDetailScreen(
@@ -204,6 +207,9 @@ fun PauzeSoundScreen(
                             SoundList(
                                 sounds = state.filteredSounds,
                                 downloadingSoundIds = state.downloadingSoundIds,
+                                hasNextPage = state.hasNextSoundsPage,
+                                isLoadingMore = state.isLoadingMoreSounds,
+                                onLoadMore = viewModel::loadMoreSounds,
                                 onItemClick = { sound ->
                                     viewModel.openDetail(sound.id, SoundDestination.LIST)
                                 },
@@ -220,7 +226,7 @@ fun PauzeSoundScreen(
 }
 
 @Composable
-private fun SoundMessage(
+internal fun SoundMessage(
     message: String,
     modifier: Modifier = Modifier,
     actionText: String? = null,
@@ -253,6 +259,9 @@ private fun SoundMessage(
 fun SoundList(
     sounds: List<SoundItem>,
     downloadingSoundIds: Set<String> = emptySet(),
+    hasNextPage: Boolean = false,
+    isLoadingMore: Boolean = false,
+    onLoadMore: () -> Unit = {},
     onItemClick: (SoundItem) -> Unit,
     onToggleLike: (String) -> Unit,
     onToggleBookmark: (String) -> Unit,
@@ -271,6 +280,30 @@ fun SoundList(
                 isDownloading = sound.id in downloadingSoundIds,
                 onClick = { onItemClick(sound) }
             )
+        }
+
+        if (hasNextPage || isLoadingMore) {
+            item(key = "sound-list-load-more") {
+                LaunchedEffect(hasNextPage, isLoadingMore) {
+                    if (hasNextPage && !isLoadingMore) {
+                        onLoadMore()
+                    }
+                }
+                Box(
+                    modifier = Modifier
+                        .width(312.dp)
+                        .height(56.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    if (isLoadingMore) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(24.dp),
+                            color = AppTheme.palette.primary.getColor(3),
+                            strokeWidth = 2.dp
+                        )
+                    }
+                }
+            }
         }
     }
 }
@@ -291,13 +324,22 @@ private fun PauzeSoundScreenPreview() {
 }
 
 internal object PreviewPauzeSoundRepository : PauzeSoundRepository {
-    override suspend fun getAllSounds(): List<AudioGuideDto> =
-        Sounds.items.map(SoundItem::toAudioGuideDto)
+    override suspend fun getSounds(
+        category: SoundCategory,
+        cursor: String?
+    ): AudioGuidePageDto = AudioGuidePageDto(
+        content = Sounds.items
+            .filter { category == SoundCategory.ALL || it.category == category.displayName }
+            .map(SoundItem::toAudioGuideDto),
+        nextCursor = null,
+        hasNext = false
+    )
 
-    override suspend fun getSoundsByCategory(category: SoundCategory): List<AudioGuideDto> =
-        Sounds.items
-            .filter { it.category == category.displayName }
-            .map(SoundItem::toAudioGuideDto)
+    override suspend fun getLikedSounds(cursor: String?): AudioGuidePageDto = AudioGuidePageDto(
+        content = Sounds.items.filter(SoundItem::isLiked).map(SoundItem::toAudioGuideDto),
+        nextCursor = null,
+        hasNext = false
+    )
 
     override suspend fun toggleLike(soundId: String): AudioLikeToggleResultDto =
         AudioLikeToggleResultDto(
@@ -316,8 +358,9 @@ internal object PreviewPauzeSoundRepository : PauzeSoundRepository {
 private fun SoundItem.toAudioGuideDto(): AudioGuideDto = AudioGuideDto(
     audioId = id.toLongOrNull() ?: 0L,
     audioTitle = title,
-    categoryId = 0.0,
-    categoryName = category,
-    fileUrl = audioUrl,
+    categoryCode = SoundCategory.entries.firstOrNull { it.displayName == category }
+        ?.name
+        ?: category,
+    audioUrl = audioUrl,
     isLiked = isLiked
 )
