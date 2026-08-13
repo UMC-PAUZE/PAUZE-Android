@@ -46,6 +46,7 @@ fun GetTodayConditionResponseDto.isToday(): Boolean =
 const val TODAY_CONDITION_QUESTION_COUNT = 5
 
 data class TodayConditionState(
+    val conditionQuestions: List<ConditionQuestion> = emptyList(),
     val currentQuestionIndex: Int = 0,
     val answers: List<Int?> = List(TODAY_CONDITION_QUESTION_COUNT) { null },
     val conditionId: Long? = null,

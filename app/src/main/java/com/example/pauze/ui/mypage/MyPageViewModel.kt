@@ -6,6 +6,7 @@ import com.example.pauze.data.model.NotificationsUpdate
 import com.example.pauze.data.model.StabilityContentUpdate
 import com.example.pauze.data.model.UpdateSettingsRequest
 import com.example.pauze.data.repository.MyPageRepository
+import com.example.pauze.data.repository.PauzeUsageRepository
 import com.example.pauze.ui.BaseViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -17,7 +18,8 @@ sealed interface MyPageEffect {
 
 @HiltViewModel
 class MyPageViewModel @Inject constructor(
-    private val myPageRepository: MyPageRepository
+    private val myPageRepository: MyPageRepository,
+    private val pauzeUsageRepository: PauzeUsageRepository
 ) : BaseViewModel<MyPageEffect, MyPageState>(
     uiState = BaseUiState(data = MyPageState())
 ) {
@@ -26,7 +28,15 @@ class MyPageViewModel @Inject constructor(
             updateData { it.copy(loadError = e.message ?: "정보를 불러오지 못했습니다") }
         }) {
             val profile = myPageRepository.getMyPage()
-            uiState.value.data.copy(profile = profile, loadError = null)
+            val resolvedUsageCount = profile.pauzeUsageCount
+                ?: runCatching {
+                    pauzeUsageRepository.getStatistics().usageCount
+                }.getOrNull()
+
+            uiState.value.data.copy(
+                profile = profile.copy(pauzeUsageCount = resolvedUsageCount),
+                loadError = null
+            )
         }
         launch(onFailure = { e ->
             updateData { it.copy(loadError = e.message ?: "정보를 불러오지 못했습니다") }

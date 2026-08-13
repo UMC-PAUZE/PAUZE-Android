@@ -24,6 +24,7 @@ import com.example.pauze.ui.theme.AppTheme
 import com.example.pauze.ui.theme.bodyTextLgRegular
 import com.example.pauze.ui.theme.headingLgBold
 import kotlinx.coroutines.delay
+import kotlin.math.ceil
 
 @Composable
 fun PauzeVisualMeditationRunningScreen(
@@ -32,10 +33,14 @@ fun PauzeVisualMeditationRunningScreen(
     onShowStopDialog: () -> Unit,
     onStopClick: () -> Unit,
     onContinueClick: () -> Unit,
+    onUsageThresholdReached: () -> Unit,
     onFinish: () -> Unit,
 ) {
     var remainingSeconds by remember(totalSeconds) {
         mutableStateOf(totalSeconds)
+    }
+    var isUsageRecorded by remember(totalSeconds) {
+        mutableStateOf(false)
     }
 
     LaunchedEffect(totalSeconds, showStopDialog) {
@@ -48,6 +53,17 @@ fun PauzeVisualMeditationRunningScreen(
     LaunchedEffect(remainingSeconds) {
         if (remainingSeconds == 0) {
             onFinish()
+        }
+    }
+
+    val elapsedSeconds = totalSeconds - remainingSeconds
+    val usageThresholdSeconds = ceil(totalSeconds * VISUAL_USAGE_RATIO).toInt()
+        .coerceAtLeast(1)
+
+    LaunchedEffect(elapsedSeconds, usageThresholdSeconds) {
+        if (!isUsageRecorded && elapsedSeconds >= usageThresholdSeconds) {
+            isUsageRecorded = true
+            onUsageThresholdReached()
         }
     }
 
@@ -94,3 +110,5 @@ fun PauzeVisualMeditationRunningScreen(
         }
     }
 }
+
+private const val VISUAL_USAGE_RATIO = 0.4

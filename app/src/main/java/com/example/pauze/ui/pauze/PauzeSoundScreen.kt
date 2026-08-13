@@ -79,6 +79,7 @@ fun PauzeSoundScreen(
                 sound = selectedSound,
                 onToggleLike = viewModel::toggleLike,
                 onToggleBookmark = viewModel::toggleBookmark,
+                onUsageQualified = viewModel::recordCompletedUsage,
                 isDownloading = selectedSound.id in state.downloadingSoundIds,
                 onBackClick = {
                     selectedSoundId = null
@@ -278,7 +279,10 @@ fun SoundList(
 @Composable
 private fun PauzeSoundScreenPreview() {
     val previewViewModel = remember {
-        PauzeSoundViewModel(repository = PreviewPauzeSoundRepository)
+        PauzeSoundViewModel(
+            repository = PreviewPauzeSoundRepository,
+            pauzeUsageRepository = PreviewPauzeUsageRepository
+        )
     }
 
     MainPaletteTheme {
