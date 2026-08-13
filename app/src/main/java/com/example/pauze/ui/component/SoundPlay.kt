@@ -25,6 +25,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -60,15 +61,18 @@ fun SoundPlay(
     modifier: Modifier = Modifier,
     progress: Float = 0.35f,
     currentTime: String = "03:32",
+    isPlaying: Boolean = false,
+    isPlaybackAvailable: Boolean = true,
+    usageSessionId: String = "",
     onUsageQualified: () -> Unit = {},
     onPreviousClick: () -> Unit = {},
     onPlayClick: () -> Unit = {},
     onNextClick: () -> Unit = {}
 ) {
     var selectedTimerIndex by rememberSaveable { mutableIntStateOf(0) }
-    var isPlaying by rememberSaveable { mutableStateOf(false) }
-    var playedSeconds by rememberSaveable { mutableIntStateOf(0) }
-    var isUsageRecorded by rememberSaveable { mutableStateOf(false) }
+    var playedSeconds by rememberSaveable(usageSessionId) { mutableIntStateOf(0) }
+    var isUsageRecorded by rememberSaveable(usageSessionId) { mutableStateOf(false) }
+    val currentOnUsageQualified by rememberUpdatedState(onUsageQualified)
 
     LaunchedEffect(isPlaying, isUsageRecorded) {
         while (isPlaying && !isUsageRecorded) {
@@ -76,7 +80,7 @@ fun SoundPlay(
             playedSeconds++
             if (playedSeconds >= MINIMUM_USAGE_SECONDS) {
                 isUsageRecorded = true
-                onUsageQualified()
+                currentOnUsageQualified()
             }
         }
     }
@@ -201,10 +205,8 @@ fun SoundPlay(
                 Spacer(modifier = Modifier.width(28.dp))
 
                 IconButton(
-                    onClick = {
-                        isPlaying = !isPlaying
-                        onPlayClick()
-                    },
+                    onClick = onPlayClick,
+                    enabled = isPlaybackAvailable,
                     modifier = Modifier.size(64.dp)
                 ) {
                     Icon(
