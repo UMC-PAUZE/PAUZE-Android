@@ -1,12 +1,16 @@
 package com.example.pauze.ui.login
 
 import android.content.Context
+import androidx.datastore.dataStore
+import androidx.lifecycle.viewModelScope
+import com.example.pauze.data.datastore.AuthDataStore
 import com.example.pauze.data.model.BaseUiState
 import com.example.pauze.data.model.KakaoLoginResult
 import com.example.pauze.data.repository.AuthRepository
 import com.example.pauze.ui.BaseViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 sealed interface LoginEffect{
@@ -20,6 +24,7 @@ sealed interface LoginEffect{
 @HiltViewModel
 class LoginViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
+    private val dataStore: AuthDataStore,
     private val repository: AuthRepository
 ): BaseViewModel<LoginEffect, Unit>(
     uiState = BaseUiState(data = Unit)
@@ -30,6 +35,11 @@ class LoginViewModel @Inject constructor(
                 if(result == null) return@launch
                 when(result){
                     is KakaoLoginResult.LoginSuccess -> {
+                        // 토큰 저장
+                        viewModelScope.launch {
+                            dataStore.saveAccessToken(result.accessToken)
+                            dataStore.saveRefreshToken(result.refreshToken)
+                        }
                         sendEffect(LoginEffect.NavigateToHome)
                     }
                     is KakaoLoginResult.SignUp -> {
@@ -50,7 +60,15 @@ class LoginViewModel @Inject constructor(
 
     fun login(email: String, pwd: String){
         launch(
-            onSuccess = { sendEffect(LoginEffect.NavigateToHome) },
+            onSuccess = { result ->
+                if(result == null) return@launch
+                // 토큰 저장
+                viewModelScope.launch {
+                    dataStore.saveAccessToken(result.accessToken)
+                    dataStore.saveRefreshToken(result.refreshToken)
+                }
+                sendEffect(LoginEffect.NavigateToHome)
+            },
             onFailure = { sendEffect(LoginEffect.IsLoginFailed) }
         ) {
             repository.login(email, pwd)
