@@ -7,6 +7,7 @@ data class UserMeResultDto(
     val profileImageUrl: String?,
     val socialTypes: List<String>,
     val settings: Settings,
+    val pauzeUsageCount: Long? = null,
 )
 
 data class Settings(
@@ -42,7 +43,6 @@ data class Stats(
     val totalMeasurements: Int?,
     val consecutiveDays: Int?,
     val averageSensitivity: Double?,
-    val pauzeCount: Long? = null,
 )
 
 //user/me/profile - 수정
