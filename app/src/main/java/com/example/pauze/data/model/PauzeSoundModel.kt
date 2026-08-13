@@ -24,10 +24,16 @@ enum class SoundCategory(val displayName: String) {
 data class AudioGuideDto(
     val audioId: Long,
     val audioTitle: String,
-    val categoryId: Double,
-    val categoryName: String,
-    val fileUrl: String,
+    val categoryCode: SoundCategory,
+    val audioUrl: String,
     val isLiked: Boolean = false
+)
+
+@Serializable
+data class AudioGuidePageDto(
+    val content: List<AudioGuideDto>,
+    val nextCursor: String?,
+    val hasNext: Boolean
 )
 
 @Serializable

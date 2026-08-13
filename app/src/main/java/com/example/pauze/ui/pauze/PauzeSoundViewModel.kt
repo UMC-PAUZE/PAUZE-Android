@@ -41,9 +41,9 @@ class PauzeSoundViewModel @Inject constructor(
 ) : BaseViewModel<PauzeSoundEffect, PauzeSoundState>(
     uiState = BaseUiState(data = PauzeSoundState())
 ) {
-    private var isAllSoundsRequestRunning = false
-    private var categoryRequestVersion = 0
-    private var activeSoundListRequestCount = 0
+    private var soundListRequestVersion = 0
+    private var likedListRequestVersion = 0
+    private var hasLoadedLikedSounds = false
 
     init {
         loadSounds(
@@ -59,14 +59,12 @@ class PauzeSoundViewModel @Inject constructor(
     fun selectCategory(category: SoundCategory) {
         if (uiState.value.data.selectedCategory == category) return
 
-        if (category == SoundCategory.ALL) {
-            categoryRequestVersion++
-        }
-
         updateData {
             it.copy(
                 selectedCategory = category,
-                categorySounds = if (category == SoundCategory.ALL) null else emptyList()
+                categorySounds = if (category == SoundCategory.ALL) null else emptyList(),
+                soundListNextCursor = null,
+                hasNextSoundsPage = false
             )
         }
         loadSounds(category)
@@ -78,15 +76,16 @@ class PauzeSoundViewModel @Inject constructor(
 
     fun selectStashTab(tab: SoundStashTab) {
         updateData { it.copy(selectedStashTab = tab) }
+        if (tab == SoundStashTab.LIKED && !hasLoadedLikedSounds) {
+            loadLikedSounds()
+        }
     }
 
     fun toggleLike(soundId: String) {
         clearError()
         launch<AudioLikeToggleResultDto>(
             onSuccess = { result ->
-                updateSound(soundId) { sound ->
-                    sound.copy(isLiked = result.isLiked)
-                }
+                applyLikeResult(soundId, result.isLiked)
             },
             block = {
                 repository.toggleLike(soundId)
@@ -156,7 +155,40 @@ class PauzeSoundViewModel @Inject constructor(
         loadSounds(uiState.value.data.selectedCategory)
     }
 
+    fun loadMoreSounds() {
+        val currentState = uiState.value.data
+        if (
+            currentState.isSoundListLoading ||
+            currentState.isLoadingMoreSounds ||
+            !currentState.hasNextSoundsPage ||
+            currentState.soundListNextCursor == null
+        ) {
+            return
+        }
+        loadSounds(currentState.selectedCategory, append = true)
+    }
+
+    fun retryLikedSounds() {
+        loadLikedSounds()
+    }
+
+    fun loadMoreLikedSounds() {
+        val currentState = uiState.value.data
+        if (
+            currentState.isLikedListLoading ||
+            currentState.isLoadingMoreLikedSounds ||
+            !currentState.hasNextLikedSoundsPage ||
+            currentState.likedListNextCursor == null
+        ) {
+            return
+        }
+        loadLikedSounds(append = true)
+    }
+
     fun openStash() {
+        if (!hasLoadedLikedSounds) {
+            loadLikedSounds()
+        }
         sendEffect(PauzeSoundEffect.NavigateToStash)
     }
 
@@ -165,6 +197,9 @@ class PauzeSoundViewModel @Inject constructor(
     }
 
     fun navigateTo(destination: SoundDestination) {
+        if (destination == SoundDestination.LIST) {
+            clearError()
+        }
         sendEffect(PauzeSoundEffect.NavigateTo(destination))
     }
 
@@ -178,24 +213,43 @@ class PauzeSoundViewModel @Inject constructor(
 
     private fun loadSounds(
         category: SoundCategory,
-        restoreDownloads: Boolean = false
+        restoreDownloads: Boolean = false,
+        append: Boolean = false
     ) {
-        if (category == SoundCategory.ALL && isAllSoundsRequestRunning) {
+        val state = uiState.value.data
+        if (append && (state.isLoadingMoreSounds || state.soundListNextCursor == null)) {
             return
         }
 
-        val requestVersion = if (category == SoundCategory.ALL) {
-            isAllSoundsRequestRunning = true
-            0
+        val requestVersion = if (append) {
+            soundListRequestVersion
         } else {
-            ++categoryRequestVersion
+            ++soundListRequestVersion
         }
-        beginSoundListRequest()
+        val cursor = if (append) state.soundListNextCursor else null
+
+        updateData { currentState ->
+            if (append) {
+                currentState.copy(isLoadingMoreSounds = true)
+            } else {
+                currentState.copy(
+                    isSoundListLoading = true,
+                    isLoadingMoreSounds = false,
+                    soundListNextCursor = null,
+                    hasNextSoundsPage = false
+                )
+            }
+        }
         clearError()
 
         launch(
+            onFailure = {
+                if (requestVersion == soundListRequestVersion) {
+                    finishSoundListRequest(append)
+                }
+            },
             block = {
-                val result = try {
+                try {
                     if (restoreDownloads) {
                         val downloadedSounds = try {
                             repository.getDownloadedSounds()
@@ -214,64 +268,163 @@ class PauzeSoundViewModel @Inject constructor(
                         }
                     }
 
-                    val remoteSounds = if (category == SoundCategory.ALL) {
-                        repository.getAllSounds()
-                    } else {
-                        repository.getSoundsByCategory(category)
-                    }.map(AudioGuideDto::toSoundItem)
-
+                    val page = repository.getSounds(category, cursor)
+                    val remoteSounds = page.content.map(AudioGuideDto::toSoundItem)
                     val currentState = uiState.value.data
-                    val localSounds = currentState.sounds + currentState.categorySounds.orEmpty()
-                    val mergedSounds = mergeRemoteWithLocal(remoteSounds, localSounds)
 
-                    if (category == SoundCategory.ALL) {
-                        currentState.copy(
-                            sounds = mergedSounds,
-                            categorySounds = if (
-                                currentState.selectedCategory == SoundCategory.ALL
-                            ) {
-                                null
-                            } else {
-                                currentState.categorySounds
-                            }
-                        )
+                    if (
+                        requestVersion != soundListRequestVersion ||
+                        currentState.selectedCategory != category
+                    ) {
+                        currentState
                     } else {
-                        val isCurrentCategory =
-                            requestVersion == categoryRequestVersion &&
-                                currentState.selectedCategory == category
-                        currentState.copy(
-                            sounds = mergeIntoAll(currentState.sounds, mergedSounds),
-                            categorySounds = if (isCurrentCategory) {
-                                mergedSounds
+                        val localSounds = currentState.sounds +
+                            currentState.categorySounds.orEmpty() +
+                            currentState.likedSounds
+
+                        if (category == SoundCategory.ALL) {
+                            val combinedSounds = if (append) {
+                                mergeIntoAll(currentState.sounds, remoteSounds)
                             } else {
-                                currentState.categorySounds
+                                remoteSounds
                             }
-                        )
+                            currentState.copy(
+                                sounds = mergeRemoteWithLocal(combinedSounds, localSounds),
+                                categorySounds = null,
+                                isSoundListLoading = false,
+                                isLoadingMoreSounds = false,
+                                soundListNextCursor = page.nextCursor,
+                                hasNextSoundsPage = page.hasNext
+                            )
+                        } else {
+                            val combinedSounds = if (append) {
+                                mergeIntoAll(currentState.categorySounds.orEmpty(), remoteSounds)
+                            } else {
+                                remoteSounds
+                            }
+                            val matchingLocalSounds = localSounds.filter {
+                                it.category == category.displayName
+                            }
+                            val mergedSounds = mergeRemoteWithLocal(
+                                remoteSounds = combinedSounds,
+                                localSounds = matchingLocalSounds
+                            )
+                            currentState.copy(
+                                sounds = mergeIntoAll(currentState.sounds, mergedSounds),
+                                categorySounds = mergedSounds,
+                                isSoundListLoading = false,
+                                isLoadingMoreSounds = false,
+                                soundListNextCursor = page.nextCursor,
+                                hasNextSoundsPage = page.hasNext
+                            )
+                        }
                     }
                 } finally {
-                    if (category == SoundCategory.ALL) {
-                        isAllSoundsRequestRunning = false
+                    if (requestVersion == soundListRequestVersion) {
+                        finishSoundListRequest(append)
                     }
-                    finishSoundListRequest()
                 }
-                result.copy(isSoundListLoading = activeSoundListRequestCount > 0)
             }
         )
     }
 
-    private fun beginSoundListRequest() {
-        activeSoundListRequestCount++
+    private fun finishSoundListRequest(append: Boolean) {
         updateData { currentState ->
-            currentState.copy(isSoundListLoading = true)
+            if (append) {
+                currentState.copy(isLoadingMoreSounds = false)
+            } else {
+                currentState.copy(isSoundListLoading = false)
+            }
         }
     }
 
-    private fun finishSoundListRequest() {
-        activeSoundListRequestCount = (activeSoundListRequestCount - 1).coerceAtLeast(0)
+    private fun loadLikedSounds(append: Boolean = false) {
+        val state = uiState.value.data
+        if (append && (state.isLoadingMoreLikedSounds || state.likedListNextCursor == null)) {
+            return
+        }
+
+        val requestVersion = if (append) {
+            likedListRequestVersion
+        } else {
+            ++likedListRequestVersion
+        }
+        val cursor = if (append) state.likedListNextCursor else null
+
         updateData { currentState ->
-            currentState.copy(
-                isSoundListLoading = activeSoundListRequestCount > 0
-            )
+            if (append) {
+                currentState.copy(isLoadingMoreLikedSounds = true, likedListError = null)
+            } else {
+                currentState.copy(
+                    isLikedListLoading = true,
+                    isLoadingMoreLikedSounds = false,
+                    likedListNextCursor = null,
+                    hasNextLikedSoundsPage = false,
+                    likedListError = null
+                )
+            }
+        }
+        clearError()
+
+        launch(
+            onFailure = { error ->
+                if (requestVersion == likedListRequestVersion) {
+                    finishLikedListRequest(append, error.toPauzeSoundErrorMessage())
+                }
+            },
+            block = {
+                try {
+                    val page = repository.getLikedSounds(cursor)
+                    val remoteSounds = page.content.map(AudioGuideDto::toSoundItem)
+                    val currentState = uiState.value.data
+
+                    if (requestVersion != likedListRequestVersion) {
+                        currentState
+                    } else {
+                        val combinedSounds = if (append) {
+                            mergeIntoAll(currentState.likedSounds, remoteSounds)
+                        } else {
+                            remoteSounds
+                        }
+                        val mergedSounds = mergeRemoteWithLocal(
+                            remoteSounds = combinedSounds,
+                            localSounds = currentState.sounds + currentState.likedSounds,
+                            includeDownloadedLocalOnly = false
+                        )
+                        hasLoadedLikedSounds = true
+
+                        currentState.copy(
+                            sounds = mergeIntoAll(currentState.sounds, mergedSounds),
+                            likedSounds = mergedSounds,
+                            isLikedListLoading = false,
+                            isLoadingMoreLikedSounds = false,
+                            likedListNextCursor = page.nextCursor,
+                            hasNextLikedSoundsPage = page.hasNext,
+                            likedListError = null
+                        )
+                    }
+                } finally {
+                    if (requestVersion == likedListRequestVersion) {
+                        finishLikedListRequest(append)
+                    }
+                }
+            }
+        )
+    }
+
+    private fun finishLikedListRequest(append: Boolean, errorMessage: String? = null) {
+        updateData { currentState ->
+            if (append) {
+                currentState.copy(
+                    isLoadingMoreLikedSounds = false,
+                    likedListError = errorMessage ?: currentState.likedListError
+                )
+            } else {
+                currentState.copy(
+                    isLikedListLoading = false,
+                    likedListError = errorMessage ?: currentState.likedListError
+                )
+            }
         }
     }
 
@@ -283,6 +436,31 @@ class PauzeSoundViewModel @Inject constructor(
         }
     }
 
+    private fun applyLikeResult(soundId: String, isLiked: Boolean) {
+        updateData { currentState ->
+            val source = (
+                currentState.categorySounds.orEmpty() +
+                    currentState.sounds +
+                    currentState.likedSounds
+                ).firstOrNull { it.id == soundId }
+            val likedSound = source?.copy(isLiked = isLiked)
+
+            currentState.copy(
+                sounds = currentState.sounds.map { sound ->
+                    if (sound.id == soundId) sound.copy(isLiked = isLiked) else sound
+                },
+                categorySounds = currentState.categorySounds?.map { sound ->
+                    if (sound.id == soundId) sound.copy(isLiked = isLiked) else sound
+                },
+                likedSounds = if (isLiked && likedSound != null) {
+                    mergeIntoAll(currentState.likedSounds, listOf(likedSound))
+                } else {
+                    currentState.likedSounds.filterNot { it.id == soundId }
+                }
+            )
+        }
+    }
+
     private fun updateSound(soundId: String, transform: (SoundItem) -> SoundItem) {
         updateData { currentState ->
             currentState.copy(
@@ -291,19 +469,26 @@ class PauzeSoundViewModel @Inject constructor(
                 },
                 categorySounds = currentState.categorySounds?.map { sound ->
                     if (sound.id == soundId) transform(sound) else sound
+                },
+                likedSounds = currentState.likedSounds.map { sound ->
+                    if (sound.id == soundId) transform(sound) else sound
                 }
             )
         }
     }
 
     private fun findSound(soundId: String): SoundItem? =
-        (uiState.value.data.categorySounds.orEmpty() + uiState.value.data.sounds)
-            .firstOrNull { it.id == soundId }
+        (
+            uiState.value.data.categorySounds.orEmpty() +
+                uiState.value.data.sounds +
+                uiState.value.data.likedSounds
+            ).firstOrNull { it.id == soundId }
 }
 
 internal fun mergeRemoteWithLocal(
     remoteSounds: List<SoundItem>,
-    localSounds: List<SoundItem>
+    localSounds: List<SoundItem>,
+    includeDownloadedLocalOnly: Boolean = true
 ): List<SoundItem> {
     val localById = localSounds.associateBy(SoundItem::id)
     val remoteIds = remoteSounds.mapTo(mutableSetOf(), SoundItem::id)
@@ -311,15 +496,18 @@ internal fun mergeRemoteWithLocal(
     val mergedRemoteSounds = remoteSounds.map { remote ->
         val local = localById[remote.id]
         remote.copy(
-            isLiked = local?.isLiked ?: remote.isLiked,
             isBookmarked = local?.isBookmarked ?: remote.isBookmarked,
             audioUrl = remote.audioUrl.ifBlank { local?.audioUrl.orEmpty() },
             localFilePath = local?.localFilePath
         )
     }
 
-    val downloadedLocalOnlySounds = localById.values.filter { local ->
-        local.id !in remoteIds && local.localFilePath != null
+    val downloadedLocalOnlySounds = if (includeDownloadedLocalOnly) {
+        localById.values.filter { local ->
+            local.id !in remoteIds && local.localFilePath != null
+        }
+    } else {
+        emptyList()
     }
 
     return mergedRemoteSounds + downloadedLocalOnlySounds
@@ -349,7 +537,7 @@ private fun mergeDownloadedIntoAll(
 private fun AudioGuideDto.toSoundItem(): SoundItem = SoundItem(
     id = audioId.toString(),
     title = audioTitle,
-    category = categoryName,
+    category = categoryCode.displayName,
     isLiked = isLiked,
     isBookmarked = false,
     imageResId = if (audioTitle.contains("비", ignoreCase = true)) {
@@ -357,7 +545,7 @@ private fun AudioGuideDto.toSoundItem(): SoundItem = SoundItem(
     } else {
         R.drawable.ic_empty_image
     },
-    audioUrl = fileUrl,
+    audioUrl = audioUrl,
     localFilePath = null
 )
 
