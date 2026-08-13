@@ -534,20 +534,27 @@ private fun mergeDownloadedIntoAll(
     return merged + downloadedSounds.filterNot { it.id in currentIds }
 }
 
-private fun AudioGuideDto.toSoundItem(): SoundItem = SoundItem(
-    id = audioId.toString(),
-    title = audioTitle,
-    category = categoryCode.displayName,
-    isLiked = isLiked,
-    isBookmarked = false,
-    imageResId = if (audioTitle.contains("비", ignoreCase = true)) {
-        R.drawable.ic_rain
-    } else {
-        R.drawable.ic_empty_image
-    },
-    audioUrl = audioUrl,
-    localFilePath = null
-)
+private fun AudioGuideDto.toSoundItem(): SoundItem {
+    val categoryName = SoundCategory.fromCode(categoryCode)?.displayName
+        ?: categoryCode.ifBlank { UNKNOWN_CATEGORY_NAME }
+
+    return SoundItem(
+        id = audioId.toString(),
+        title = audioTitle,
+        category = categoryName,
+        isLiked = isLiked,
+        isBookmarked = false,
+        imageResId = if (audioTitle.contains("비", ignoreCase = true)) {
+            R.drawable.ic_rain
+        } else {
+            R.drawable.ic_empty_image
+        },
+        audioUrl = audioUrl,
+        localFilePath = null
+    )
+}
+
+private const val UNKNOWN_CATEGORY_NAME = "기타"
 
 private fun mergeIntoAll(
     currentSounds: List<SoundItem>,

@@ -359,7 +359,8 @@ private fun SoundItem.toAudioGuideDto(): AudioGuideDto = AudioGuideDto(
     audioId = id.toLongOrNull() ?: 0L,
     audioTitle = title,
     categoryCode = SoundCategory.entries.firstOrNull { it.displayName == category }
-        ?: SoundCategory.NATURE_SOUND,
+        ?.name
+        ?: category,
     audioUrl = audioUrl,
     isLiked = isLiked
 )

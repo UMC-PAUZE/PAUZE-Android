@@ -17,14 +17,20 @@ enum class SoundCategory(val displayName: String) {
     ALL("전체"),
     NATURE_SOUND("자연소리"),
     ASMR("ASMR"),
-    NOISE("노이즈")
+    NOISE("노이즈");
+
+    companion object {
+        fun fromCode(code: String): SoundCategory? = entries.firstOrNull { category ->
+            category != ALL && category.name.equals(code.trim(), ignoreCase = true)
+        }
+    }
 }
 
 @Serializable
 data class AudioGuideDto(
     val audioId: Long,
     val audioTitle: String,
-    val categoryCode: SoundCategory,
+    val categoryCode: String,
     val audioUrl: String,
     val isLiked: Boolean = false
 )
