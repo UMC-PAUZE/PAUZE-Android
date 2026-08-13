@@ -11,8 +11,7 @@ import com.example.pauze.data.model.LocalSignUpResult
 import com.example.pauze.data.model.NicknameAvailableResult
 import com.example.pauze.data.model.SendCodeForLinkingResult
 import com.example.pauze.data.model.SendCodeForSignUpResult
-import com.example.pauze.data.model.TermsAgreement
-import com.example.pauze.data.model.Token
+import com.example.pauze.data.model.TermAgreement
 import com.example.pauze.data.model.VerifyEmailResult
 
 interface AuthRepository {
@@ -21,9 +20,9 @@ interface AuthRepository {
     suspend fun sendCodeForLinking(email: String, kakaoAccessToken: String): SendCodeForLinkingResult?
     suspend fun verifyEmail(email: String, code: String): VerifyEmailResult?
     suspend fun isNicknameAvailable(nickname: String): NicknameAvailableResult?
-    suspend fun localSignUp(name: String, nickname: String, birth: String, email: String, password: String, termsAgreement: List<TermsAgreement>): LocalSignUpResult?
+    suspend fun localSignUp(name: String, nickname: String, birth: String, email: String, password: String, termAgreements: List<TermAgreement>): LocalSignUpResult?
     suspend fun login(email: String, password: String): LocalLoginResult?
-    suspend fun kakaoSignUp(name: String, nickname: String, birth: String, kakaoAccessToken: String): KakaoSignUpResult?
+    suspend fun kakaoSignUp(name: String, nickname: String, birth: String, kakaoAccessToken: String, termAgreements: List<TermAgreement>): KakaoSignUpResult?
     suspend fun kakaoLogin(context: Context): KakaoLoginResult?
     suspend fun confirmKakaoAccount(context: Context, email: String): ConfirmKakaoResult?
     suspend fun linkAccount(context: Context, direction: String, email: String?): LinkAccountResult?

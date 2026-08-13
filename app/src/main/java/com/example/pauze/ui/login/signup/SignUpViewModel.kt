@@ -11,7 +11,7 @@ import android.os.CountDownTimer
 import androidx.compose.runtime.mutableIntStateOf
 import com.example.pauze.data.model.BaseUiState
 import com.example.pauze.data.model.SendCodeForSignUpResult
-import com.example.pauze.data.model.TermsAgreement
+import com.example.pauze.data.model.TermAgreement
 import com.example.pauze.data.repository.AuthRepository
 import com.example.pauze.ui.login.LoginNavDestination
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -166,9 +166,9 @@ class SignUpViewModel @Inject constructor(
                 birth = birthday.toString().replace("-", ""),
                 email = email,
                 password = password,
-                termsAgreement = listOf(
-                    TermsAgreement(2, isAgreedToTerm),
-                    TermsAgreement(3, isAgreedToPolicy)
+                termAgreements = listOf(
+                    TermAgreement(2, isAgreedToTerm),
+                    TermAgreement(3, isAgreedToPolicy)
                 )
             )
         }

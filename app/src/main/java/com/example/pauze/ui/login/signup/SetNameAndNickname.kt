@@ -53,18 +53,20 @@ fun SetNameAndNickname(
             onValueChanged = { viewModel.nickname = it },
             imeAction = ImeAction.Done
         )
-        if(viewModel.isNicknameAvailable != null) {
-            Text(
-                if(viewModel.nickname.length > 10) "10자 이내로 입력해주세요"
-                else if(viewModel.isNicknameAvailable == false) "이미 사용된 닉네임입니다"
-                else "사용 가능한 닉네임입니다",
-                style = bodyTextSmRegular,
-                color = if(viewModel.nickname.length > 10
-                    || viewModel.isNicknameAvailable == false)
-                    AppTheme.palette.secondary.getColor(4)
-                else AppTheme.palette.gray.getColor(5)
-            )
-        }
+        Text(
+            when (viewModel.isNicknameAvailable) {
+                true -> "사용 가능한 닉네임입니다"
+                false -> "이미 사용된 닉네임입니다"
+                else -> "10자 이내로 입력해주세요"
+            },
+            style = bodyTextSmRegular,
+            color = if(viewModel.nickname.length > 10
+                || viewModel.isNicknameAvailable == false)
+                AppTheme.palette.secondary.getColor(4)
+            else if(viewModel.isNicknameAvailable == true)
+                AppTheme.palette.primary.getColor(4)
+            else AppTheme.palette.gray.getColor(5)
+        )
     }
     return viewModel.name.length > 1 && viewModel.nickname.length < 10 && viewModel.isNicknameAvailable == true
 }

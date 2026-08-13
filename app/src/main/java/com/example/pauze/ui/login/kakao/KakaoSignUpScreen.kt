@@ -21,6 +21,7 @@ import androidx.compose.ui.focus.FocusManager
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -44,7 +45,7 @@ import kotlinx.datetime.format.char
 @Composable
 fun KakaoSignUpScreen(
     navController: NavController,
-    viewModel: KakaoSignUpViewModel = viewModel()
+    viewModel: KakaoSignUpViewModel = hiltViewModel()
 ){
     val focusManager = LocalFocusManager.current
     val currentBackStackEntry by navController.currentBackStackEntryAsState()
@@ -112,7 +113,7 @@ fun KakaoSignUpScreen(
             Button(
                 "가입 완료하기",
                 modifier = Modifier.fillMaxWidth(),
-                onClick = { viewModel.signUp() },
+                onClick = { viewModel.kakaoSignUp() },
                 enabled = isCompleted && viewModel.isAgreedToTerm && viewModel.isAgreedToPolicy,
             )
             Spacer(modifier = Modifier.height(40.dp))
@@ -152,15 +153,22 @@ fun AdditionalInfoContent(
         ModeBasedTextField(
             mode = TextFieldMode.Nickname,
             value = viewModel.nickname,
-            onCheckClick = { /*추후 구현*/},
+            onCheckClick = { viewModel.checkNicknameAvailable() },
             onValueChanged = { viewModel.nickname = it },
             imeAction = ImeAction.Done
         )
         Text(
-            "10자 이내로 입력해주세요",
+            when (viewModel.isNicknameAvailable) {
+                true -> "사용 가능한 닉네임입니다"
+                false -> "이미 사용된 닉네임입니다"
+                else -> "10자 이내로 입력해주세요"
+            },
             style = bodyTextSmRegular,
-            color = if(viewModel.nickname.length > 10)
+            color = if(viewModel.nickname.length > 10
+                || viewModel.isNicknameAvailable == false)
                 AppTheme.palette.secondary.getColor(4)
+            else if(viewModel.isNicknameAvailable == true)
+                AppTheme.palette.primary.getColor(4)
             else AppTheme.palette.gray.getColor(5)
         )
         Spacer(modifier = Modifier.height(12.dp))
@@ -180,5 +188,5 @@ fun AdditionalInfoContent(
             )
         }
     }
-    return viewModel.name.length > 1 && viewModel.nickname.length < 10 && viewModel.birthday != null
+    return viewModel.name.length > 1 && viewModel.nickname.length < 10 && viewModel.isNicknameAvailable == true && viewModel.birthday != null
 }

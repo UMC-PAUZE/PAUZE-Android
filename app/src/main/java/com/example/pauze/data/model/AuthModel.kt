@@ -74,12 +74,7 @@ data class LocalSignUpRequest (
     val birth: String,
     val email: String,
     val password: String,
-    val termAgreement: List<TermsAgreement>
-)
-@Serializable
-data class TermsAgreement(
-    val termId: Int,
-    val agreed: Boolean
+    val termAgreements: List<TermAgreement>
 )
 @Serializable
 data class LocalSignUpResult(
@@ -105,7 +100,8 @@ data class KakaoSignUpRequest(
     val name: String,
     val nickname: String,
     val birth: String,
-    val kakaoAccessToken: String
+    val kakaoAccessToken: String,
+    val termAgreements: List<TermAgreement>
 )
 @Serializable
 data class KakaoSignUpResult(
@@ -177,6 +173,11 @@ data class RefreshOrLogoutRequest(
     val refreshToken: String
 )
 
+@Serializable
+data class TermAgreement(
+    val termId: Int,
+    val agreed: Boolean
+)
 @Serializable
 data class Token (
     val accessToken: String,

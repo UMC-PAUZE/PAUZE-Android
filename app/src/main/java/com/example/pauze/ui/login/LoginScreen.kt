@@ -220,8 +220,7 @@ fun LoginScreen(
                     color = Color(0xFFFEE500),
                     shape = RoundedCornerShape(size = 100.dp))
                 .clickable{
-                    //viewModel.loginWithKakao()
-                    viewModel.showLinkDialog()
+                    viewModel.loginWithKakao()
                 }
                 .padding(horizontal = 28.dp, vertical = 18.dp),
             contentAlignment = Alignment.Center

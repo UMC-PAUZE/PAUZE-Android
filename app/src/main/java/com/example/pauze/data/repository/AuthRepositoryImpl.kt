@@ -1,8 +1,6 @@
 package com.example.pauze.data.repository
 
 import android.content.Context
-import android.os.Build
-import androidx.annotation.RequiresApi
 import com.example.pauze.data.datastore.AuthDataStore
 import com.example.pauze.data.model.ConfirmKakaoRequest
 import com.example.pauze.data.model.ConfirmKakaoResult
@@ -22,7 +20,7 @@ import com.example.pauze.data.model.SendCodeForLinkingRequest
 import com.example.pauze.data.model.SendCodeForLinkingResult
 import com.example.pauze.data.model.SendCodeForSignUpRequest
 import com.example.pauze.data.model.SendCodeForSignUpResult
-import com.example.pauze.data.model.TermsAgreement
+import com.example.pauze.data.model.TermAgreement
 import com.example.pauze.data.model.VerifyEmailRequest
 import com.example.pauze.data.model.VerifyEmailResult
 import com.example.pauze.data.service.AuthService
@@ -106,12 +104,12 @@ class AuthRepositoryImpl @Inject constructor(
         birth: String,
         email: String,
         password: String,
-        termsAgreement: List<TermsAgreement>
+        termAgreements: List<TermAgreement>
     ): LocalSignUpResult? {
         try {
             val response = service.localSignUp(
                 LocalSignUpRequest(
-                    name, nickname, birth, email, password, termsAgreement
+                    name, nickname, birth, email, password, termAgreements
                 )
             )
             return response.result
@@ -144,11 +142,18 @@ class AuthRepositoryImpl @Inject constructor(
         name: String,
         nickname: String,
         birth: String,
-        kakaoAccessToken: String
+        kakaoAccessToken: String,
+        termAgreements: List<TermAgreement>
     ): KakaoSignUpResult? {
         try {
             val response = service.kakaoSignUp(
-                KakaoSignUpRequest(name, nickname, birth, kakaoAccessToken)
+                KakaoSignUpRequest(
+                    name = name,
+                    nickname= nickname,
+                    birth = birth,
+                    kakaoAccessToken = kakaoAccessToken,
+                    termAgreements = termAgreements
+                )
             )
             return response.result
         } catch (e: CancellationException){
@@ -160,12 +165,12 @@ class AuthRepositoryImpl @Inject constructor(
         }
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
     override suspend fun kakaoLogin(context: Context): KakaoLoginResult? {
-        val accessToken = dataStore.getKakaoAccessToken(context).firstOrNull() ?: return null
+        val kakaoAccessToken = dataStore.kakaoLoginAndGetToken(context).firstOrNull() ?: return null
+        dataStore.saveKakaoAccessToken(kakaoAccessToken)
 
         return try {
-            val response = service.kakaoLogin(KakaoLoginRequest(accessToken))
+            val response = service.kakaoLogin(KakaoLoginRequest(kakaoAccessToken))
             response.result
         } catch (e: CancellationException){
             println("작업이 사용자에 의해 취소되었습니다, ${e.message}")
@@ -176,15 +181,15 @@ class AuthRepositoryImpl @Inject constructor(
         }
 
     }
-    @RequiresApi(Build.VERSION_CODES.O)
+
     override suspend fun confirmKakaoAccount(
         context: Context,
         email: String
     ): ConfirmKakaoResult? {
-        val accessToken = dataStore.getKakaoAccessToken(context).firstOrNull() ?: return null
+        val kakaoAccessToken = dataStore.kakaoLoginAndGetToken(context).firstOrNull() ?: return null
 
         return try {
-            val response = service.confirmKakaoAccount(ConfirmKakaoRequest(email, accessToken))
+            val response = service.confirmKakaoAccount(ConfirmKakaoRequest(email, kakaoAccessToken))
             response.result
         } catch (e: CancellationException){
             println("작업이 사용자에 의해 취소되었습니다, ${e.message}")
@@ -195,16 +200,16 @@ class AuthRepositoryImpl @Inject constructor(
         }
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
+
     override suspend fun linkAccount(
         context: Context,
         direction: String,
         email: String?
     ): LinkAccountResult? {
-        val accessToken = dataStore.getKakaoAccessToken(context).firstOrNull() ?: return null
+        val kakaoAccessToken = dataStore.kakaoLoginAndGetToken(context).firstOrNull() ?: return null
 
         return try {
-            val response = service.linkAccount(LinkAccountRequest(direction, accessToken, email))
+            val response = service.linkAccount(LinkAccountRequest(direction, kakaoAccessToken, email))
             response.result
         } catch (e: CancellationException){
             println("작업이 사용자에 의해 취소되었습니다, ${e.message}")
