@@ -57,7 +57,7 @@ fun ReportScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     LifecycleResumeEffect(isGuest) {
-        if (!isGuest) viewModel.fetchTodayCondition()
+        if (!isGuest) viewModel.refresh()
         onPauseOrDispose { }
     }
 
