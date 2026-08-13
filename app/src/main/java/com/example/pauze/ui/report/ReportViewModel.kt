@@ -37,7 +37,7 @@ class ReportViewModel @Inject constructor(
     var selectedPeriod by mutableStateOf(ReportPeriod.WEEKLY)
         private set
 
-    init {
+    fun refresh() {
         fetchWeekly()
         fetchMonthly()
         fetchTodayCondition()
