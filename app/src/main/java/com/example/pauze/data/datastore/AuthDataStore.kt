@@ -53,7 +53,14 @@ class AuthDataStore @Inject constructor(
         }
     }
 
-
+    // 토큰 삭제
+    suspend fun clearToken(){
+        dataStore.edit { preferences ->
+            preferences.remove(KAKAO_ACCESS_TOKEN)
+            preferences.remove(ACCESS_TOKEN)
+            preferences.remove(REFRESH_TOKEN)
+        }
+    }
     // 카카오 로그인
     fun kakaoLoginAndGetToken(context: Context) = callbackFlow{
         val callback: (OAuthToken?, Throwable?) -> Unit = { token, error ->

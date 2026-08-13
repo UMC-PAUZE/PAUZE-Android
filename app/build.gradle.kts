@@ -8,6 +8,21 @@ plugins {
     id("kotlin-kapt")
     id("org.jetbrains.kotlin.plugin.serialization") version "2.4.10"
 }
+val localProperties = Properties()
+val localPropertiesFile = project.rootProject.file("local.properties")
+if (localPropertiesFile.isFile) {
+    localPropertiesFile.inputStream().use(localProperties::load)
+}
+
+val kakaoKey = listOfNotNull(
+    providers.gradleProperty("KAKAO_KEY").orNull,
+    providers.environmentVariable("KAKAO_KEY").orNull,
+    localProperties.getProperty("KAKAO_KEY")
+).firstOrNull { it.isNotBlank() }?.trim()
+    ?: error(
+        "KAKAO_KEY is required. Set -PKAKAO_KEY=..., the KAKAO_KEY " +
+                "environment variable, or KAKAO_KEY in local.properties."
+    )
 
 android {
     namespace = "com.example.pauze"
@@ -22,10 +37,8 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-        val properties = Properties()
-        properties.load(project.rootProject.file("local.properties").inputStream())
-        buildConfigField("String", "KAKAO_KEY","\"${properties.getProperty("KAKAO_KEY")}\"" )
-        manifestPlaceholders["KAKAO_KEY"] = "${properties.getProperty("KAKAO_KEY")}"
+        buildConfigField("String", "KAKAO_KEY", "\"$kakaoKey\"")
+        manifestPlaceholders["KAKAO_KEY"] = kakaoKey
     }
 
     buildTypes {

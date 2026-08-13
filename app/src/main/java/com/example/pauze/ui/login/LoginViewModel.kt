@@ -7,6 +7,7 @@ import com.example.pauze.data.datastore.AuthDataStore
 import com.example.pauze.data.model.BaseUiState
 import com.example.pauze.data.model.KakaoLoginResult
 import com.example.pauze.data.repository.AuthRepository
+import com.example.pauze.data.repository.TokenRepository
 import com.example.pauze.ui.BaseViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -39,6 +40,7 @@ class LoginViewModel @Inject constructor(
                         viewModelScope.launch {
                             dataStore.saveAccessToken(result.accessToken)
                             dataStore.saveRefreshToken(result.refreshToken)
+                            TokenRepository.updateAccessToken(result.accessToken)
                         }
                         sendEffect(LoginEffect.NavigateToHome)
                     }
@@ -66,6 +68,7 @@ class LoginViewModel @Inject constructor(
                 viewModelScope.launch {
                     dataStore.saveAccessToken(result.accessToken)
                     dataStore.saveRefreshToken(result.refreshToken)
+                    TokenRepository.updateAccessToken(result.accessToken)
                 }
                 sendEffect(LoginEffect.NavigateToHome)
             },
