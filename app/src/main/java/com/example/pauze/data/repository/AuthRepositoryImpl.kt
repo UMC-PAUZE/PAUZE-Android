@@ -234,15 +234,12 @@ class AuthRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun logout(token: String?): Unit? {
+    override suspend fun logout(): Boolean {
         return try {
-            if(token == null) {
-                val response = service.logout(null)
-                response.result
-            } else {
-                val response = service.logout(RefreshOrLogoutRequest(token))
-                response.result
-            }
+            val token = dataStore.getRefreshToken()
+            if(token == null) return false
+            val response = service.logout(RefreshOrLogoutRequest(token))
+            response.isSuccess
         } catch (e: CancellationException){
             println("작업이 사용자에 의해 취소되었습니다, ${e.message}")
             throw e

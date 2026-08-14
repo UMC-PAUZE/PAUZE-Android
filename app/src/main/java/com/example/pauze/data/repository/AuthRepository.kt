@@ -28,6 +28,5 @@ interface AuthRepository {
     suspend fun getUser(): User?
     suspend fun confirmKakaoAccount(context: Context, email: String): ConfirmKakaoResult?
     suspend fun linkAccount(context: Context, direction: String, email: String?): LinkAccountResult?
-    suspend fun logout(token: String?): Unit?
-
+    suspend fun logout(): Boolean
 }

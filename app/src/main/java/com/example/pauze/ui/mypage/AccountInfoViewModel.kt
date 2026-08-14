@@ -1,10 +1,16 @@
 package com.example.pauze.ui.mypage
 
+import androidx.datastore.dataStore
+import androidx.lifecycle.viewModelScope
+import com.example.pauze.data.datastore.AuthDataStore
 import com.example.pauze.data.model.AccountInfoState
 import com.example.pauze.data.model.BaseUiState
+import com.example.pauze.data.repository.AuthRepository
 import com.example.pauze.data.repository.MyPageRepository
+import com.example.pauze.data.repository.TokenRepository
 import com.example.pauze.ui.BaseViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 sealed interface AccountInfoEffect {
@@ -16,6 +22,8 @@ sealed interface AccountInfoEffect {
 
 @HiltViewModel
 class AccountInfoViewModel @Inject constructor(
+    private val authDataStore: AuthDataStore,
+    private val authRepository: AuthRepository,
     private val myPageRepository: MyPageRepository
 ) : BaseViewModel<AccountInfoEffect, AccountInfoState>(
     uiState = BaseUiState(data = AccountInfoState())
@@ -33,7 +41,19 @@ class AccountInfoViewModel @Inject constructor(
     }
 
     fun onBackClick() = sendEffect(AccountInfoEffect.NavigateToBack)
-    fun onLogoutClick() = sendEffect(AccountInfoEffect.NavigateToLogout)
+    fun onLogoutClick(){
+        launch(
+            onSuccess = {
+                viewModelScope.launch {
+                    authDataStore.clearToken()
+                }
+                TokenRepository.updateAccessToken(null)
+                sendEffect(AccountInfoEffect.NavigateToLogout)
+            }
+        ) {
+            authRepository.logout()
+        }
+    }
     fun onWithdrawClick() = sendEffect(AccountInfoEffect.ShowWithdrawDialog)
     fun onWithdrawConfirm() {
         launch(
