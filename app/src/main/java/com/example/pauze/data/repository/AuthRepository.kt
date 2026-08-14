@@ -12,6 +12,7 @@ import com.example.pauze.data.model.NicknameAvailableResult
 import com.example.pauze.data.model.SendCodeForLinkingResult
 import com.example.pauze.data.model.SendCodeForSignUpResult
 import com.example.pauze.data.model.TermAgreement
+import com.example.pauze.data.model.Token
 import com.example.pauze.data.model.User
 import com.example.pauze.data.model.VerifyEmailResult
 
@@ -28,5 +29,6 @@ interface AuthRepository {
     suspend fun getUser(): User?
     suspend fun confirmKakaoAccount(context: Context, email: String): ConfirmKakaoResult?
     suspend fun linkAccount(context: Context, direction: String, email: String?): LinkAccountResult?
+    suspend fun refreshToken(token: String?): Token?
     suspend fun logout(): Boolean
 }

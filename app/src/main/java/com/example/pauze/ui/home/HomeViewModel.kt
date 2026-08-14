@@ -1,5 +1,8 @@
 package com.example.pauze.ui.home
 
+import androidx.datastore.dataStore
+import androidx.lifecycle.viewModelScope
+import com.example.pauze.data.datastore.AuthDataStore
 import com.example.pauze.data.model.BaseUiState
 import com.example.pauze.data.model.Condition
 import com.example.pauze.data.model.GetTodayConditionResponseDto
@@ -14,6 +17,7 @@ import com.example.pauze.ui.BaseViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 sealed interface HomeEffect {
@@ -24,6 +28,7 @@ sealed interface HomeEffect {
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
+    private val authDataStore: AuthDataStore,
     private val authRepository: AuthRepository,
     private val conditionRepository: TodayConditionRepository
 ) : BaseViewModel<HomeEffect, HomeState>(

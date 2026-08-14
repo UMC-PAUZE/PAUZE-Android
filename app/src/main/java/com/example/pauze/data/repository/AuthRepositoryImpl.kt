@@ -22,6 +22,7 @@ import com.example.pauze.data.model.SendCodeForLinkingResult
 import com.example.pauze.data.model.SendCodeForSignUpRequest
 import com.example.pauze.data.model.SendCodeForSignUpResult
 import com.example.pauze.data.model.TermAgreement
+import com.example.pauze.data.model.Token
 import com.example.pauze.data.model.User
 import com.example.pauze.data.model.VerifyEmailRequest
 import com.example.pauze.data.model.VerifyEmailResult
@@ -224,6 +225,21 @@ class AuthRepositoryImpl @Inject constructor(
 
         return try {
             val response = service.linkAccount(LinkAccountRequest(direction, kakaoAccessToken, email))
+            response.result
+        } catch (e: CancellationException){
+            println("작업이 사용자에 의해 취소되었습니다, ${e.message}")
+            throw e
+        } catch(e: Exception){
+            println("예외 발생: ${e.message}")
+            throw e
+        }
+    }
+
+    override suspend fun refreshToken(token: String?): Token? {
+        return try {
+            val token = dataStore.getRefreshToken()
+            if(token == null) return null
+            val response = service.refreshToken(RefreshOrLogoutRequest(token))
             response.result
         } catch (e: CancellationException){
             println("작업이 사용자에 의해 취소되었습니다, ${e.message}")
