@@ -66,7 +66,7 @@ fun HomeScreen(
     val conditionBoxPadding = 16
 
     LifecycleResumeEffect(Unit) {
-        viewModel.getCondition()
+        viewModel.getUserAndCondition()
         onPauseOrDispose { }
     }
 
@@ -109,7 +109,7 @@ fun HomeScreen(
         else {
             TopBar(variant = TopBarVariant.Home)
             Spacer(modifier = Modifier.height(17.dp))
-            Text("000님", style = bodyTextLgRegular, color = AppTheme.palette.gray.getColor(2))
+            Text("${uiState.data.nickname}님", style = bodyTextLgRegular, color = AppTheme.palette.gray.getColor(2))
             Text(
                 if(uiState.data.isTodayConditionExists) "오늘은 조용한 곳에서 안정을 \n취하는 게 어떨까요?"
                 else "숙면하셨나요?\n오늘의 컨디션을 작성해보세요",

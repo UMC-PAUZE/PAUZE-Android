@@ -12,6 +12,7 @@ import com.example.pauze.data.model.NicknameAvailableResult
 import com.example.pauze.data.model.SendCodeForLinkingResult
 import com.example.pauze.data.model.SendCodeForSignUpResult
 import com.example.pauze.data.model.TermAgreement
+import com.example.pauze.data.model.User
 import com.example.pauze.data.model.VerifyEmailResult
 
 interface AuthRepository {
@@ -24,7 +25,9 @@ interface AuthRepository {
     suspend fun login(email: String, password: String): LocalLoginResult?
     suspend fun kakaoSignUp(name: String, nickname: String, birth: String, kakaoAccessToken: String, termAgreements: List<TermAgreement>): KakaoSignUpResult?
     suspend fun kakaoLogin(context: Context): KakaoLoginResult?
+    suspend fun getUser(): User?
     suspend fun confirmKakaoAccount(context: Context, email: String): ConfirmKakaoResult?
     suspend fun linkAccount(context: Context, direction: String, email: String?): LinkAccountResult?
+    suspend fun logout(token: String?): Unit?
 
 }

@@ -16,11 +16,13 @@ import com.example.pauze.data.model.LocalLoginResult
 import com.example.pauze.data.model.LocalSignUpRequest
 import com.example.pauze.data.model.LocalSignUpResult
 import com.example.pauze.data.model.NicknameAvailableResult
+import com.example.pauze.data.model.RefreshOrLogoutRequest
 import com.example.pauze.data.model.SendCodeForLinkingRequest
 import com.example.pauze.data.model.SendCodeForLinkingResult
 import com.example.pauze.data.model.SendCodeForSignUpRequest
 import com.example.pauze.data.model.SendCodeForSignUpResult
 import com.example.pauze.data.model.TermAgreement
+import com.example.pauze.data.model.User
 import com.example.pauze.data.model.VerifyEmailRequest
 import com.example.pauze.data.model.VerifyEmailResult
 import com.example.pauze.data.service.AuthService
@@ -182,6 +184,18 @@ class AuthRepositoryImpl @Inject constructor(
 
     }
 
+    override suspend fun getUser(): User? {
+        return try {
+            val response = service.getUser()
+            response.result
+        } catch (e: CancellationException){
+            println("작업이 사용자에 의해 취소되었습니다, ${e.message}")
+            throw e
+        } catch(e: Exception){
+            println("예외 발생: ${e.message}")
+            throw e
+        }
+    }
     override suspend fun confirmKakaoAccount(
         context: Context,
         email: String
@@ -211,6 +225,24 @@ class AuthRepositoryImpl @Inject constructor(
         return try {
             val response = service.linkAccount(LinkAccountRequest(direction, kakaoAccessToken, email))
             response.result
+        } catch (e: CancellationException){
+            println("작업이 사용자에 의해 취소되었습니다, ${e.message}")
+            throw e
+        } catch(e: Exception){
+            println("예외 발생: ${e.message}")
+            throw e
+        }
+    }
+
+    override suspend fun logout(token: String?): Unit? {
+        return try {
+            if(token == null) {
+                val response = service.logout(null)
+                response.result
+            } else {
+                val response = service.logout(RefreshOrLogoutRequest(token))
+                response.result
+            }
         } catch (e: CancellationException){
             println("작업이 사용자에 의해 취소되었습니다, ${e.message}")
             throw e
