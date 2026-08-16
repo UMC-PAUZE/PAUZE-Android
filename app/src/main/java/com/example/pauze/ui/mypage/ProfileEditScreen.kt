@@ -136,7 +136,7 @@ fun ProfileEditScreen(
                 ModeBasedTextField(
                     mode = TextFieldMode.Nickname,
                     value = viewModel.nickname,
-                    onValueChanged = { viewModel.nickname = it },
+                    onValueChanged = { viewModel.updateNickname(it) },
                     imeAction = ImeAction.Next,
                     commentText = viewModel.loadError,
                     isError = viewModel.loadError != null
@@ -145,7 +145,7 @@ fun ProfileEditScreen(
                 ModeBasedTextField(
                     mode = TextFieldMode.Bio,
                     value = viewModel.bio,
-                    onValueChanged = { viewModel.bio = it },
+                    onValueChanged = { viewModel.updateBio(it) },
                     imeAction = ImeAction.Done,
                     commentText = "${viewModel.bio.length}/30"
                 )

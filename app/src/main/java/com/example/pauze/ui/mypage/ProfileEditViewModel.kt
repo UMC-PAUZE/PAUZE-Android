@@ -31,7 +31,9 @@ class ProfileEditViewModel @Inject constructor(
     uiState = BaseUiState(data = Unit)
 ) {
     var nickname by mutableStateOf("")
+        private set
     var bio by mutableStateOf("")
+        private set
     var profileImageUrl by mutableStateOf<String?>(null)
     var newProfileImageUri by mutableStateOf<Uri?>(null)
     var birthday by mutableStateOf<String?>(null)
@@ -50,6 +52,9 @@ class ProfileEditViewModel @Inject constructor(
     }
 
     fun onBackClick() = sendEffect(ProfileEditEffect.NavigateToBack)
+
+    fun updateNickname(newNickname: String) { nickname = newNickname }
+    fun updateBio(newBio: String) { bio = newBio }
 
     fun onImagePicked(uri: Uri) {
         val mimeType = context.contentResolver.getType(uri)

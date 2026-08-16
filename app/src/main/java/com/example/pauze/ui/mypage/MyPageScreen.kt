@@ -156,14 +156,7 @@ fun MyPageScreen(
                         )
                         StatCard(
                             label = "평균 민감지수",
-                            value = uiState.data.stats?.averageSensitivity?.let {
-                                "${
-                                    if (it % 1.0 == 0.0) it.toInt().toString() else "%.1f".format(
-                                        java.util.Locale.KOREA,
-                                        it
-                                    )
-                                }점"
-                            } ?: "-",
+                            value = uiState.data.stats?.averageSensitivity?.let(::formatSensitivity) ?: "-",
                             valueColor = AppTheme.palette.tertiary.getColor(3),
                             modifier = Modifier.weight(1f)
                         )
@@ -281,6 +274,11 @@ fun MyPageScreen(
         )
     }
 
+}
+
+private fun formatSensitivity(score: Double): String {
+    val formatted = if (score % 1.0 == 0.0) score.toInt().toString() else "%.1f".format(java.util.Locale.KOREA, score)
+    return "${formatted}점"
 }
 
 @Preview(showBackground = true, widthDp = 360, heightDp = 800)

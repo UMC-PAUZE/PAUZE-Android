@@ -10,8 +10,8 @@ data class UserMeResultDto(
 )
 
 data class Settings(
-    val notifications: Notifications,
-    val stabilityContent: StabilityContent,
+    val notifications: Notifications, // 알림 설정
+    val stabilityContent: StabilityContent, // 안정 콘텐츠 설정
 )
 
 data class Notifications(

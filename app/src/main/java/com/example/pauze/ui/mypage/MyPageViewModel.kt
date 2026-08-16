@@ -25,13 +25,13 @@ class MyPageViewModel @Inject constructor(
         launch(onFailure = { e ->
             updateData { it.copy(loadError = e.message ?: "정보를 불러오지 못했습니다") }
         }) {
-            val profile = myPageRepository.getMyPage()
+            val profile = myPageRepository.getMyPage() // 마이페이지 조회 (users/me)
             uiState.value.data.copy(profile = profile, loadError = null)
         }
         launch(onFailure = { e ->
             updateData { it.copy(loadError = e.message ?: "정보를 불러오지 못했습니다") }
         }) {
-            val stats = myPageRepository.getProfile().stats
+            val stats = myPageRepository.getProfile().stats // 프로필 상세 조회 (users/me/profile)
             uiState.value.data.copy(stats = stats, loadError = null)
         }
     }
