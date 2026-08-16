@@ -67,6 +67,10 @@ fun SetNameAndNickname(
                 AppTheme.palette.primary.getColor(4)
             else AppTheme.palette.gray.getColor(5)
         )
+
+        if(viewModel.nickname.isEmpty()) {
+            viewModel.isNicknameAvailable = null
+        }
     }
     return viewModel.name.length > 1 && viewModel.nickname.length < 10 && viewModel.isNicknameAvailable == true
 }

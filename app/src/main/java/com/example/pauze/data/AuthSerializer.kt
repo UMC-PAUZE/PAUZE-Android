@@ -40,7 +40,7 @@ object KakaoLoginResultSerializer: JsonContentPolymorphicSerializer<KakaoLoginRe
 
         return if(hasAccessToken){
             KakaoLoginResult.LoginSuccess.serializer()
-        } else if(hasNextStep && hasExistingSocialType) {
+        } else if(hasExistingSocialType) {
             KakaoLoginResult.HasLocalAccount.serializer()
         } else if(hasNextStep){
             KakaoLoginResult.SignUp.serializer()

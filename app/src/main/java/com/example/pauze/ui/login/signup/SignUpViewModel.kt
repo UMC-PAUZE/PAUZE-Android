@@ -139,7 +139,7 @@ class SignUpViewModel @Inject constructor(
     fun checkNicknameAvailable(){
         launch(
             onSuccess = { result ->
-                if(result == null){
+                if(result == null || !result.available){
                     isNicknameAvailable = false
                     return@launch
                 }

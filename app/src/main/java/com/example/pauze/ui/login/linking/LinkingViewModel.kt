@@ -5,8 +5,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import com.example.pauze.data.datastore.AuthDataStore
 import com.example.pauze.data.model.BaseUiState
+import com.example.pauze.data.repository.AuthRepository
 import com.example.pauze.ui.BaseViewModel
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 
 sealed interface LinkingEffect {
     object RestartVerifTimer: LinkingEffect
@@ -14,7 +18,11 @@ sealed interface LinkingEffect {
     object NavigateToLogin: LinkingEffect
 }
 
-class LinkingViewModel: BaseViewModel<LinkingEffect, Unit>(
+@HiltViewModel
+class LinkingViewModel @Inject constructor(
+    private val dataStore: AuthDataStore,
+    private val repository: AuthRepository
+): BaseViewModel<LinkingEffect, Unit>(
     uiState = BaseUiState(data = Unit)
 ) {
     var email by mutableStateOf("")
@@ -24,13 +32,20 @@ class LinkingViewModel: BaseViewModel<LinkingEffect, Unit>(
     var time by mutableStateOf("00:00")
     private var countDownTimer: CountDownTimer? = null
 
-    // todo: 데이터 연결 시 uiState로 처리
-    var isEmailNoExisted by mutableStateOf(true)
-    fun checkEmailAlreadyExistOrNot(): Boolean = isEmailNoExisted
-    fun toggleEmailExist(){
-        isEmailNoExisted = !isEmailNoExisted
+    fun sendCodeForLinking() {
+        launch(
+            onSuccess = {
+                isVerified = true
+            },
+            onFailure = {
+                return@launch
+            }
+        ) {
+            val kakaoAccessToken = dataStore.getKakaoAccessToken()
+            if(kakaoAccessToken == null) return@launch
+            repository.sendCodeForLinking(email, kakaoAccessToken)
+        }
     }
-
     fun updatePhase(){
         phase = phase + 1
         if(phase == 1){

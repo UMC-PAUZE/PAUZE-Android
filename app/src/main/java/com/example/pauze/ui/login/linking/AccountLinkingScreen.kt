@@ -20,6 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.pauze.ui.component.Button
@@ -34,7 +35,7 @@ import com.example.pauze.ui.theme.headingMdMedium
 @Composable
 fun AccountLinkingScreen(
     navController: NavController,
-    viewModel: LinkingViewModel = viewModel()
+    viewModel: LinkingViewModel = hiltViewModel()
 ){
     val focusManager = LocalFocusManager.current
     var isVerified by remember { mutableStateOf(false) }
@@ -85,8 +86,10 @@ fun AccountLinkingScreen(
                 value = viewModel.email,
                 onValueChanged = { viewModel.email = it },
                 imeAction = ImeAction.Done,
-                onCheckClick = { viewModel.updatePhase() },
-                checkClickValue = true,
+                onCheckClick = {
+                    viewModel.sendCodeForLinking()
+                    viewModel.updatePhase()
+                }
             )
         } else {
             isVerified = EnterVerificationCode(viewModel, true)

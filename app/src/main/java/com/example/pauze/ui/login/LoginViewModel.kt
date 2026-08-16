@@ -1,6 +1,7 @@
 package com.example.pauze.ui.login
 
 import android.content.Context
+import android.util.Log
 import androidx.datastore.dataStore
 import androidx.lifecycle.viewModelScope
 import com.example.pauze.data.datastore.AuthDataStore
@@ -54,6 +55,9 @@ class LoginViewModel @Inject constructor(
                         return@launch
                     }
                 }
+            },
+            onFailure = {
+                return@launch
             }
         ) {
             repository.kakaoLogin(context)
@@ -78,9 +82,6 @@ class LoginViewModel @Inject constructor(
         }
     }
 
-    fun showLinkDialog(){
-        sendEffect(LoginEffect.ShowLinkDialog)
-    }
     fun toGuestMode(){
         sendEffect(LoginEffect.NavigateToHome)
     }

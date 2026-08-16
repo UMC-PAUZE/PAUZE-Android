@@ -3,6 +3,7 @@ package com.example.pauze.ui.login
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -135,6 +136,7 @@ fun LoginScreen(
                     isLoginFailed = true
                 }
                 is LoginEffect.ShowLinkDialog -> {
+                    Log.d("Auth/Linking", "showLinkDialog true로 변환")
                     showLinkDialog = true
                 }
             }
