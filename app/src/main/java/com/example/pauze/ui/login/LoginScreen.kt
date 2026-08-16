@@ -91,7 +91,7 @@ class LoginActivity : ComponentActivity() {
                         KakaoSignUpScreen(navController)
                     }
                     composable<LoginNavDestination.Link> {
-                        AccountLinkingScreen(navController)
+                        AccountLinkingScreen(this@LoginActivity, navController)
                     }
                 }
             }
@@ -136,7 +136,6 @@ fun LoginScreen(
                     isLoginFailed = true
                 }
                 is LoginEffect.ShowLinkDialog -> {
-                    Log.d("Auth/Linking", "showLinkDialog true로 변환")
                     showLinkDialog = true
                 }
             }

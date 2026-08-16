@@ -1,5 +1,7 @@
 package com.example.pauze.ui.login.linking
 
+import android.content.Context
+import android.content.Intent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -20,9 +22,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat.startActivity
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.example.pauze.MainActivity
 import com.example.pauze.ui.component.Button
 import com.example.pauze.ui.component.ModeBasedTextField
 import com.example.pauze.ui.component.TextFieldMode
@@ -34,6 +38,7 @@ import com.example.pauze.ui.theme.headingMdMedium
 
 @Composable
 fun AccountLinkingScreen(
+    context: Context,
     navController: NavController,
     viewModel: LinkingViewModel = hiltViewModel()
 ){
@@ -49,8 +54,11 @@ fun AccountLinkingScreen(
                 is LinkingEffect.BackStack -> {
                     navController.popBackStack()
                 }
-                is LinkingEffect.NavigateToLogin -> {
-                    navController.navigate(LoginNavDestination.Login)
+                is LinkingEffect.NavigateToHome -> {
+                    val intent = Intent(context, MainActivity::class.java).apply{
+                        flags = Intent.FLAG_ACTIVITY_CLEAR_TASK
+                    }
+                    startActivity(context, intent, null)
                 }
             }
         }
@@ -97,7 +105,7 @@ fun AccountLinkingScreen(
             Button(
                 "완료",
                 onClick = {
-                    viewModel.navigateToLogin()
+                    viewModel.linkAccount()
                 },
                 modifier = Modifier.fillMaxWidth().padding(bottom = 48.dp),
                 enabled = isVerified,

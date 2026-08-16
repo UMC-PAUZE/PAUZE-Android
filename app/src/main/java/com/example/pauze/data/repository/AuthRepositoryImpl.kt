@@ -217,11 +217,11 @@ class AuthRepositoryImpl @Inject constructor(
 
 
     override suspend fun linkAccount(
-        context: Context,
         direction: String,
-        email: String?
+        kakaoAccessToken: String,
+        email: String?,
+        password: String?,
     ): LinkAccountResult? {
-        val kakaoAccessToken = dataStore.kakaoLoginAndGetToken(context).firstOrNull() ?: return null
 
         return try {
             val response = service.linkAccount(LinkAccountRequest(direction, kakaoAccessToken, email))

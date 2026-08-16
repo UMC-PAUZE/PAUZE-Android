@@ -1,21 +1,25 @@
 package com.example.pauze.ui.login.linking
 
+import android.content.Context
 import android.os.CountDownTimer
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.viewModelScope
 import com.example.pauze.data.datastore.AuthDataStore
 import com.example.pauze.data.model.BaseUiState
 import com.example.pauze.data.repository.AuthRepository
+import com.example.pauze.data.repository.TokenRepository
 import com.example.pauze.ui.BaseViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 sealed interface LinkingEffect {
     object RestartVerifTimer: LinkingEffect
     object BackStack: LinkingEffect
-    object NavigateToLogin: LinkingEffect
+    object NavigateToHome: LinkingEffect
 }
 
 @HiltViewModel
@@ -35,7 +39,7 @@ class LinkingViewModel @Inject constructor(
     fun sendCodeForLinking() {
         launch(
             onSuccess = {
-                isVerified = true
+                println("인증 코드 전송됨")
             },
             onFailure = {
                 return@launch
@@ -44,6 +48,44 @@ class LinkingViewModel @Inject constructor(
             val kakaoAccessToken = dataStore.getKakaoAccessToken()
             if(kakaoAccessToken == null) return@launch
             repository.sendCodeForLinking(email, kakaoAccessToken)
+        }
+    }
+
+    fun verifyEmail() {
+        launch (
+            onSuccess = { result ->
+                if(result == null){
+                    isVerified = false
+                    return@launch
+                }
+                isVerified = true
+            },
+            onFailure = {
+                return@launch
+            }
+        ) {
+            repository.verifyEmail(email, code)
+        }
+    }
+
+    fun linkAccount() {
+        launch(
+            onSuccess = { result ->
+                if(result == null) return@launch
+                viewModelScope.launch {
+                    dataStore.saveAccessToken(result.accessToken)
+                    dataStore.saveRefreshToken(result.refreshToken)
+                    TokenRepository.updateAccessToken(result.accessToken)
+
+                    navigateToHome()
+                }
+            },
+            onFailure = {
+                return@launch
+            }
+        ) {
+            val kakaoAccessToken = dataStore.getKakaoAccessToken() ?: ""
+            repository.linkAccount("LOCAL_TO_KAKAO", kakaoAccessToken, email, null)
         }
     }
     fun updatePhase(){
@@ -77,7 +119,7 @@ class LinkingViewModel @Inject constructor(
     fun backStack(){
         sendEffect(LinkingEffect.BackStack)
     }
-    fun navigateToLogin(){
-        sendEffect(LinkingEffect.NavigateToLogin)
+    fun navigateToHome(){
+        sendEffect(LinkingEffect.NavigateToHome)
     }
 }

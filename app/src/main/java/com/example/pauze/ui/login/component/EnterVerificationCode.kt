@@ -42,7 +42,7 @@ fun EnterVerificationCode(
             value = if(isLinking) (viewModel as LinkingViewModel).code else (viewModel as SignUpViewModel).code,
             onValueChanged = { if(isLinking) (viewModel as LinkingViewModel).code = it else (viewModel as SignUpViewModel).code = it },
             imeAction = ImeAction.Done,
-            onCheckClick = { (viewModel as SignUpViewModel).verifyEmail() },
+            onCheckClick = { if(isLinking) (viewModel as LinkingViewModel).verifyEmail() else (viewModel as SignUpViewModel).verifyEmail() },
             checkClickValue = if(isLinking) (viewModel as LinkingViewModel).isVerified else (viewModel as SignUpViewModel).isVerified
         )
 

@@ -160,6 +160,7 @@ data class LinkAccountRequest(
     val direction: String,
     val kakaoAccessToken: String,
     val email: String? = null,
+    val password: String? = null,
 )
 @Serializable
 data class LinkAccountResult(

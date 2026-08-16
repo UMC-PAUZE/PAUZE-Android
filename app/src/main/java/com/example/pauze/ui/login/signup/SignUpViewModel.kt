@@ -100,11 +100,10 @@ class SignUpViewModel @Inject constructor(
                 if(result == null) return@launch
                 when(result){
                     is SendCodeForSignUpResult.KakaoExists -> {
-                        isVerified = true
                         sendEffect(SignUpEffect.ShowLinkDialog)
                     }
                     is SendCodeForSignUpResult.Success -> {
-                        isVerified = true
+                        println("인증 코드 전송됨")
                     }
                     else -> {
                         return@launch

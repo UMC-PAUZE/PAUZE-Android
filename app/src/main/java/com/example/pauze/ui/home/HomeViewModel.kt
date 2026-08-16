@@ -28,7 +28,6 @@ sealed interface HomeEffect {
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
-    private val authDataStore: AuthDataStore,
     private val authRepository: AuthRepository,
     private val conditionRepository: TodayConditionRepository
 ) : BaseViewModel<HomeEffect, HomeState>(
