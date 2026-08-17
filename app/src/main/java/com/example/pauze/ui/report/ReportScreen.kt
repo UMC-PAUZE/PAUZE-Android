@@ -37,7 +37,7 @@ import com.example.pauze.ui.component.Button
 import com.example.pauze.ui.component.Tab
 import com.example.pauze.ui.component.TopBar
 import com.example.pauze.ui.login.LoginActivity
-import com.example.pauze.ui.pauze.PauzeTodayConditionActivity
+import com.example.pauze.ui.pauze.condition.PauzeTodayConditionActivity
 import com.example.pauze.ui.report.component.InsightCard
 import com.example.pauze.ui.report.component.TriggerCard
 import com.example.pauze.ui.report.component.AverageScoreCard

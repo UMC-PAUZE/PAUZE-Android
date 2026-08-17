@@ -50,9 +50,9 @@
                     android:pathPrefix="/curation/" />
             </intent-filter>
         </activity>
-        <activity android:name=".ui.pauze.PauzeStartActivity"
+        <activity android:name=".ui.pauze.start.PauzeStartActivity"
             android:exported="false"/>
-        <activity android:name=".ui.pauze.PauzeTodayConditionActivity"
+        <activity android:name=".ui.pauze.condition.PauzeTodayConditionActivity"
             android:exported="false"/>
         <!--카카오 로그인용 액티비티-->
         <activity
