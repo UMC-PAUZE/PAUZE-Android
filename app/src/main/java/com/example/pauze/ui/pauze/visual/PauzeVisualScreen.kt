@@ -75,7 +75,9 @@ fun PauzeVisualScreen(
                     }
 
                     PauzeVisualMethod.Meditation -> {
-                        step = PauzeVisualStep.SelectTime
+                        viewModel.loadVisualGuide {
+                            step = PauzeVisualStep.SelectTime
+                        }
                     }
 
                     null -> Unit
@@ -149,6 +151,7 @@ fun PauzeVisualScreen(
 
             PauzeVisualMethod.Meditation -> PauzeVisualMeditationRunningScreen(
                 totalSeconds = totalSeconds,
+                visualUrl = uiState.data.visualUrl,
                 showStopDialog = showStopDialog,
                 onShowStopDialog = viewModel::showStopDialog,
                 onStopClick = {
