@@ -1,7 +1,6 @@
 package com.example.pauze.ui.curation
 
 import android.content.Intent
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.Image
@@ -31,7 +30,6 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
@@ -50,7 +48,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.core.util.Consumer
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.pauze.R
 import com.example.pauze.data.dummies.curationCategories
@@ -77,12 +74,14 @@ import java.util.TimeZone
 fun CurationBoardScreen(
     onPostClick: (Long) -> Unit = {},
     onArchiveClick: () -> Unit = {},
+    deepLinkPostId: Long? = null,
+    onDeepLinkConsumed: () -> Unit = {},
     viewModel: CurationBoardViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val curationState = uiState.data
 
-    val activity = LocalActivity.current as? ComponentActivity
+    val activity = LocalActivity.current
 
     var isLoginRequiredDialogVisible by rememberSaveable {
         mutableStateOf(false)
@@ -94,10 +93,6 @@ fun CurationBoardScreen(
 
     var sharingPost by remember {
         mutableStateOf<CurationPost?>(null)
-    }
-
-    var deepLinkUri by remember(activity) {
-        mutableStateOf(activity?.intent?.data)
     }
 
     LaunchedEffect(viewModel) {
@@ -121,36 +116,13 @@ fun CurationBoardScreen(
         }
     }
 
-    DisposableEffect(activity) {
-        val newIntentListener = Consumer<Intent> { newIntent ->
-            deepLinkUri = newIntent.data
-        }
-
-        activity?.addOnNewIntentListener(newIntentListener)
-
-        onDispose {
-            activity?.removeOnNewIntentListener(
-                newIntentListener,
-            )
-        }
-    }
-
-    val deepLinkPostId = remember(deepLinkUri) {
-        deepLinkUri?.toCurationPostIdOrNull()
-    }
-
-    LaunchedEffect(
-        deepLinkUri,
-        deepLinkPostId,
-    ) {
-        if (
-            deepLinkUri != null &&
-            deepLinkPostId != null
-        ) {
+    LaunchedEffect(deepLinkPostId) {
+        if (deepLinkPostId != null) {
             viewModel.selectPostFromDeepLink(
-                deepLink = deepLinkUri.toString(),
+                deepLink = deepLinkPostId.toString(),
                 postId = deepLinkPostId,
             )
+            onDeepLinkConsumed()
         }
     }
 
