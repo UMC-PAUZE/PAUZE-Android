@@ -14,6 +14,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -39,6 +41,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.pauze.BottomNavDestination
 import com.example.pauze.R
+import com.example.pauze.ui.component.Button
 import com.example.pauze.ui.component.Dialog
 import com.example.pauze.ui.component.LoginRequiredDialog
 import com.example.pauze.ui.component.TopBar
@@ -109,12 +112,26 @@ fun MyPageScreen(
     ) {
         TopBar(title = "마이", showBackButton = false)
 
-        if (uiState.data.profile == null) {
+        if (uiState.data.isProfileLoading) {
             Box(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
                 CircularProgressIndicator()
+            }
+        } else if (uiState.data.profileError != null) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(
+                        text = uiState.data.profileError ?: "정보를 불러오지 못했습니다",
+                        color = AppTheme.palette.gray.getColor(2)
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Button("다시 시도", onClick = viewModel::refresh)
+                }
             }
         } else {
             Column(
@@ -146,17 +163,23 @@ fun MyPageScreen(
                     ) {
                         StatCard(
                             label = "총 측정",
-                            value = "${uiState.data.stats?.totalMeasurements ?: 0}회",
+                            value = statValue(uiState.data.isStatsLoading, uiState.data.statsError) {
+                                "${uiState.data.stats?.totalMeasurements ?: 0}회"
+                            },
                             modifier = Modifier.weight(1f)
                         )
                         StatCard(
                             label = "연속 측정",
-                            value = "${uiState.data.stats?.consecutiveDays ?: 0}일",
+                            value = statValue(uiState.data.isStatsLoading, uiState.data.statsError) {
+                                "${uiState.data.stats?.consecutiveDays ?: 0}일"
+                            },
                             modifier = Modifier.weight(1f)
                         )
                         StatCard(
                             label = "평균 민감지수",
-                            value = uiState.data.stats?.averageSensitivity?.let(::formatSensitivity) ?: "-",
+                            value = statValue(uiState.data.isStatsLoading, uiState.data.statsError) {
+                                uiState.data.stats?.averageSensitivity?.let(::formatSensitivity) ?: "-"
+                            },
                             valueColor = AppTheme.palette.tertiary.getColor(3),
                             modifier = Modifier.weight(1f)
                         )
@@ -280,6 +303,9 @@ private fun formatSensitivity(score: Double): String {
     val formatted = if (score % 1.0 == 0.0) score.toInt().toString() else "%.1f".format(java.util.Locale.KOREA, score)
     return "${formatted}점"
 }
+
+private fun statValue(isLoading: Boolean, error: String?, value: () -> String): String =
+    if (isLoading || error != null) "-" else value()
 
 @Preview(showBackground = true, widthDp = 360, heightDp = 800)
 @Composable

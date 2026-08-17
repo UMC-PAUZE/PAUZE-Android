@@ -30,8 +30,8 @@ data class UserProfileResultDto(
     val uid: String,
     val name: String,
     val nickname: String,
-    val introduction: String,
-    val profileImageUrl: String,
+    val introduction: String?,
+    val profileImageUrl: String?,
     val email: String,
     val birth: String,
     val socialTypes: List<String>,
@@ -80,7 +80,10 @@ data class WithdrawRequest(
 data class MyPageState(
     val profile: UserMeResultDto? = null,
     val stats: Stats? = null,
-    val loadError: String? = null,
+    val isProfileLoading: Boolean = true,
+    val isStatsLoading: Boolean = true,
+    val profileError: String? = null,
+    val statsError: String? = null,
 )
 
 data class AccountInfoState(
