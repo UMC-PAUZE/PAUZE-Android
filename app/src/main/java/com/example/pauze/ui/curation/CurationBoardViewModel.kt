@@ -155,9 +155,18 @@ class CurationBoardViewModel @Inject constructor(
         val requestVersion = ++detailRequestVersion
 
         updateData { state ->
+            val selectedPostSnapshot = state.posts.firstOrNull {
+                it.postId == postId
+            } ?: state.likedPosts.firstOrNull {
+                it.postId == postId
+            } ?: state.bookmarkedPosts.firstOrNull {
+                it.postId == postId
+            }
+
             state.copy(
                 selectedPostId = postId,
-                selectedPostDetail = null,
+                // 원본 목록에서 제거돼도 상세 화면은 유지할 수 있도록 보관한다.
+                selectedPostDetail = selectedPostSnapshot,
             )
         }
 
@@ -209,6 +218,8 @@ class CurationBoardViewModel @Inject constructor(
                     post -> post.postId == postId
                 } ?: state.bookmarkedPosts.firstOrNull {
                     post -> post.postId == postId
+                } ?: state.selectedPostDetail?.takeIf {
+                    post -> post.postId == postId
                 }
 
                 val detailPost = detail.toCurationPost(
@@ -241,13 +252,9 @@ class CurationBoardViewModel @Inject constructor(
                             } else {
                                 post
                             }
-                        },
-                    selectedPostId = postId,
-                    selectedPostDetail = if (existingPost == null) {
-                        detailPost
-                    } else {
-                        null
                     },
+                    selectedPostId = postId,
+                    selectedPostDetail = detailPost,
                 )
             }
         }
