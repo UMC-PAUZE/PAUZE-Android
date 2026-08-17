@@ -21,7 +21,10 @@ class CurationBoardViewModel @Inject constructor(
 ) : BaseViewModel<CurationEffect, CurationBoardState>(
     uiState = BaseUiState(data = CurationBoardState()),
 ) {
+    // 화면 재구성이나 Activity 재사용으로 같은 딥링크가 중복 처리되는 것을 막는다.
     private var handledDeepLink: String? = null
+
+    // 조회 조건이나 선택이 바뀐 뒤 이전 응답이 최신 상태를 덮어쓰지 않도록 요청 세대를 구분한다.
     private var postsRequestVersion: Int = 0
     private var detailRequestVersion: Int = 0
     private var likesRequestVersion: Int = 0
@@ -49,6 +52,7 @@ class CurationBoardViewModel @Inject constructor(
             return
         }
 
+        // 첫 페이지는 새 조회 세대를 시작하고, 추가 페이지는 현재 조회 세대에 합류한다.
         val requestVersion = if (page == 1) {
             ++postsRequestVersion
         } else {
@@ -85,6 +89,7 @@ class CurationBoardViewModel @Inject constructor(
                 val updatedPosts = if (page == 1) {
                     posts
                 } else {
+                    // 서버 페이지 경계가 겹쳐도 동일 게시글이 목록에 중복 노출되지 않게 한다.
                     (state.posts + posts).distinctBy {
                         it.postId
                     }
@@ -300,6 +305,7 @@ class CurationBoardViewModel @Inject constructor(
         val keyword = uiState.value.data.submittedArchiveKeyword
             .takeIf { it.isNotBlank() }
 
+        // 좋아요와 북마크 탭은 독립적으로 로딩·페이징되므로 진입 시 각각 조회한다.
         loadMyLikes(keyword = keyword)
         loadMyBookmarks(keyword = keyword)
     }
@@ -359,6 +365,7 @@ class CurationBoardViewModel @Inject constructor(
 
         updateData { state ->
             state.copy(
+                // 첫 페이지는 새 검색 결과이므로 이전 검색의 항목과 페이지 정보를 초기화한다.
                 likedPosts = if (page == 1) {
                     emptyList()
                 } else {
@@ -399,6 +406,8 @@ class CurationBoardViewModel @Inject constructor(
             } else {
                 val loadedLikes = result.content.map { item ->
                     val likedPost = item.toCurationPost()
+
+                    // 좋아요 목록 응답에 없는 본문·썸네일·조회수는 이미 받은 게시글에서 보완한다.
                     val existingPost = state.posts.firstOrNull {
                         it.postId == likedPost.postId
                     } ?: state.bookmarkedPosts.firstOrNull {
@@ -423,6 +432,7 @@ class CurationBoardViewModel @Inject constructor(
                         .distinctBy { it.postId }
                 }
 
+                // 다른 캐시를 갱신할 때 게시글마다 목록 전체를 다시 순회하지 않도록 인덱싱한다.
                 val likesByPostId = likedPosts.associateBy {
                     it.postId
                 }
@@ -512,6 +522,7 @@ class CurationBoardViewModel @Inject constructor(
 
         updateData { state ->
             state.copy(
+                // 첫 페이지는 새 검색 결과이므로 이전 검색의 항목과 페이지 정보를 초기화한다.
                 bookmarkedPosts = if (page == 1) {
                     emptyList()
                 } else {
@@ -552,6 +563,8 @@ class CurationBoardViewModel @Inject constructor(
             } else {
                 val loadedBookmarks = result.content.map { item ->
                     val bookmarkedPost = item.toCurationPost()
+
+                    // 북마크 목록 응답에 없는 본문·조회수는 이미 받은 게시글에서 보완한다.
                     val existingPost = state.posts.firstOrNull {
                         it.postId == bookmarkedPost.postId
                     } ?: state.likedPosts.firstOrNull {
@@ -575,6 +588,7 @@ class CurationBoardViewModel @Inject constructor(
                         .distinctBy { it.postId }
                 }
 
+                // 다른 캐시를 갱신할 때 게시글마다 목록 전체를 다시 순회하지 않도록 인덱싱한다.
                 val bookmarksByPostId = bookmarkedPosts.associateBy {
                     it.postId
                 }
@@ -688,6 +702,7 @@ class CurationBoardViewModel @Inject constructor(
                         }
                     }
 
+                    // 동일 게시글을 여러 화면이 참조하므로 모든 캐시와 상세 스냅샷을 함께 갱신한다.
                     state.copy(
                         posts = state.posts.map(updatePost),
                         likedPosts = updatedLikedPosts,
@@ -748,6 +763,7 @@ class CurationBoardViewModel @Inject constructor(
                         }
                     }
 
+                    // 원본 목록에서 제거되더라도 열린 상세 스냅샷에는 변경 결과를 반영한다.
                     state.copy(
                         posts = state.posts.map { post ->
                             if (post.postId == result.postId) {

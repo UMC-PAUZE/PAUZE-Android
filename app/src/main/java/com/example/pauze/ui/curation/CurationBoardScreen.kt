@@ -116,6 +116,7 @@ fun CurationBoardScreen(
         }
     }
 
+    // 전달받은 ID는 한 번만 소비해 재구성이나 뒤로 가기 이후 상세 화면이 다시 열리지 않게 한다.
     LaunchedEffect(deepLinkPostId) {
         if (deepLinkPostId != null) {
             viewModel.selectPostFromDeepLink(
@@ -161,6 +162,7 @@ fun CurationBoardScreen(
         curationState.postsTotalPages,
         curationState.isPostsLoading,
     ) {
+        // 레이아웃 갱신 중 조건이 반복 평가돼도 ViewModel의 로딩·페이지 검사와 함께 중복 요청을 막는다.
         if (
             shouldLoadMorePosts &&
             selectedPost == null &&
