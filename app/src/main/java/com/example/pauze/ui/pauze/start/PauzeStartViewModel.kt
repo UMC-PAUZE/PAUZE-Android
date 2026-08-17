@@ -1,4 +1,4 @@
-package com.example.pauze.ui.pauze
+package com.example.pauze.ui.pauze.start
 
 import com.example.pauze.data.model.BaseUiState
 import com.example.pauze.ui.BaseViewModel
@@ -17,7 +17,7 @@ sealed interface PauzeStartEffect {
 class PauzeStartViewModel @Inject constructor() : BaseViewModel<PauzeStartEffect, Unit>(
     uiState = BaseUiState(data = Unit)
 ) {
-    private var isGuideNavigationRequested = false
+    private var isGuideNavigationRequested = false // 카드 연타 시 네비게이션 중복 실행 방지
 
     fun onStartBreathingClick() = sendEffect(PauzeStartEffect.NavigateToBreathing)
     fun onAuditoryClick() = sendEffect(PauzeStartEffect.NavigateToAuditory)

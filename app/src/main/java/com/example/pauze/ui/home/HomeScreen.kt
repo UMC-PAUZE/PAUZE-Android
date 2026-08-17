@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
@@ -46,8 +45,8 @@ import com.example.pauze.ui.component.Destination
 import com.example.pauze.ui.component.NavigationButton
 import com.example.pauze.ui.component.TopBar
 import com.example.pauze.ui.component.TopBarVariant
-import com.example.pauze.ui.pauze.PauzeStartActivity
-import com.example.pauze.ui.pauze.PauzeTodayConditionActivity
+import com.example.pauze.ui.pauze.start.PauzeStartActivity
+import com.example.pauze.ui.pauze.condition.PauzeTodayConditionActivity
 import com.example.pauze.ui.theme.bodyTextLgBold
 import com.example.pauze.ui.theme.bodyTextLgRegular
 import com.example.pauze.ui.theme.bodyTextMdBold

@@ -1,4 +1,4 @@
-package com.example.pauze.ui.pauze
+package com.example.pauze.ui.pauze.condition
 
 import android.content.Intent
 import android.os.Bundle
@@ -51,6 +51,7 @@ import com.example.pauze.ui.component.Dialog
 import com.example.pauze.ui.component.PhaseBar
 import com.example.pauze.ui.component.SensitivityScoreBar
 import com.example.pauze.ui.component.TopBar
+import com.example.pauze.ui.pauze.start.PauzeStartActivity
 import com.example.pauze.ui.theme.AppTheme
 import com.example.pauze.ui.theme.MainPaletteTheme
 import com.example.pauze.ui.theme.bodyTextLgBold
@@ -410,7 +411,9 @@ private fun ResultActionButton(
 @Composable
 private fun PauzeTodayConditionPreview() {
     val previewViewModel = remember {
-        PauzeTodayConditionViewModel(PreviewTodayConditionRepository)
+        PauzeTodayConditionViewModel(
+            PreviewTodayConditionRepository
+        )
     }
 
     MainPaletteTheme {

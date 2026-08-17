@@ -25,7 +25,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavHostController
@@ -41,13 +40,12 @@ import com.example.pauze.ui.mypage.AccountInfoScreen
 import com.example.pauze.ui.mypage.MyPageNavDestination
 import com.example.pauze.ui.mypage.MyPageScreen
 import com.example.pauze.ui.mypage.ProfileEditScreen
-import com.example.pauze.ui.pauze.PauzeStartActivity
+import com.example.pauze.ui.pauze.start.PauzeStartActivity
 import com.example.pauze.ui.report.ReportScreen
 import com.example.pauze.ui.theme.AppTheme
 import com.example.pauze.ui.theme.MainPaletteTheme
 import com.example.pauze.ui.theme.captionTextMedium
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
