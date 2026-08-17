@@ -23,11 +23,11 @@ class PauzeVisualViewModel @Inject constructor(
 ) : BaseViewModel<PauzeVisualEffect, PauzeVisualState>(
     uiState = BaseUiState(data = PauzeVisualState())
 ) {
-    fun loadVisualGuide(onSuccess: () -> Unit) {
+    fun loadVisualGuide(onReady: () -> Unit) {
         val currentUrl = uiState.value.data.visualUrl
 
         if (!currentUrl.isNullOrBlank()) {
-            onSuccess()
+            onReady()
             return
         }
 
@@ -42,8 +42,15 @@ class PauzeVisualViewModel @Inject constructor(
                 updateData { state ->
                     state.copy(visualUrl = visualUrl)
                 }
-                onSuccess()
+                onReady()
             },
+            onFailure = {
+                // 오디오를 불러오지 못해도 호흡 가이드 화면은 무음으로 제공한다.
+                updateState { state ->
+                    state.copy(error = null)
+                }
+                onReady()
+            }
         ) {
             visualGuideRepository.getVisualUrl()
                 .trim()
