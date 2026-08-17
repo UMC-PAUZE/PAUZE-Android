@@ -1,4 +1,4 @@
-package com.example.pauze.ui.pauze
+package com.example.pauze.ui.pauze.visual
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -65,7 +65,7 @@ fun PauzeVisualScreen(
             onMethodSelect = { selectedMethod = it },
             isLoading = uiState.isLoading,
             hasError = selectedMethod == PauzeVisualMethod.BreathingGuide &&
-                uiState.error != null,
+                    uiState.error != null,
             onNextClick = {
                 when (selectedMethod) {
                     PauzeVisualMethod.BreathingGuide -> {

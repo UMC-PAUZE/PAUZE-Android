@@ -1,4 +1,4 @@
-package com.example.pauze.ui.pauze
+package com.example.pauze.ui.pauze.visual
 
 import com.example.pauze.data.model.BaseUiState
 import com.example.pauze.data.repository.VisualGuideRepository

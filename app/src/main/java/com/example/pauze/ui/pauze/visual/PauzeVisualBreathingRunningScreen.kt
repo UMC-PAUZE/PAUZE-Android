@@ -1,4 +1,4 @@
-package com.example.pauze.ui.pauze
+package com.example.pauze.ui.pauze.visual
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -50,7 +50,7 @@ private const val INHALE_SECONDS = 4
 private const val HOLD_SECONDS = 7
 private const val EXHALE_SECONDS = 8
 private const val BREATH_CYCLE_SECONDS = INHALE_SECONDS + HOLD_SECONDS + EXHALE_SECONDS
-private const val VISUAL_USAGE_RATIO = 0.4
+internal const val VISUAL_USAGE_RATIO = 0.4
 
 @Composable
 fun PauzeVisualBreathingRunningScreen(

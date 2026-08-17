@@ -1,4 +1,4 @@
-package com.example.pauze.ui.pauze
+package com.example.pauze.ui.pauze.visual
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border

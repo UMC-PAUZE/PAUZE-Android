@@ -1,4 +1,4 @@
-package com.example.pauze.ui.pauze
+package com.example.pauze.ui.pauze.sound
 
 import com.example.pauze.R
 import com.example.pauze.data.model.AudioGuideDto

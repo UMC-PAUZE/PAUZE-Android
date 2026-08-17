@@ -1,4 +1,4 @@
-package com.example.pauze.ui.pauze
+package com.example.pauze.ui.pauze.sound
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -314,7 +314,7 @@ private fun PauzeSoundScreenPreview() {
     val previewViewModel = remember {
         PauzeSoundViewModel(
             repository = PreviewPauzeSoundRepository,
-            pauzeUsageRepository = PreviewPauzeUsageRepository
+            pauzeUsageRepository = com.example.pauze.ui.pauze.PreviewPauzeUsageRepository
         )
     }
 

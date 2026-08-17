@@ -1,4 +1,4 @@
-package com.example.pauze.ui.pauze
+package com.example.pauze.ui.pauze.breathing
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -36,6 +36,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.pauze.data.model.BreathPhase
+import com.example.pauze.ui.pauze.PreviewPauzeUsageRepository
 import com.example.pauze.ui.pauze.component.PauzeBreathingCircle
 
 @Composable
@@ -241,17 +242,6 @@ private fun BreathStepText(label: String, seconds: Int, isActive: Boolean){
             text = "${seconds}초",
             style = bodyTextMdMedium,
             color = AppTheme.palette.gray.getColor(if (isActive) 4 else 7)
-        )
-    }
-}
-
-@Preview(showBackground = true, widthDp = 360, heightDp = 800)
-@Composable
-private fun PauzeBreathingPreview(){
-    PAUZEAndroidTheme(darkTheme = true, dynamicColor = false){
-        PauzeBreathingScreen(
-            navController = rememberNavController(),
-            viewModel = PauzeBreathingViewModel(PreviewPauzeUsageRepository)
         )
     }
 }

@@ -1,4 +1,4 @@
-package com.example.pauze.ui.pauze
+package com.example.pauze.ui.pauze.sound
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -27,6 +27,7 @@ import com.example.pauze.data.model.SoundStashTab
 import com.example.pauze.ui.component.SearchBar
 import com.example.pauze.ui.component.Tab
 import com.example.pauze.ui.component.TopBar
+import com.example.pauze.ui.pauze.PreviewPauzeUsageRepository
 import com.example.pauze.ui.theme.AppTheme
 import com.example.pauze.ui.theme.MainPaletteTheme
 import com.example.pauze.ui.theme.bodyTextMdMedium
