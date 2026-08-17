@@ -23,6 +23,7 @@ class CurationBoardViewModel @Inject constructor(
 ) {
     private var handledDeepLink: String? = null
     private var postsRequestVersion: Int = 0
+    private var detailRequestVersion: Int = 0
     private var likesRequestVersion: Int = 0
     private var bookmarksRequestVersion: Int = 0
 
@@ -151,6 +152,8 @@ class CurationBoardViewModel @Inject constructor(
     }
 
     fun selectPost(postId: Long) {
+        val requestVersion = ++detailRequestVersion
+
         updateData { state ->
             state.copy(
                 selectedPostId = postId,
@@ -158,16 +161,21 @@ class CurationBoardViewModel @Inject constructor(
             )
         }
 
-        loadCurationPostDetail(postId)
+        loadCurationPostDetail(
+            postId = postId,
+            requestVersion = requestVersion,
+        )
     }
 
     private fun loadCurationPostDetail(
         postId: Long,
+        requestVersion: Int,
     ) {
         launch(
             onFailure = {
                 updateData { state ->
                     if (
+                        requestVersion == detailRequestVersion &&
                         state.selectedPostId == postId &&
                         state.selectedPost == null
                     ) {
@@ -187,52 +195,61 @@ class CurationBoardViewModel @Inject constructor(
                 )
 
             val state = uiState.value.data
-            val existingPost = state.posts.firstOrNull {
-                post -> post.postId == postId
-            } ?: state.likedPosts.firstOrNull {
-                post -> post.postId == postId
-            } ?: state.bookmarkedPosts.firstOrNull {
-                post -> post.postId == postId
-            }
 
-            val detailPost = detail.toCurationPost(
-                summary = existingPost?.summary
-                    ?: detail.content,
-            )
-
-            val updatedPosts = state.posts.map { post ->
-                if (post.postId == postId) {
-                    detailPost
-                } else {
-                    post
+            // 이전 상세 요청이 늦게 끝나도 현재 선택 상태를 덮어쓰지 않는다.
+            if (
+                requestVersion != detailRequestVersion ||
+                state.selectedPostId != postId
+            ) {
+                state
+            } else {
+                val existingPost = state.posts.firstOrNull {
+                    post -> post.postId == postId
+                } ?: state.likedPosts.firstOrNull {
+                    post -> post.postId == postId
+                } ?: state.bookmarkedPosts.firstOrNull {
+                    post -> post.postId == postId
                 }
-            }
 
-            state.copy(
-                posts = updatedPosts,
-                likedPosts =
-                    state.likedPosts.map { post ->
-                        if (post.postId == postId) {
-                            detailPost
-                        } else {
-                            post
-                        }
+                val detailPost = detail.toCurationPost(
+                    summary = existingPost?.summary
+                        ?: detail.content,
+                )
+
+                val updatedPosts = state.posts.map { post ->
+                    if (post.postId == postId) {
+                        detailPost
+                    } else {
+                        post
+                    }
+                }
+
+                state.copy(
+                    posts = updatedPosts,
+                    likedPosts =
+                        state.likedPosts.map { post ->
+                            if (post.postId == postId) {
+                                detailPost
+                            } else {
+                                post
+                            }
+                        },
+                    bookmarkedPosts =
+                        state.bookmarkedPosts.map { post ->
+                            if (post.postId == postId) {
+                                detailPost
+                            } else {
+                                post
+                            }
+                        },
+                    selectedPostId = postId,
+                    selectedPostDetail = if (existingPost == null) {
+                        detailPost
+                    } else {
+                        null
                     },
-                bookmarkedPosts =
-                    state.bookmarkedPosts.map { post ->
-                        if (post.postId == postId) {
-                            detailPost
-                        } else {
-                            post
-                        }
-                    },
-                selectedPostId = postId,
-                selectedPostDetail = if (existingPost == null) {
-                    detailPost
-                } else {
-                    null
-                },
-            )
+                )
+            }
         }
     }
 
@@ -248,6 +265,7 @@ class CurationBoardViewModel @Inject constructor(
 
     fun clearSelectedPost() {
         handledDeepLink = null
+        ++detailRequestVersion
 
         updateData { state ->
             state.copy(
