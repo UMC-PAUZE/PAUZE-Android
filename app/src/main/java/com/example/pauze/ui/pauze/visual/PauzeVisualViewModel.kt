@@ -26,11 +26,13 @@ class PauzeVisualViewModel @Inject constructor(
     fun loadVisualGuide(onReady: () -> Unit) {
         val currentUrl = uiState.value.data.visualUrl
 
+        // 이미 받은 URL을 재사용해 방식이나 단계를 다시 선택할 때 API를 반복 호출하지 않는다.
         if (!currentUrl.isNullOrBlank()) {
             onReady()
             return
         }
 
+        // 빠른 연속 탭으로 동일한 가이드 요청이 중복 실행되는 것을 막는다.
         if (uiState.value.isLoading) return
 
         updateState { state ->
