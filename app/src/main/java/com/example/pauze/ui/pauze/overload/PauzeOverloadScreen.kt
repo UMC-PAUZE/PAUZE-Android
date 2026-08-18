@@ -76,36 +76,34 @@ fun PauzeOverloadScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(color = AppTheme.palette.gray.getColor(9))
-            .padding(horizontal = 24.dp)
     ){
-        TopBar(
-            "과한 에너지 소모",
-            onBackClick = { viewModel.backStack() }
-        )
-        Spacer(modifier = Modifier.height(24.dp))
-        Text("지금 바로 할 수 있어요", style = bodyTextXlBold, color = AppTheme.palette.gray.getColor(2))
-        Spacer(modifier = Modifier.height(16.dp))
-        LazyRow {
-            items(instantActions.size){ index ->
-                InstantActions(action = instantActions.get(index))
+        TopBar("과한 에너지 소모", onBackClick = viewModel::backStack)
+        Column(modifier = Modifier.padding(horizontal = 24.dp)){
+            Spacer(modifier = Modifier.height(24.dp))
+            Text("지금 바로 할 수 있어요", style = bodyTextXlBold, color = AppTheme.palette.gray.getColor(2))
+            Spacer(modifier = Modifier.height(16.dp))
+            LazyRow {
+                items(instantActions.size){ index ->
+                    InstantActions(action = instantActions.get(index))
+                }
             }
-        }
-        Spacer(modifier = Modifier.height(48.dp))
-        Text("쉼 가이드", style = bodyTextXlBold, color = AppTheme.palette.gray.getColor(2))
-        Spacer(modifier = Modifier.height(16.dp))
-        LazyColumn(
-            modifier = Modifier.fillMaxWidth().weight(1f)
-        ) {
-            items(restGuideList.size) { index ->
-                RestGuide(
-                    guide = restGuideList[index],
-                    onCompleted = viewModel::onRestGuideCompleted
-                )
-            }
-            item {
-                Spacer(modifier = Modifier.height(48.dp))
-                NavigationButton(toWhere = Destination.Find, onClick = { viewModel.navigateToFind() })
-                Spacer(modifier = Modifier.height(40.dp))
+            Spacer(modifier = Modifier.height(48.dp))
+            Text("쉼 가이드", style = bodyTextXlBold, color = AppTheme.palette.gray.getColor(2))
+            Spacer(modifier = Modifier.height(16.dp))
+            LazyColumn(
+                modifier = Modifier.fillMaxWidth().weight(1f)
+            ) {
+                items(restGuideList.size) { index ->
+                    RestGuide(
+                        guide = restGuideList[index],
+                        onCompleted = viewModel::onRestGuideCompleted
+                    )
+                }
+                item {
+                    Spacer(modifier = Modifier.height(48.dp))
+                    NavigationButton(toWhere = Destination.Find, onClick = { viewModel.navigateToFind() })
+                    Spacer(modifier = Modifier.height(40.dp))
+                }
             }
         }
     }

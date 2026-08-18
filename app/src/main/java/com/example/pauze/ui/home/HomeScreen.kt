@@ -98,7 +98,6 @@ fun HomeScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(color = AppTheme.palette.gray.getColor(9))
-            .padding(horizontal = bgPadding.dp),
     ) {
         if(uiState.isLoading){
             CircularProgressIndicator()
@@ -108,36 +107,38 @@ fun HomeScreen(
         }
         else {
             TopBar(variant = TopBarVariant.Home)
-            Spacer(modifier = Modifier.height(17.dp))
-            Text("${uiState.data.nickname}님", style = bodyTextLgRegular, color = AppTheme.palette.gray.getColor(2))
-            Text(
-                if(uiState.data.isTodayConditionExists) "오늘은 조용한 곳에서 안정을 \n취하는 게 어떨까요?"
-                else "숙면하셨나요?\n오늘의 컨디션을 작성해보세요",
-                style = headingMdMedium,
-                color = AppTheme.palette.gray.getColor(2))
-            Spacer(modifier = Modifier.height(16.dp))
-            if(!uiState.data.isTodayConditionExists){
-                Column {
-                    Button(
-                        "오늘의 컨디션 입력하기",
-                        onClick = { viewModel.moveToTodayCondition() },
-                        modifier = Modifier.fillMaxWidth(),
-                        enabled = true
-                    )
-                    Spacer(modifier = Modifier.height(48.dp))
+            Column(modifier = Modifier.padding(horizontal = bgPadding.dp)){
+                Spacer(modifier = Modifier.height(17.dp))
+                Text("${uiState.data.nickname}님", style = bodyTextLgRegular, color = AppTheme.palette.gray.getColor(2))
+                Text(
+                    if(uiState.data.isTodayConditionExists) "오늘은 조용한 곳에서 안정을 \n취하는 게 어떨까요?"
+                    else "숙면하셨나요?\n오늘의 컨디션을 작성해보세요",
+                    style = headingMdMedium,
+                    color = AppTheme.palette.gray.getColor(2))
+                Spacer(modifier = Modifier.height(16.dp))
+                if(!uiState.data.isTodayConditionExists){
+                    Column {
+                        Button(
+                            "오늘의 컨디션 입력하기",
+                            onClick = { viewModel.moveToTodayCondition() },
+                            modifier = Modifier.fillMaxWidth(),
+                            enabled = true
+                        )
+                        Spacer(modifier = Modifier.height(48.dp))
+                    }
                 }
+                NavigationButton(
+                    toWhere = Destination.PauzeBreathing,
+                    onClick = { viewModel.moveToBreathing() }
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                ConditionBox(
+                    condition = uiState.data.condition,
+                    isTodayConditionExists = uiState.data.isTodayConditionExists,
+                    boxPadding = conditionBoxPadding,
+                    navigateToReport = { viewModel.moveToReportScreen() }
+                )
             }
-            NavigationButton(
-                toWhere = Destination.PauzeBreathing,
-                onClick = { viewModel.moveToBreathing() }
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-            ConditionBox(
-                condition = uiState.data.condition,
-                isTodayConditionExists = uiState.data.isTodayConditionExists,
-                boxPadding = conditionBoxPadding,
-                navigateToReport = { viewModel.moveToReportScreen() }
-            )
         }
     }
 }
