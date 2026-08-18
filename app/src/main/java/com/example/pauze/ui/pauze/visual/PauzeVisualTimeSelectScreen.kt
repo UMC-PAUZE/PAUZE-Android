@@ -49,6 +49,7 @@ fun PauzeVisualTimeSelectScreen(
     onStartClick: () -> Unit,
     onBackClick: () -> Unit
 ) {
+    // 0초 세션은 즉시 종료되므로 최소 한 단위 이상 선택했을 때만 시작을 허용한다.
     val isStartEnabled = selectedHour != 0 || selectedMinute != 0 || selectedSecond != 0
 
     PauzeVisualStepLayout(
@@ -126,6 +127,7 @@ private fun PauzeVisualWheelColumn(
     selectedValue: Int,
     onValueChange: (Int) -> Unit
 ) {
+    // 충분한 반복 항목의 가운데서 시작해 양방향으로 이어지는 시간 휠처럼 보이게 한다.
     val loopCount = 100
     val middleLoop = loopCount / 2
     val valueSize = values.size
@@ -141,6 +143,7 @@ private fun PauzeVisualWheelColumn(
         derivedStateOf { listState.firstVisibleItemIndex }
     }
 
+    // 빠른 시간 선택처럼 외부 값이 바뀌면 현재 반복 구간 안의 같은 값으로 이동한다.
     LaunchedEffect(selectedValue) {
         val currentValue = values[centeredIndex % valueSize]
 
@@ -153,6 +156,7 @@ private fun PauzeVisualWheelColumn(
         }
     }
 
+    // 스크롤이 멈춘 값만 상위 상태에 반영해 이동 중 불필요한 상태 변경을 막는다.
     LaunchedEffect(listState, values, selectedValue) {
         snapshotFlow {
             listState.isScrollInProgress to listState.firstVisibleItemIndex

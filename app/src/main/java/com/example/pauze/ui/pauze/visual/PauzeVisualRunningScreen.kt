@@ -52,6 +52,7 @@ fun PauzeVisualMeditationRunningScreen(
     }
 
     val context = LocalContext.current
+    // 가이드 음원이 없거나 로딩에 실패한 경우에도 명상 타이머는 무음으로 계속 동작한다.
     val player = remember(visualUrl) {
         visualUrl
             ?.takeIf { it.isNotBlank() }
@@ -71,6 +72,7 @@ fun PauzeVisualMeditationRunningScreen(
             }
     }
 
+    // 종료 여부를 확인하는 동안에는 음원을 멈춰 다이얼로그 뒤에서 재생되지 않게 한다.
     LaunchedEffect(player, showStopDialog) {
         if (showStopDialog) {
             player?.pause()
@@ -85,6 +87,7 @@ fun PauzeVisualMeditationRunningScreen(
         }
     }
 
+    // 종료 확인에 걸린 시간은 실제 명상 시간에 포함하지 않는다.
     LaunchedEffect(totalSeconds, showStopDialog) {
         while (remainingSeconds > 0 && !showStopDialog) {
             delay(1000L)
@@ -102,6 +105,7 @@ fun PauzeVisualMeditationRunningScreen(
     val usageThresholdSeconds = ceil(totalSeconds * VISUAL_USAGE_RATIO).toInt()
         .coerceAtLeast(1)
 
+    // 전체 시간의 40%에 도달한 시점만 사용 완료로 한 번 기록한다.
     LaunchedEffect(elapsedSeconds, usageThresholdSeconds) {
         if (!isUsageRecorded && elapsedSeconds >= usageThresholdSeconds) {
             isUsageRecorded = true

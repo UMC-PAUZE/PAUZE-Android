@@ -74,6 +74,7 @@ fun PauzeVisualBreathingRunningScreen(
     }
 
     val context = LocalContext.current
+    // 가이드 음원이 없거나 로딩에 실패한 경우에도 호흡 타이머는 무음으로 계속 동작한다.
     val player = remember(visualUrl) {
         visualUrl
             ?.takeIf { it.isNotBlank() }
@@ -93,6 +94,7 @@ fun PauzeVisualBreathingRunningScreen(
             }
     }
 
+    // 사용자 일시정지와 종료 다이얼로그 상태를 함께 반영해 화면 흐름과 음원 재생을 맞춘다.
     LaunchedEffect(player, isPlaying, showStopDialog) {
         if (isPlaying && !showStopDialog) {
             player?.play()
@@ -107,6 +109,7 @@ fun PauzeVisualBreathingRunningScreen(
         }
     }
 
+    // 일시정지나 종료 확인 중에는 남은 시간을 차감하지 않아 실제 진행 시간만 기록한다.
     LaunchedEffect(totalSeconds, showStopDialog, isPlaying) {
         while (remainingSeconds > 0 && !showStopDialog && isPlaying) {
             delay(1000L)
@@ -124,6 +127,7 @@ fun PauzeVisualBreathingRunningScreen(
     val usageThresholdSeconds = ceil(totalSeconds * VISUAL_USAGE_RATIO).toInt()
         .coerceAtLeast(1)
 
+    // 전체 시간의 40%에 도달한 시점만 사용 완료로 한 번 기록한다.
     LaunchedEffect(elapsedSeconds, usageThresholdSeconds) {
         if (!isUsageRecorded && elapsedSeconds >= usageThresholdSeconds) {
             isUsageRecorded = true
@@ -284,6 +288,7 @@ private data class BreathAnimationState(
 }
 
 private fun calculateBreathAnimationState(elapsedSeconds: Int): BreathAnimationState {
+    // 경과 시간을 한 호흡 주기로 순환시켜 들숨·참기·날숨을 동일한 규칙으로 계산한다.
     val cycleSecond = elapsedSeconds.mod(BREATH_CYCLE_SECONDS)
 
     return when {

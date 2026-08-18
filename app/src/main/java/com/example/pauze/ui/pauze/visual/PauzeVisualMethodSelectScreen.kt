@@ -38,6 +38,7 @@ fun PauzeVisualMethodSelectScreen(
     onRetryClick: () -> Unit,
     onBackClick: () -> Unit
 ) {
+    // 가이드 조회 중에는 선택과 다음 이동을 막아 동일 API가 중복 호출되지 않게 한다.
     PauzeVisualStepLayout(
         title = "안정하고 싶은 방식을\n선택해주세요",
         description = "시각적 자극이 심할 때는 눈을 쉬게 해주세요.\n화면이 꺼지고, 소리와 호흡만으로 집중할 수 있는 환경이\n만들어집니다.",
@@ -84,6 +85,7 @@ fun PauzeVisualMethodSelectScreen(
             }
 
             hasError -> {
+                // 선택한 방식을 유지해 재시도 성공 후 같은 흐름으로 이어갈 수 있게 한다.
                 Spacer(modifier = Modifier.height(24.dp))
                 Column(
                     modifier = Modifier.fillMaxWidth(),
