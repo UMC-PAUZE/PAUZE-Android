@@ -73,6 +73,7 @@ class LinkingViewModel @Inject constructor(
             onSuccess = { result ->
                 if(result == null) return@launch
                 viewModelScope.launch {
+                    // 토큰 저장
                     dataStore.saveAccessToken(result.accessToken)
                     dataStore.saveRefreshToken(result.refreshToken)
                     TokenRepository.updateAccessToken(result.accessToken)

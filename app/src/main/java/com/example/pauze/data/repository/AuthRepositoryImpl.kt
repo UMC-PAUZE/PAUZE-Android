@@ -198,10 +198,9 @@ class AuthRepositoryImpl @Inject constructor(
         }
     }
     override suspend fun confirmKakaoAccount(
-        context: Context,
         email: String
     ): ConfirmKakaoResult? {
-        val kakaoAccessToken = dataStore.kakaoLoginAndGetToken(context).firstOrNull() ?: return null
+        val kakaoAccessToken = dataStore.getKakaoAccessToken() ?: ""
 
         return try {
             val response = service.confirmKakaoAccount(ConfirmKakaoRequest(email, kakaoAccessToken))
@@ -224,7 +223,12 @@ class AuthRepositoryImpl @Inject constructor(
     ): LinkAccountResult? {
 
         return try {
-            val response = service.linkAccount(LinkAccountRequest(direction, kakaoAccessToken, email))
+            val request = if(direction == "KAKAO_TO_LOCAL"){
+                LinkAccountRequest(direction, kakaoAccessToken, email, password)
+            } else {
+                LinkAccountRequest(direction, kakaoAccessToken, email)
+            }
+            val response = service.linkAccount(request)
             response.result
         } catch (e: CancellationException){
             println("작업이 사용자에 의해 취소되었습니다, ${e.message}")

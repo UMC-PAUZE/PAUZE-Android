@@ -32,36 +32,36 @@ import com.example.pauze.ui.theme.bodyTextSmRegular
 @Composable
 fun EnterVerificationCode(
     viewModel: ViewModel,
-    isLinking: Boolean
+    isLinkingScreen: Boolean
 ): Boolean{
     var isFocused by remember { mutableStateOf(false) }
 
     Column {
         isFocused = ModeBasedTextField(
             mode = TextFieldMode.Verif,
-            value = if(isLinking) (viewModel as LinkingViewModel).code else (viewModel as SignUpViewModel).code,
-            onValueChanged = { if(isLinking) (viewModel as LinkingViewModel).code = it else (viewModel as SignUpViewModel).code = it },
+            value = if(isLinkingScreen) (viewModel as LinkingViewModel).code else (viewModel as SignUpViewModel).code,
+            onValueChanged = { if(isLinkingScreen) (viewModel as LinkingViewModel).code = it else (viewModel as SignUpViewModel).code = it },
             imeAction = ImeAction.Done,
-            onCheckClick = { if(isLinking) (viewModel as LinkingViewModel).verifyEmail() else (viewModel as SignUpViewModel).verifyEmail() },
-            checkClickValue = if(isLinking) (viewModel as LinkingViewModel).isVerified else (viewModel as SignUpViewModel).isVerified
+            onCheckClick = { if(isLinkingScreen) (viewModel as LinkingViewModel).verifyEmail() else (viewModel as SignUpViewModel).verifyEmail() },
+            checkClickValue = if(isLinkingScreen) (viewModel as LinkingViewModel).isVerified else (viewModel as SignUpViewModel).isVerified
         )
 
-        if(isLinking && (viewModel as LinkingViewModel).code.isEmpty()){
+        if(isLinkingScreen && (viewModel as LinkingViewModel).code.isEmpty()){
             viewModel.isVerified = null
-        } else if (!isLinking && (viewModel as SignUpViewModel).code.isEmpty()){
+        } else if (!isLinkingScreen && (viewModel as SignUpViewModel).code.isEmpty()){
             viewModel.isVerified = null
         }
 
         if(!isFocused
-            && (isLinking && (viewModel as LinkingViewModel).code != "" && viewModel.isVerified != null)
-            || (!isLinking && (viewModel as SignUpViewModel).code != "" && viewModel.isVerified != null)){
+            && (isLinkingScreen && (viewModel as LinkingViewModel).code != "" && viewModel.isVerified != null)
+            || (!isLinkingScreen && (viewModel as SignUpViewModel).code != "" && viewModel.isVerified != null)){
             Text(
-                if((isLinking && (viewModel as LinkingViewModel).isVerified == true)
-                    || (!isLinking && (viewModel as SignUpViewModel).isVerified == true)) "인증에 성공했습니다"
+                if((isLinkingScreen && (viewModel as LinkingViewModel).isVerified == true)
+                    || (!isLinkingScreen && (viewModel as SignUpViewModel).isVerified == true)) "인증에 성공했습니다"
                     else "인증에 실패했습니다",
                 style = bodyTextSmRegular,
-                color = if((isLinking && (viewModel as LinkingViewModel).isVerified == true)
-                    || (!isLinking && (viewModel as SignUpViewModel).isVerified == true))
+                color = if((isLinkingScreen && (viewModel as LinkingViewModel).isVerified == true)
+                    || (!isLinkingScreen && (viewModel as SignUpViewModel).isVerified == true))
                     AppTheme.palette.primary.getColor(4)
                     else AppTheme.palette.secondary.getColor(4)
             )
@@ -72,7 +72,7 @@ fun EnterVerificationCode(
             horizontalArrangement = Arrangement.End
         ){
             Text(
-                if(isLinking) (viewModel as LinkingViewModel).time else (viewModel as SignUpViewModel).time,
+                if(isLinkingScreen) (viewModel as LinkingViewModel).time else (viewModel as SignUpViewModel).time,
                 style = bodyTextMdRegular,
                 color = AppTheme.palette.primary.getColor(5)
             )
@@ -81,13 +81,17 @@ fun EnterVerificationCode(
                 "코드 재전송",
                 modifier = Modifier
                     .clickable(onClick = {
-                        if(isLinking) {
+                        if(isLinkingScreen) {
                             (viewModel as LinkingViewModel).sendEffectForTimer()
-                            //viewModel.sendCodeForSignUp()
+                            viewModel.sendCodeForLinking()
                         }
                         else {
                             (viewModel as SignUpViewModel).sendEffectForTimer()
-                            viewModel.sendCodeForSignUp()
+                            if(viewModel.isKakaoAccountExists){
+                                viewModel.confirmKakaoAccount()
+                            } else {
+                                viewModel.sendCodeForSignUp()
+                            }
                         }
                     })
                     .padding(vertical = 8.dp),
@@ -96,5 +100,5 @@ fun EnterVerificationCode(
             )
         }
     }
-    return !isFocused && (isLinking && (viewModel as LinkingViewModel).isVerified == true) || (!isLinking && (viewModel as SignUpViewModel).isVerified == true)
+    return !isFocused && (isLinkingScreen && (viewModel as LinkingViewModel).isVerified == true) || (!isLinkingScreen && (viewModel as SignUpViewModel).isVerified == true)
 }

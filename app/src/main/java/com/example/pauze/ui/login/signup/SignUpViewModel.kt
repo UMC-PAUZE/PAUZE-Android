@@ -1,5 +1,6 @@
 package com.example.pauze.ui.login.signup
 
+import android.content.Context
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -9,12 +10,17 @@ import com.example.pauze.ui.BaseViewModel
 import kotlinx.datetime.LocalDate
 import android.os.CountDownTimer
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.lifecycle.viewModelScope
+import com.example.pauze.data.datastore.AuthDataStore
 import com.example.pauze.data.model.BaseUiState
 import com.example.pauze.data.model.SendCodeForSignUpResult
 import com.example.pauze.data.model.TermAgreement
 import com.example.pauze.data.repository.AuthRepository
+import com.example.pauze.data.repository.TokenRepository
 import com.example.pauze.ui.login.LoginNavDestination
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 sealed interface SignUpEffect {
@@ -22,7 +28,7 @@ sealed interface SignUpEffect {
     object BackStack: SignUpEffect
     data class NavigateToPolicy(val isTermOfUse: Boolean): SignUpEffect
     object NavigateToCompleted: SignUpEffect
-    object NavigateToLink: SignUpEffect
+    object NavigateToHome: SignUpEffect
     object ShowLinkDialog: SignUpEffect
     object ShowBirthdayPicker: SignUpEffect
 }
@@ -30,6 +36,7 @@ sealed interface SignUpEffect {
 @HiltViewModel
 class SignUpViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
+    private val dataStore: AuthDataStore,
     private val repository: AuthRepository
 ): BaseViewModel<SignUpEffect, Unit>(
     uiState = BaseUiState(data = Unit)
@@ -39,6 +46,7 @@ class SignUpViewModel @Inject constructor(
     // phase 0
     var email by mutableStateOf("")
     var isEmailExists by mutableStateOf<Boolean?>(null)
+    var isKakaoAccountExists by mutableStateOf(false)
     var emailAvailableStatus by mutableStateOf("")
 
     // phase 1
@@ -81,7 +89,8 @@ class SignUpViewModel @Inject constructor(
                         isEmailExists = true
                     }
                     "KAKAO" -> {
-                        isEmailExists = true
+                        isKakaoAccountExists = true
+                        sendEffect(SignUpEffect.ShowLinkDialog)
                     }
                 }
                 emailAvailableStatus = result.status
@@ -106,11 +115,13 @@ class SignUpViewModel @Inject constructor(
                         println("인증 코드 전송됨")
                     }
                     else -> {
+                        println("인증코드 전송 실패")
                         return@launch
                     }
                 }
             },
             onFailure = {
+                println("인증코드 전송 실패")
                 return@launch
             }
         ) {
@@ -128,6 +139,7 @@ class SignUpViewModel @Inject constructor(
                 isVerified = true
             },
             onFailure = {
+                isVerified = false
                 return@launch
             }
         ) {
@@ -153,10 +165,44 @@ class SignUpViewModel @Inject constructor(
         }
     }
 
+    fun linkAccount() {
+        launch(
+            onSuccess = { result ->
+                if(result == null) return@launch
+                viewModelScope.launch {
+                    // 토큰 저장
+                    dataStore.saveAccessToken(result.accessToken)
+                    dataStore.saveRefreshToken(result.refreshToken)
+                    TokenRepository.updateAccessToken(result.accessToken)
+
+                    navigateToHome()
+                }
+            },
+            onFailure = {
+                return@launch
+            }
+        ) {
+            val kakaoAccessToken = dataStore.getKakaoAccessToken() ?: ""
+            repository.linkAccount("KAKAO_TO_LOCAL", kakaoAccessToken, email, password)
+        }
+    }
+
     fun signUp(){
         launch(
-            onSuccess = {
+            onSuccess = { result ->
+                if(result == null) {
+                    return@launch
+                }
+                viewModelScope.launch {
+                    // 토큰 저장
+                    dataStore.saveAccessToken(result.accessToken)
+                    dataStore.saveRefreshToken(result.refreshToken)
+                    TokenRepository.updateAccessToken(result.accessToken)
+                }
                 sendEffect(SignUpEffect.NavigateToCompleted)
+            },
+            onFailure = {
+                return@launch
             }
         ) {
             repository.localSignUp(
@@ -172,6 +218,39 @@ class SignUpViewModel @Inject constructor(
             )
         }
     }
+
+    fun kakaoLogin(context: Context) {
+        launch(
+            onSuccess = {
+                confirmKakaoAccount()
+            },
+            onFailure = {
+                return@launch
+            }
+        ) {
+            val kakaoAccessToken = dataStore.kakaoLoginAndGetToken(context).firstOrNull() ?: ""
+            dataStore.saveKakaoAccessToken(kakaoAccessToken)
+        }
+    }
+
+    fun confirmKakaoAccount(){
+        launch(
+            onSuccess = { result ->
+                if(result == null) {
+                    println("인증코드 전송 실패")
+                }
+                println("인증코드 전송")
+            },
+            onFailure = {
+                println("인증코드 전송 실패")
+                return@launch
+            }
+        ) {
+            repository.confirmKakaoAccount(email)
+        }
+    }
+
+
 
     fun updateIsAgreedToTerm(isAgreed: Boolean){
         isAgreedToTerm = isAgreed
@@ -212,11 +291,8 @@ class SignUpViewModel @Inject constructor(
     fun checkPolicy(isTermOfUse: Boolean){
         sendEffect(SignUpEffect.NavigateToPolicy(isTermOfUse))
     }
-    fun navigateToLink(){
-        sendEffect(SignUpEffect.NavigateToLink)
-    }
-    fun showLinkDialog(){
-        sendEffect(SignUpEffect.ShowLinkDialog)
+    fun navigateToHome(){
+        sendEffect(SignUpEffect.NavigateToHome)
     }
     fun showBirthdayPicker(){
         sendEffect(SignUpEffect.ShowBirthdayPicker)

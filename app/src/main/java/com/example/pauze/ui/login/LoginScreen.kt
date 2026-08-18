@@ -79,7 +79,7 @@ class LoginActivity : ComponentActivity() {
                         LoginScreen(this@LoginActivity, navController)
                     }
                     composable<LoginNavDestination.SignUp> {
-                        SignUpScreen(navController)
+                        SignUpScreen(this@LoginActivity, navController)
                     }
                     composable<LoginNavDestination.Policy> {
                         TermsAndPolicyScreen(navController)

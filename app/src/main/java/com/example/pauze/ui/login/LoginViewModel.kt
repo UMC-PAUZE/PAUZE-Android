@@ -37,13 +37,14 @@ class LoginViewModel @Inject constructor(
                 if(result == null) return@launch
                 when(result){
                     is KakaoLoginResult.LoginSuccess -> {
-                        // 토큰 저장
                         viewModelScope.launch {
+                            // 토큰 저장
                             dataStore.saveAccessToken(result.accessToken)
                             dataStore.saveRefreshToken(result.refreshToken)
                             TokenRepository.updateAccessToken(result.accessToken)
+
+                            sendEffect(LoginEffect.NavigateToHome)
                         }
-                        sendEffect(LoginEffect.NavigateToHome)
                     }
                     is KakaoLoginResult.SignUp -> {
                         sendEffect(LoginEffect.NavigateToAdditionalScreen)
@@ -68,13 +69,15 @@ class LoginViewModel @Inject constructor(
         launch(
             onSuccess = { result ->
                 if(result == null) return@launch
-                // 토큰 저장
                 viewModelScope.launch {
+                    // 토큰 저장
                     dataStore.saveAccessToken(result.accessToken)
                     dataStore.saveRefreshToken(result.refreshToken)
                     TokenRepository.updateAccessToken(result.accessToken)
+
+                    sendEffect(LoginEffect.NavigateToHome)
                 }
-                sendEffect(LoginEffect.NavigateToHome)
+
             },
             onFailure = { sendEffect(LoginEffect.IsLoginFailed) }
         ) {
