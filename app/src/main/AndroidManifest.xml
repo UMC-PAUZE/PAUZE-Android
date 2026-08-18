@@ -20,11 +20,8 @@
             android:name=".ui.login.LoginActivity"
             android:exported="true"
             android:label="@string/app_name"
-            android:theme="@style/Theme.PAUZEAndroid" />
-        <activity
-            android:name=".MainActivity"
-            android:exported="true"
-            android:launchMode="singleTop">
+            android:theme="@style/Theme.PAUZEAndroid">
+
             <!-- 큐레이션 딥링크로 실행 -->
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
@@ -50,9 +47,11 @@
                     android:pathPrefix="/curation/" />
             </intent-filter>
         </activity>
-        <activity android:name=".ui.pauze.start.PauzeStartActivity"
+        <activity android:name=".MainActivity"
             android:exported="false"/>
-        <activity android:name=".ui.pauze.condition.PauzeTodayConditionActivity"
+        <activity android:name=".ui.pauze.PauzeStartActivity"
+            android:exported="false"/>
+        <activity android:name=".ui.pauze.PauzeTodayConditionActivity"
             android:exported="false"/>
         <!--카카오 로그인용 액티비티-->
         <activity

@@ -10,8 +10,8 @@ data class UserMeResultDto(
 )
 
 data class Settings(
-    val notifications: Notifications, // 알림 설정
-    val stabilityContent: StabilityContent, // 안정 콘텐츠 설정
+    val notifications: Notifications,
+    val stabilityContent: StabilityContent,
 )
 
 data class Notifications(
@@ -33,7 +33,6 @@ data class UserProfileResultDto(
     val introduction: String?,
     val profileImageUrl: String?,
     val email: String,
-    val birth: String,
     val socialTypes: List<String>,
     val joinedAt: String,
     val stats: Stats,
@@ -80,10 +79,7 @@ data class WithdrawRequest(
 data class MyPageState(
     val profile: UserMeResultDto? = null,
     val stats: Stats? = null,
-    val isProfileLoading: Boolean = true,
-    val isStatsLoading: Boolean = true,
-    val profileError: String? = null,
-    val statsError: String? = null,
+    val loadError: String? = null,
 )
 
 data class AccountInfoState(

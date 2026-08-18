@@ -1,4 +1,4 @@
-package com.example.pauze.ui.pauze.breathing
+package com.example.pauze.ui.pauze
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -81,13 +81,11 @@ class PauzeBreathingViewModel @Inject constructor(
 
         timerJob = viewModelScope.launch {
             breathState = BreathState(BreathPhase.READY, 3)
-            for (sec in 3 downTo 1) { // 3 - 2 - 1 카운터
+            for (sec in 3 downTo 1) {
                 waitWhilePaused()
                 breathState = BreathState(BreathPhase.READY, sec)
                 delayAndWaitIfPaused()
             }
-
-            // 실제 호흡 루프
             while (currentCycle < totalCycle) {
                 for ((phase, duration) in phases) {
                     for (sec in 1..duration) {
@@ -102,7 +100,7 @@ class PauzeBreathingViewModel @Inject constructor(
             ensureActive()
             if (!isCompleted) {
                 isCompleted = true
-                pauzeUsageRepository.recordCompletedUsage() // pauze 기록 처리
+                pauzeUsageRepository.recordCompletedUsage()
             }
             delay(1000)
             sendEffect(BreathingEffect.NavigateToBack)

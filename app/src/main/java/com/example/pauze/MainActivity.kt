@@ -20,13 +20,12 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavHostController
@@ -36,27 +35,24 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.pauze.data.repository.TokenRepository
 import com.example.pauze.ui.curation.CurationBoardScreen
-import com.example.pauze.ui.curation.toCurationPostIdOrNull
 import com.example.pauze.ui.home.HomeScreen
 import com.example.pauze.ui.login.LoginActivity
 import com.example.pauze.ui.mypage.AccountInfoScreen
 import com.example.pauze.ui.mypage.MyPageNavDestination
 import com.example.pauze.ui.mypage.MyPageScreen
 import com.example.pauze.ui.mypage.ProfileEditScreen
-import com.example.pauze.ui.pauze.start.PauzeStartActivity
+import com.example.pauze.ui.pauze.PauzeStartActivity
 import com.example.pauze.ui.report.ReportScreen
 import com.example.pauze.ui.theme.AppTheme
 import com.example.pauze.ui.theme.MainPaletteTheme
 import com.example.pauze.ui.theme.captionTextMedium
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
-    private var pendingCurationPostId by mutableStateOf<Long?>(null)
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        updateCurationDeepLink(intent)
         enableEdgeToEdge()
         setContent {
             MainPaletteTheme {
@@ -72,46 +68,16 @@ class MainActivity : ComponentActivity() {
                         }
                     }
                 }
-                MainScreen(
-                    context = this,
-                    navController = navController,
-                    deepLinkPostId = pendingCurationPostId,
-                    onDeepLinkConsumed = ::consumeCurationDeepLink,
-                )
+                MainScreen(this, navController)
             }
         }
-    }
-
-    override fun onNewIntent(intent: Intent) {
-        super.onNewIntent(intent)
-        setIntent(intent)
-        updateCurationDeepLink(intent)
-    }
-
-    private fun updateCurationDeepLink(intent: Intent) {
-        pendingCurationPostId = intent.data?.toCurationPostIdOrNull()
-    }
-
-    private fun consumeCurationDeepLink() {
-        pendingCurationPostId = null
-        intent.data = null
     }
 }
 @Composable
 fun MainScreen(
     context: Context,
     navController: NavHostController,
-    deepLinkPostId: Long? = null,
-    onDeepLinkConsumed: () -> Unit = {},
 ){
-    LaunchedEffect(deepLinkPostId) {
-        if (deepLinkPostId != null) {
-            navController.navigate(BottomNavDestination.Find) {
-                launchSingleTop = true
-            }
-        }
-    }
-
     Scaffold(
         containerColor = AppTheme.palette.gray.getColor(9),
         bottomBar = {
@@ -252,10 +218,7 @@ fun MainScreen(
                 ReportScreen(context = context, isGuest = TokenRepository.accessToken == null)
             }
             composable<BottomNavDestination.Find>{
-                CurationBoardScreen(
-                    deepLinkPostId = deepLinkPostId,
-                    onDeepLinkConsumed = onDeepLinkConsumed,
-                )
+                CurationBoardScreen()
             }
             composable<BottomNavDestination.MyPage> {
                 MyPageScreen(navController = navController, isGuest = TokenRepository.accessToken == null)

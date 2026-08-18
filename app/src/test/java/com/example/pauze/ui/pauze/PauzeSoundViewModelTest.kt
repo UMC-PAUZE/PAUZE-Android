@@ -1,7 +1,6 @@
 package com.example.pauze.ui.pauze
 
 import com.example.pauze.data.model.SoundItem
-import com.example.pauze.ui.pauze.sound.mergeRemoteWithLocal
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue

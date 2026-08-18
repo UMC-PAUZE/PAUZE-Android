@@ -121,7 +121,6 @@ fun CurationArchiveScreen(
         }
     }
 
-    // 탭마다 데이터 집합이 달라 이전 탭의 스크롤 위치를 그대로 노출하지 않는다.
     LaunchedEffect(selectedTab) {
         if (listState.layoutInfo.totalItemsCount > 0) {
             listState.scrollToItem(0)
@@ -135,7 +134,6 @@ fun CurationArchiveScreen(
         isLoading,
         hasNextPage,
     ) {
-        // 목록 추가 후에도 임계점에 머물 수 있으므로 로딩 및 다음 페이지 여부를 함께 확인한다.
         if (
             shouldLoadMore &&
             !isLoading &&
@@ -165,7 +163,6 @@ fun CurationArchiveScreen(
                 onQueryChange = { keyword ->
                     onSearchKeywordChange(keyword)
 
-                    // 검색어를 모두 지우면 별도 검색 동작 없이 전체 보관함을 즉시 복원한다.
                     if (keyword.isBlank()) {
                         onSearch()
                     }

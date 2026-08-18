@@ -132,7 +132,6 @@ fun CurationPostDetailDto.toCurationPost(
     )
 }
 
-// 보관함 API가 제공하지 않는 필드는 중립값으로 두고, ViewModel에서 기존 캐시와 병합한다.
 fun MyBookmarkListItemDto.toCurationPost(): CurationPost {
     return CurationPost(
         postId = postId,
@@ -150,7 +149,6 @@ fun MyBookmarkListItemDto.toCurationPost(): CurationPost {
     )
 }
 
-// 좋아요 목록 응답에는 썸네일과 조회수가 없으므로 기존 게시글 데이터가 있으면 재사용한다.
 fun MyLikeListItemDto.toCurationPost(): CurationPost {
     return CurationPost(
         postId = postId,

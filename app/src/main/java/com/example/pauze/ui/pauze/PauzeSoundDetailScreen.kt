@@ -1,4 +1,4 @@
-package com.example.pauze.ui.pauze.sound
+package com.example.pauze.ui.pauze
 
 import android.net.Uri
 import androidx.compose.foundation.Image

@@ -52,7 +52,6 @@ import com.example.pauze.ui.theme.bodyTextMdRegular
 import com.example.pauze.ui.theme.bodyTextSmMedium
 import com.example.pauze.ui.theme.bodyTextSmRegular
 
-// 서버 본문은 구조화된 블록이 아닌 일반 문자열이므로 문단과 번호 제목을 화면에서 구분한다.
 private val sectionTitlePattern = Regex("""^\d+\..+""")
 private val paragraphSeparatorPattern = Regex("""\n\s*\n""")
 

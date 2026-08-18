@@ -27,7 +27,6 @@ import com.example.pauze.ui.theme.fontFamily
 import com.example.pauze.ui.theme.headingMdRegular
 import com.example.pauze.ui.theme.headingXlBold
 
-// 오늘의 컨디션 조회 화면 (점수, 예민함 정도 보여줌)
 @Composable
 fun TodayConditionCard(
     condition: Condition?,
