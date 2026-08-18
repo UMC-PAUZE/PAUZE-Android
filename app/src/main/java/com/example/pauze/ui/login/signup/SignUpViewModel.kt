@@ -198,7 +198,7 @@ class SignUpViewModel @Inject constructor(
             )
         }
     }
-    // 클라이언트 소셜 로그인
+    // 클라이언트 카카오 로그인
     fun kakaoLogin(context: Context) {
         launch(
             onSuccess = {
