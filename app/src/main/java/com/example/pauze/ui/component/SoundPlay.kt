@@ -155,6 +155,13 @@ fun SoundPlay(
                         modifier = Modifier
                             .size(width = option.width, height = 34.dp)
                             .clip(CircleShape)
+                            .background(
+                                if (isSelected) {
+                                    AppTheme.palette.gray.getColor(3).copy(alpha = 0.4f)
+                                } else {
+                                    Color.Transparent
+                                }
+                            )
                             .border(
                                 BorderStroke(
                                     width = if (isSelected) 2.dp else 1.dp,
