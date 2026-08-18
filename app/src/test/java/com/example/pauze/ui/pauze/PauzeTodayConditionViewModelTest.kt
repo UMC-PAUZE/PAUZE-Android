@@ -5,7 +5,6 @@ import com.example.pauze.data.model.NoiseLevel
 import com.example.pauze.data.model.SleepLevel
 import com.example.pauze.data.model.SocialLevel
 import com.example.pauze.data.model.VisualLevel
-import com.example.pauze.ui.pauze.condition.toTodayConditionRequest
 import org.junit.Assert.assertEquals
 import org.junit.Test
 

@@ -39,7 +39,6 @@ class ReportViewModel @Inject constructor(
 
     private var pendingFetchCount = 0
     fun refresh() {
-        // 3개 API 요청 끝나기 전에 재호출 무시
         if (pendingFetchCount > 0) return
         pendingFetchCount = 3
         fetchWeekly()

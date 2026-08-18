@@ -1,4 +1,4 @@
-package com.example.pauze.ui.pauze.condition
+package com.example.pauze.ui.pauze
 
 import com.example.pauze.data.model.BaseUiState
 import com.example.pauze.data.model.ConditionQuestion

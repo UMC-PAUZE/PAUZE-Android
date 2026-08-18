@@ -39,6 +39,9 @@ import com.example.pauze.ui.component.TopBar
 import com.example.pauze.ui.component.SetBirthday
 import com.example.pauze.ui.theme.AppTheme
 import com.example.pauze.ui.theme.PAUZEAndroidTheme
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.format
+import kotlinx.datetime.format.char
 
 @Composable
 fun ProfileEditScreen(
@@ -51,6 +54,12 @@ fun ProfileEditScreen(
                 is ProfileEditEffect.NavigateToBack -> navController.popBackStack()
             }
         }
+    }
+
+    val dateFormat = LocalDate.Format {
+        year(); char('.'); char(' ')
+        monthNumber(); char('.'); char(' ')
+        day()
     }
 
     val pickImageLauncher = rememberLauncherForActivityResult(
@@ -136,7 +145,7 @@ fun ProfileEditScreen(
                 ModeBasedTextField(
                     mode = TextFieldMode.Nickname,
                     value = viewModel.nickname,
-                    onValueChanged = { viewModel.updateNickname(it) },
+                    onValueChanged = { viewModel.nickname = it },
                     imeAction = ImeAction.Next,
                     commentText = viewModel.loadError,
                     isError = viewModel.loadError != null
@@ -145,13 +154,13 @@ fun ProfileEditScreen(
                 ModeBasedTextField(
                     mode = TextFieldMode.Bio,
                     value = viewModel.bio,
-                    onValueChanged = { viewModel.updateBio(it) },
+                    onValueChanged = { viewModel.bio = it },
                     imeAction = ImeAction.Done,
                     commentText = "${viewModel.bio.length}/30"
                 )
 
                 SetBirthday(
-                    birthday = viewModel.birthday ?: "생년월일을 입력해주세요",
+                    birthday = viewModel.birthday?.format(dateFormat) ?: "생년월일을 입력해주세요",
                     onClick = {  },
                     showDropdownIcon = false
                 )

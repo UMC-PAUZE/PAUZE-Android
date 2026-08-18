@@ -26,7 +26,6 @@ import com.example.pauze.ui.theme.bodyTextMdBold
 import com.example.pauze.ui.theme.bodyTextMdRegular
 import com.example.pauze.ui.theme.bodyTextSmRegular
 
-// 리포트 그래프 화면
 @Composable
 fun AverageScoreCard(state: AverageScoreUiState){
     ReportCard() {
@@ -56,7 +55,6 @@ fun AverageScoreCard(state: AverageScoreUiState){
                 }
             }
 
-            // 그래프 그라데이션
             Column(modifier = Modifier.weight(1f)) {
                 val chartHeight = 165.dp
                 val redColor = AppTheme.palette.secondary.getColor(4)

@@ -1,4 +1,4 @@
-package com.example.pauze.ui.pauze.visual
+package com.example.pauze.ui.pauze
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -27,7 +27,6 @@ fun PauzeVisualCountdownScreen(
     onCountdownChange: (Int) -> Unit,
     onCountdownFinish: () -> Unit
 ) {
-    // 화면 진입마다 카운트다운을 한 번만 실행하고 완료 후 실행 단계로 전환한다.
     LaunchedEffect(Unit) {
         for (number in 3 downTo 1) {
             onCountdownChange(number)
@@ -37,7 +36,6 @@ fun PauzeVisualCountdownScreen(
         onCountdownFinish()
     }
 
-    // 오버레이가 시간 선택 화면의 터치를 가로채 카운트다운 중 값 변경을 막는다.
     Box(
         modifier = Modifier
             .fillMaxSize()
