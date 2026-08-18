@@ -1,8 +1,14 @@
 package com.example.pauze.data.model
 
-import java.util.Collections.emptyList
+data class InstantAction(
+    val duration: Int,
+    val title: String,
+    val image: Int,
+)
 
-data class PauzeOverloadState(
-    val instantActions: List<InstantAction> = emptyList(),
-    val restGuideList: List<RestGuide> = emptyList()
+data class RestGuide(
+    val image: Int,
+    val duration: Int,
+    val title: String,
+    val content: String
 )
