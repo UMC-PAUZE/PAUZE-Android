@@ -28,6 +28,8 @@ import com.example.pauze.ui.component.SoundPlay
 import com.example.pauze.ui.component.TopBar
 import com.example.pauze.ui.theme.*
 import java.io.File
+import java.util.Locale
+import kotlinx.coroutines.delay
 
 @Composable
 fun PauzeSoundDetailScreen(
@@ -61,6 +63,7 @@ fun PauzeSoundDetailScreen(
                     true
                 )
                 setMediaItem(MediaItem.fromUri(uri))
+                repeatMode = Player.REPEAT_MODE_ONE
                 prepare()
             }
         }
@@ -68,11 +71,23 @@ fun PauzeSoundDetailScreen(
     var isPlayerPlaying by remember(player) {
         mutableStateOf(player?.isPlaying == true)
     }
+    var currentPositionMs by remember(player) {
+        mutableLongStateOf(0L)
+    }
+
+    fun updatePlaybackPosition(currentPlayer: Player) {
+        currentPositionMs = currentPlayer.currentPosition.coerceAtLeast(0L)
+    }
 
     DisposableEffect(player) {
         val listener = object : Player.Listener {
             override fun onIsPlayingChanged(isPlaying: Boolean) {
                 isPlayerPlaying = isPlaying
+                player?.let(::updatePlaybackPosition)
+            }
+
+            override fun onPlaybackStateChanged(playbackState: Int) {
+                player?.let(::updatePlaybackPosition)
             }
         }
 
@@ -81,6 +96,17 @@ fun PauzeSoundDetailScreen(
             player?.removeListener(listener)
             player?.release()
         }
+    }
+
+    LaunchedEffect(player, isPlayerPlaying) {
+        val currentPlayer = player ?: return@LaunchedEffect
+
+        do {
+            updatePlaybackPosition(currentPlayer)
+            if (isPlayerPlaying) {
+                delay(250L)
+            }
+        } while (isPlayerPlaying)
     }
 
     Box(
@@ -175,10 +201,15 @@ fun PauzeSoundDetailScreen(
 
         // 4. 하단 타이머 및 재생 컨트롤러
         SoundPlay(
+            currentTime = formatPlaybackTime(currentPositionMs),
             isPlaying = isPlayerPlaying,
             isPlaybackAvailable = player != null,
             usageSessionId = sound.id,
             onUsageQualified = onUsageQualified,
+            onTimerFinished = {
+                player?.pause()
+                onBackClick()
+            },
             onPlayClick = {
                 player?.let { currentPlayer ->
                     if (currentPlayer.isPlaying) {
@@ -195,6 +226,19 @@ fun PauzeSoundDetailScreen(
                 .align(Alignment.BottomCenter)
                 .fillMaxWidth()
         )
+    }
+}
+
+private fun formatPlaybackTime(positionMs: Long): String {
+    val totalSeconds = (positionMs / 1_000L).coerceAtLeast(0L)
+    val hours = totalSeconds / 3_600L
+    val minutes = (totalSeconds % 3_600L) / 60L
+    val seconds = totalSeconds % 60L
+
+    return if (hours > 0L) {
+        String.format(Locale.US, "%d:%02d:%02d", hours, minutes, seconds)
+    } else {
+        String.format(Locale.US, "%02d:%02d", minutes, seconds)
     }
 }
 
