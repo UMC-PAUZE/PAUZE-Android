@@ -20,7 +20,7 @@ class PauzeOverloadViewModel @Inject constructor(
 ): BaseViewModel<PauzeOverloadEffect, Unit>(
     uiState = BaseUiState(data = Unit)
 ) {
-    val instantActions = listOf<InstantAction>(
+    val instantActions = listOf (
         InstantAction(
             duration = 10,
             title = "눈 감고 10초 호흡",
@@ -43,7 +43,7 @@ class PauzeOverloadViewModel @Inject constructor(
         ),
     )
 
-    val restGuideList = listOf<RestGuide>(
+    val restGuideList = listOf (
         RestGuide(
             image = 0,
             duration = 10,
@@ -75,14 +75,14 @@ class PauzeOverloadViewModel @Inject constructor(
             content = "오늘 가장 강하게 느낀 감정 하나를 3줄 이내로 적습니다. 감정을 언어화하면 처리되지 않은 자극이 쌓이는 것을 방지하는 효과가 있어요."
         ),
     )
+    fun onRestGuideCompleted() {
+        pauzeUsageRepository.recordCompletedUsage()
+    }
+
     fun backStack(){
         sendEffect(PauzeOverloadEffect.BackStack)
     }
     fun navigateToFind(){
         sendEffect(PauzeOverloadEffect.NavigateToFind)
-    }
-
-    fun onRestGuideCompleted() {
-        pauzeUsageRepository.recordCompletedUsage()
     }
 }

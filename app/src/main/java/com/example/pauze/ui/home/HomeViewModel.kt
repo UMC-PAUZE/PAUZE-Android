@@ -1,10 +1,6 @@
 package com.example.pauze.ui.home
 
-import androidx.datastore.dataStore
-import androidx.lifecycle.viewModelScope
-import com.example.pauze.data.datastore.AuthDataStore
 import com.example.pauze.data.model.BaseUiState
-import com.example.pauze.data.model.Condition
 import com.example.pauze.data.model.GetTodayConditionResponseDto
 import com.example.pauze.data.model.HomeState
 import com.example.pauze.data.model.User
@@ -17,7 +13,6 @@ import com.example.pauze.ui.BaseViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 sealed interface HomeEffect {
@@ -33,6 +28,7 @@ class HomeViewModel @Inject constructor(
 ) : BaseViewModel<HomeEffect, HomeState>(
     uiState = BaseUiState(data = HomeState())
 ) {
+    // 유저 정보와 컨디션 호출
     fun getUserAndCondition(){
         launch {
             TokenRepository.isInitialized.first { it }

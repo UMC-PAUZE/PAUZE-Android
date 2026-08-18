@@ -67,6 +67,7 @@ fun HomeScreen(
     val conditionBoxPadding = 16
 
     LifecycleResumeEffect(Unit) {
+        // 게스트 모드가 아니면 데이터 호출
         if(TokenRepository.accessToken != null) {
             viewModel.getUserAndCondition()
         }
@@ -103,10 +104,23 @@ fun HomeScreen(
             .background(color = AppTheme.palette.gray.getColor(9))
     ) {
         if(uiState.isLoading){
-            CircularProgressIndicator()
+            Column(
+                modifier = Modifier.fillMaxSize(),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ){
+                CircularProgressIndicator()
+            }
+
         }
         else if(uiState.error != null){
-            Text("오류가 발생했습니다\n다시 시도해주세요", style = bodyTextXlBold, color = AppTheme.palette.gray.getColor(2))
+            Column(
+                modifier = Modifier.fillMaxSize(),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ){
+                Text("오류가 발생했습니다\n다시 시도해주세요", style = bodyTextXlBold, color = AppTheme.palette.gray.getColor(2))
+            }
         }
         else {
             TopBar(variant = TopBarVariant.Home)
@@ -119,6 +133,7 @@ fun HomeScreen(
                     style = headingMdMedium,
                     color = AppTheme.palette.gray.getColor(2))
                 Spacer(modifier = Modifier.height(16.dp))
+                // 컨디션 입력하기 버튼
                 if(!uiState.data.isTodayConditionExists){
                     Column {
                         Button(
@@ -130,11 +145,13 @@ fun HomeScreen(
                         Spacer(modifier = Modifier.height(48.dp))
                     }
                 }
+                // 즉각 안정-호흡 이동 버튼
                 NavigationButton(
                     toWhere = Destination.PauzeBreathing,
                     onClick = { viewModel.moveToBreathing() }
                 )
                 Spacer(modifier = Modifier.height(16.dp))
+                // 컨디션 표시
                 ConditionBox(
                     condition = uiState.data.condition,
                     isTodayConditionExists = uiState.data.isTodayConditionExists,
@@ -196,6 +213,7 @@ fun ConditionBox(condition: Condition?, isTodayConditionExists: Boolean, boxPadd
                 Spacer(modifier = Modifier.height(16.dp))
                 ConditionDetailBox(condition = condition)
                 Spacer(modifier = Modifier.height(16.dp))
+                // 리포트 화면으로 이동
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
