@@ -200,7 +200,7 @@ class AuthRepositoryImpl @Inject constructor(
     override suspend fun confirmKakaoAccount(
         email: String
     ): ConfirmKakaoResult? {
-        val kakaoAccessToken = dataStore.getKakaoAccessToken() ?: ""
+        val kakaoAccessToken = dataStore.getKakaoAccessToken() ?: return null
 
         return try {
             val response = service.confirmKakaoAccount(ConfirmKakaoRequest(email, kakaoAccessToken))
@@ -239,7 +239,7 @@ class AuthRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun refreshToken(token: String?): Token? {
+    override suspend fun refreshToken(): Token? {
         return try {
             val token = dataStore.getRefreshToken()
             if(token == null) return null

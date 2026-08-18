@@ -38,6 +38,7 @@ import com.example.pauze.ui.theme.AppTheme
 import com.example.pauze.R
 import com.example.pauze.data.model.Condition
 import com.example.pauze.data.model.SensitivityLevel
+import com.example.pauze.data.repository.TokenRepository
 import com.example.pauze.ui.component.Button
 import com.example.pauze.ui.component.Chips
 import com.example.pauze.ui.component.SensitivityScoreBar
@@ -66,7 +67,9 @@ fun HomeScreen(
     val conditionBoxPadding = 16
 
     LifecycleResumeEffect(Unit) {
-        viewModel.getUserAndCondition()
+        if(TokenRepository.accessToken != null) {
+            viewModel.getUserAndCondition()
+        }
         onPauseOrDispose { }
     }
 

@@ -198,8 +198,9 @@ class SignUpViewModel @Inject constructor(
                     dataStore.saveAccessToken(result.accessToken)
                     dataStore.saveRefreshToken(result.refreshToken)
                     TokenRepository.updateAccessToken(result.accessToken)
+
+                    sendEffect(SignUpEffect.NavigateToCompleted)
                 }
-                sendEffect(SignUpEffect.NavigateToCompleted)
             },
             onFailure = {
                 return@launch
@@ -223,12 +224,13 @@ class SignUpViewModel @Inject constructor(
         launch(
             onSuccess = {
                 confirmKakaoAccount()
+                updatePhase()
             },
             onFailure = {
                 return@launch
             }
         ) {
-            val kakaoAccessToken = dataStore.kakaoLoginAndGetToken(context).firstOrNull() ?: ""
+            val kakaoAccessToken = dataStore.kakaoLoginAndGetToken(context).firstOrNull() ?: return@launch
             dataStore.saveKakaoAccessToken(kakaoAccessToken)
         }
     }

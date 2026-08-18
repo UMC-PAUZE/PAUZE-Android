@@ -34,7 +34,10 @@ fun SetNameAndNickname(
         ModeBasedTextField(
             mode = TextFieldMode.UserName,
             value = viewModel.name,
-            onValueChanged = { viewModel.name = it },
+            onValueChanged = {
+                viewModel.name = it
+                viewModel.isNicknameAvailable = null
+            },
             imeAction = ImeAction.Next
         )
         Text(
@@ -67,10 +70,6 @@ fun SetNameAndNickname(
                 AppTheme.palette.primary.getColor(4)
             else AppTheme.palette.gray.getColor(5)
         )
-
-        if(viewModel.nickname.isEmpty()) {
-            viewModel.isNicknameAvailable = null
-        }
     }
     return viewModel.name.length > 1 && viewModel.nickname.length < 10 && viewModel.isNicknameAvailable == true
 }

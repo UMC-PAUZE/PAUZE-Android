@@ -45,10 +45,12 @@ class AccountInfoViewModel @Inject constructor(
         launch(
             onSuccess = {
                 viewModelScope.launch {
+                    // 토큰 초기화
                     authDataStore.clearToken()
+                    TokenRepository.updateAccessToken(null)
+
+                    sendEffect(AccountInfoEffect.NavigateToLogout)
                 }
-                TokenRepository.updateAccessToken(null)
-                sendEffect(AccountInfoEffect.NavigateToLogout)
             }
         ) {
             authRepository.logout()

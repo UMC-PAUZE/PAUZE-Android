@@ -51,7 +51,6 @@ fun SetAndCheckEmail(
                 onDismissRequest =  { viewModel.showLinkDialog = false },
                 onContinue = {
                     viewModel.kakaoLogin(context)
-                    viewModel.updatePhase()
                 }
             )
         }

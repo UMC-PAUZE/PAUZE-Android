@@ -33,10 +33,6 @@ class HomeViewModel @Inject constructor(
 ) : BaseViewModel<HomeEffect, HomeState>(
     uiState = BaseUiState(data = HomeState())
 ) {
-    init {
-        getUserAndCondition()
-    }
-
     fun getUserAndCondition(){
         launch {
             TokenRepository.isInitialized.first { it }
@@ -62,7 +58,7 @@ class HomeViewModel @Inject constructor(
 
     private fun toHomeState(user: User?, conditionDto: GetTodayConditionResponseDto?): HomeState {
         return HomeState(
-            nickname = user?.nickname ?: "사용자님",
+            nickname = user?.nickname ?: "사용자",
             condition = conditionDto?.toCondition(),
             isTodayConditionExists = conditionDto?.isToday() ?: false
         )
