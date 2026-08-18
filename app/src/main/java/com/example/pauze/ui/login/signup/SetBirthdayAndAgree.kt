@@ -17,6 +17,7 @@ import kotlinx.datetime.LocalDate
 import kotlinx.datetime.format
 import kotlinx.datetime.format.char
 
+// 생일 입력, 약관 및 개인정보 처리방침 동의
 @Composable
 fun SetBirthdayAndAgree(
     viewModel: SignUpViewModel
@@ -30,23 +31,28 @@ fun SetBirthdayAndAgree(
         char('-')
         day()
     }
-
+    // 생일
     SetBirthday(
         birthday = viewModel.birthday?.format(customDateFormat) ?: "생년월일을 입력해주세요",
         onClick = {
             focusManager.clearFocus()
-            viewModel.showBirthdayPicker()
+            viewModel.showBirthdayPicker(true)
         }
     )
     Spacer(modifier = Modifier.height(48.dp))
+    // 약관 동의
     AgreementCheckbox(viewModel, viewModel.isAgreedToTerm, true, focusManager, false)
     Spacer(modifier = Modifier.height(12.dp))
     AgreementCheckbox(viewModel, viewModel.isAgreedToPolicy, false, focusManager, false)
+
     if(viewModel.showBirthdayPicker){
         BirthdayBottomSheet(
-            onDismissRequest = { viewModel.showBirthdayPicker = false },
+            onDismissRequest = { viewModel.showBirthdayPicker(false) },
             onDateChanged = { tempDay = it },
-            onClick = { viewModel.birthday = tempDay; viewModel.showBirthdayPicker = false }
+            onClick = {
+                viewModel.updateBirthday(tempDay)
+                viewModel.showBirthdayPicker(false)
+            }
         )
     }
 

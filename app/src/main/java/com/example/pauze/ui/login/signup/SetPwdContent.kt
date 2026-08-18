@@ -10,16 +10,15 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import com.example.pauze.ui.component.ModeBasedTextField
 import com.example.pauze.ui.component.TextFieldMode
-import com.example.pauze.ui.login.component.AgreementCheckbox
 import com.example.pauze.ui.theme.AppTheme
 import com.example.pauze.ui.theme.bodyTextSmRegular
 import java.util.regex.Pattern
 
+// 비밀번호
 @Composable
 fun SetPwdContent(
     viewModel: SignUpViewModel
@@ -28,10 +27,11 @@ fun SetPwdContent(
     val pwdCheck = Pattern.matches("^(?=.*[0-9])(?=.*[a-zA-Z])(?=.*[!@#$%^&*]).+$", viewModel.password)
 
     Column {
+        // 비밀번호
         isPwdFocused = ModeBasedTextField(
             mode = TextFieldMode.SetPwd,
             value = viewModel.password,
-            onValueChanged = { viewModel.password = it },
+            onValueChanged = { viewModel.updatePwd(it) },
             imeAction = ImeAction.Next
         )
         Spacer(modifier = Modifier.height(4.dp))
@@ -47,10 +47,12 @@ fun SetPwdContent(
             else AppTheme.palette.gray.getColor(5)
         )
         Spacer(modifier = Modifier.height(12.dp))
+
+        // 비밀번호 확인
         ModeBasedTextField(
             mode = TextFieldMode.SetPwd,
             value = viewModel.pwdCheck,
-            onValueChanged = { viewModel.pwdCheck = it },
+            onValueChanged = { viewModel.updatePwdCheck(it) },
             imeAction = ImeAction.Done,
             checkPasswordSame = { viewModel.password == viewModel.pwdCheck }
         )
