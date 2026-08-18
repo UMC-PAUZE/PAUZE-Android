@@ -21,7 +21,6 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import com.example.pauze.ui.component.ModeBasedTextField
 import com.example.pauze.ui.component.TextFieldMode
-import com.example.pauze.ui.login.kakao.KakaoSignUpViewModel
 import com.example.pauze.ui.login.linking.LinkingViewModel
 import com.example.pauze.ui.login.signup.SignUpViewModel
 import com.example.pauze.ui.theme.AppTheme
@@ -29,6 +28,7 @@ import com.example.pauze.ui.theme.bodyTextMdBold
 import com.example.pauze.ui.theme.bodyTextMdRegular
 import com.example.pauze.ui.theme.bodyTextSmRegular
 
+// 인증코드 입력 필드
 @Composable
 fun EnterVerificationCode(
     viewModel: ViewModel,
@@ -40,18 +40,26 @@ fun EnterVerificationCode(
         isFocused = ModeBasedTextField(
             mode = TextFieldMode.Verif,
             value = if(isLinkingScreen) (viewModel as LinkingViewModel).code else (viewModel as SignUpViewModel).code,
-            onValueChanged = { if(isLinkingScreen) (viewModel as LinkingViewModel).code = it else (viewModel as SignUpViewModel).code = it },
+            onValueChanged = {
+                if(isLinkingScreen){
+                    (viewModel as LinkingViewModel).updateCode(it)
+                    viewModel.updateIsVerified(null)
+                }
+                else{
+                    (viewModel as SignUpViewModel).updateCode(it)
+                    viewModel.updateIsVerified(null)
+                }
+            },
             imeAction = ImeAction.Done,
-            onCheckClick = { if(isLinkingScreen) (viewModel as LinkingViewModel).verifyEmail() else (viewModel as SignUpViewModel).verifyEmail() },
-            checkClickValue = if(isLinkingScreen) (viewModel as LinkingViewModel).isVerified else (viewModel as SignUpViewModel).isVerified
+            onCheckClick = {
+                if(isLinkingScreen) (viewModel as LinkingViewModel).verifyEmail()
+                else (viewModel as SignUpViewModel).verifyEmail()
+            },
+            checkClickValue = if(isLinkingScreen) (viewModel as LinkingViewModel).isVerified
+                else (viewModel as SignUpViewModel).isVerified
         )
 
-        if(isLinkingScreen && (viewModel as LinkingViewModel).code.isEmpty()){
-            viewModel.isVerified = null
-        } else if (!isLinkingScreen && (viewModel as SignUpViewModel).code.isEmpty()){
-            viewModel.isVerified = null
-        }
-
+        // 인증코드 일치 결과 반영
         if(!isFocused
             && (isLinkingScreen && (viewModel as LinkingViewModel).code != "" && viewModel.isVerified != null)
             || (!isLinkingScreen && (viewModel as SignUpViewModel).code != "" && viewModel.isVerified != null)){
@@ -66,6 +74,7 @@ fun EnterVerificationCode(
                     else AppTheme.palette.secondary.getColor(4)
             )
         }
+        // 코드 재전송
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
@@ -87,8 +96,10 @@ fun EnterVerificationCode(
                         }
                         else {
                             (viewModel as SignUpViewModel).sendEffectForTimer()
+                            // Kakao -> Local 연동
                             if(viewModel.isKakaoAccountExists){
                                 viewModel.confirmKakaoAccount()
+                            // 로컬 회원가입
                             } else {
                                 viewModel.sendCodeForSignUp()
                             }

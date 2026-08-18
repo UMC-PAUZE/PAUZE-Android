@@ -22,6 +22,7 @@ import com.example.pauze.ui.theme.AppTheme
 import com.example.pauze.ui.theme.bodyTextMdMedium
 import com.example.pauze.ui.theme.bodyTextSmRegular
 
+// 이용약관 및 개인정보 처리방침 동의 체크박스
 @Composable
 fun AgreementCheckbox(
     viewModel: ViewModel,

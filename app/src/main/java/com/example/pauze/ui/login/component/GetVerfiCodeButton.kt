@@ -5,26 +5,24 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.ViewModel
 import com.example.pauze.ui.component.Button
-import com.example.pauze.ui.login.kakao.KakaoSignUpViewModel
 import com.example.pauze.ui.login.signup.SignUpViewModel
 import com.example.pauze.ui.theme.AppTheme
 
+// 인증코드 요청 버튼
 @Composable
 fun GetVerifCodeButton(
-    viewModel: ViewModel,
-    isLinking: Boolean
+    viewModel: SignUpViewModel
 ){
     Button(
         "인증코드 받기",
         onClick = {
-            if(isLinking){
-                // todo: 잠시 후 구현
-            }else {
-                (viewModel as SignUpViewModel).sendCodeForSignUp()
+            // 로컬 회원가입일 때만 요청
+            if(!viewModel.isKakaoAccountExists){
+                viewModel.sendCodeForSignUp()
                 viewModel.updatePhase()
-            } },
+            }
+        },
         modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp),
         color = AppTheme.palette.gray.getColor(7),
         contentColor = AppTheme.palette.gray.getColor(2)

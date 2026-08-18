@@ -143,7 +143,7 @@ fun SignUpScreen(
             if(viewModel.phase == 0){
                 if(isCompleted){
                     Spacer(modifier = Modifier.height(12.dp))
-                    GetVerifCodeButton(viewModel, false)
+                    GetVerifCodeButton(viewModel)
                 }
             } else {
                 Spacer(modifier = Modifier.padding(horizontal = 24.dp).weight(1f))

@@ -113,6 +113,13 @@ class LinkingViewModel @Inject constructor(
         }.start()
     }
 
+    fun updateCode(value: String) {
+        code = value
+    }
+
+    fun updateIsVerified(value: Boolean?) {
+        isVerified = value
+    }
     fun sendEffectForTimer(){
         sendEffect(LinkingEffect.RestartVerifTimer)
     }

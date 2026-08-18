@@ -3,6 +3,7 @@ package com.example.pauze.ui.login.component
 import androidx.compose.runtime.Composable
 import com.example.pauze.ui.component.Dialog
 
+// 연동(Local <-> Kakao) 여부 묻는 다이얼로그
 @Composable
 fun AccountLinkingDialog(onDismissRequest: () -> Unit, onContinue: () -> Unit){
     Dialog(

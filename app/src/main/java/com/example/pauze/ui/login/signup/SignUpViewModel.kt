@@ -252,7 +252,13 @@ class SignUpViewModel @Inject constructor(
         }
     }
 
+    fun updateCode(value: String) {
+        code = value
+    }
 
+    fun updateIsVerified(value: Boolean?) {
+        isVerified = value
+    }
 
     fun updateIsAgreedToTerm(isAgreed: Boolean){
         isAgreedToTerm = isAgreed
