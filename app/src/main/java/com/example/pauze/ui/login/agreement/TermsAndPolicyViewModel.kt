@@ -2,9 +2,6 @@ package com.example.pauze.ui.login.agreement
 
 import android.util.Pair
 import androidx.collection.objectListOf
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.navigation.toRoute
 import com.example.pauze.data.model.BaseUiState
