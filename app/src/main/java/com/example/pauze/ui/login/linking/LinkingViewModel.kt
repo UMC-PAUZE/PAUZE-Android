@@ -12,6 +12,7 @@ import com.example.pauze.data.model.BaseUiState
 import com.example.pauze.data.repository.AuthRepository
 import com.example.pauze.data.repository.TokenRepository
 import com.example.pauze.ui.BaseViewModel
+import com.example.pauze.ui.login.saveTokens
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -36,6 +37,7 @@ class LinkingViewModel @Inject constructor(
     var time by mutableStateOf("00:00")
     private var countDownTimer: CountDownTimer? = null
 
+    // 연동 이메일 인증코드 발송
     fun sendCodeForLinking() {
         launch(
             onSuccess = {
@@ -51,6 +53,7 @@ class LinkingViewModel @Inject constructor(
         }
     }
 
+    // 이메일 인증코드 검증
     fun verifyEmail() {
         launch (
             onSuccess = { result ->
@@ -68,16 +71,17 @@ class LinkingViewModel @Inject constructor(
         }
     }
 
+    // 계정 연동
     fun linkAccount() {
         launch(
             onSuccess = { result ->
                 if(result == null) return@launch
                 viewModelScope.launch {
-                    // 토큰 저장
-                    dataStore.saveAccessToken(result.accessToken)
-                    dataStore.saveRefreshToken(result.refreshToken)
-                    TokenRepository.updateAccessToken(result.accessToken)
-
+                    saveTokens(
+                        dataStore,
+                        result.accessToken,
+                        result.refreshToken
+                    )
                     navigateToHome()
                 }
             },
@@ -85,7 +89,7 @@ class LinkingViewModel @Inject constructor(
                 return@launch
             }
         ) {
-            val kakaoAccessToken = dataStore.getKakaoAccessToken() ?: ""
+            val kakaoAccessToken = dataStore.getKakaoAccessToken() ?: return@launch null
             repository.linkAccount("LOCAL_TO_KAKAO", kakaoAccessToken, email, null)
         }
     }
@@ -113,6 +117,9 @@ class LinkingViewModel @Inject constructor(
         }.start()
     }
 
+    fun updateEmail(value: String) {
+        email = value
+    }
     fun updateCode(value: String) {
         code = value
     }

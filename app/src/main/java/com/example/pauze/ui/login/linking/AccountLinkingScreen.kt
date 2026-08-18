@@ -24,18 +24,17 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat.startActivity
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.pauze.MainActivity
 import com.example.pauze.ui.component.Button
 import com.example.pauze.ui.component.ModeBasedTextField
 import com.example.pauze.ui.component.TextFieldMode
 import com.example.pauze.ui.component.TopBar
-import com.example.pauze.ui.login.LoginNavDestination
 import com.example.pauze.ui.login.component.EnterVerificationCode
 import com.example.pauze.ui.theme.AppTheme
 import com.example.pauze.ui.theme.headingMdMedium
 
+// Local -> Kakao 연동 화면
 @Composable
 fun AccountLinkingScreen(
     context: Context,
@@ -43,7 +42,7 @@ fun AccountLinkingScreen(
     viewModel: LinkingViewModel = hiltViewModel()
 ){
     val focusManager = LocalFocusManager.current
-    var isVerified by remember { mutableStateOf(false) }
+    var isCompleted by remember { mutableStateOf(false) }
 
     LaunchedEffect(viewModel.effect) {
         viewModel.effect.collect { effect ->
@@ -88,19 +87,21 @@ fun AccountLinkingScreen(
             color = AppTheme.palette.gray.getColor(2)
         )
         Spacer(modifier = Modifier.height(48.dp))
+        // 이메일
         if(viewModel.phase == 0){
             ModeBasedTextField(
                 mode = TextFieldMode.SetEmail,
                 value = viewModel.email,
-                onValueChanged = { viewModel.email = it },
+                onValueChanged = { viewModel.updateEmail(it) },
                 imeAction = ImeAction.Done,
                 onCheckClick = {
                     viewModel.sendCodeForLinking()
                     viewModel.updatePhase()
                 }
             )
+        // 인증 코드
         } else {
-            isVerified = EnterVerificationCode(viewModel, true)
+            isCompleted = EnterVerificationCode(viewModel, true)
             Spacer(modifier = Modifier.weight(1f))
             Button(
                 "완료",
@@ -108,7 +109,7 @@ fun AccountLinkingScreen(
                     viewModel.linkAccount()
                 },
                 modifier = Modifier.fillMaxWidth().padding(bottom = 48.dp),
-                enabled = isVerified,
+                enabled = isCompleted,
             )
         }
 
