@@ -64,7 +64,7 @@ fun PauzeSoundStashScreen(
 
         Row(
             modifier = Modifier.width(312.dp),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             listOf(SoundStashTab.LIKED, SoundStashTab.SAVED).forEach { tab ->
                 val text = if (tab == SoundStashTab.LIKED) "좋아요" else "저장"
@@ -72,7 +72,7 @@ fun PauzeSoundStashScreen(
                     text = text,
                     selected = state.selectedStashTab == tab,
                     onClick = { viewModel.selectStashTab(tab) },
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier.size(width = 148.dp, height = 40.dp),
                     icon = if (tab == SoundStashTab.LIKED) {
                         painterResource(R.drawable.ic_heart_off)
                     } else {
@@ -82,7 +82,7 @@ fun PauzeSoundStashScreen(
             }
         }
 
-        Spacer(modifier = Modifier.height(32.dp))
+        Spacer(modifier = Modifier.height(28.dp))
 
         val isLikedTab = state.selectedStashTab == SoundStashTab.LIKED
         when {

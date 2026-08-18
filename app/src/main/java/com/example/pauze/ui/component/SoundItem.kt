@@ -56,7 +56,7 @@ fun SoundItem(
     ) {
         Box(
             modifier = Modifier
-                .size(60.dp)
+                .size(40.dp)
                 .clip(RoundedCornerShape(12.dp)),
             contentAlignment = Alignment.Center
         ) {
