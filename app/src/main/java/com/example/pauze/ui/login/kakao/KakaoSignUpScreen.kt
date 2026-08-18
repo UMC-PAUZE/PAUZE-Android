@@ -22,17 +22,14 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.pauze.ui.component.BirthdayBottomSheet
-import com.example.pauze.ui.component.BirthdayPicker
 import com.example.pauze.ui.component.Button
 import com.example.pauze.ui.component.ModeBasedTextField
 import com.example.pauze.ui.component.SetBirthday
 import com.example.pauze.ui.component.TextFieldMode
 import com.example.pauze.ui.component.TopBar
-import com.example.pauze.ui.login.component.EnterVerificationCode
 import com.example.pauze.ui.login.LoginNavDestination
 import com.example.pauze.ui.login.component.AgreementCheckbox
 import com.example.pauze.ui.theme.AppTheme
@@ -42,6 +39,7 @@ import kotlinx.datetime.LocalDate
 import kotlinx.datetime.format
 import kotlinx.datetime.format.char
 
+// 카카오 회원가입 스크린
 @Composable
 fun KakaoSignUpScreen(
     navController: NavController,
@@ -75,12 +73,10 @@ fun KakaoSignUpScreen(
                 is KakaoSignUpEffect.NavigateToCompleted -> {
                     navController.navigate(LoginNavDestination.Completed(viewModel.name))
                 }
-                is KakaoSignUpEffect.ShowBirthdayPicker -> {
-                    viewModel.showBirthdayPicker = true
-                }
             }
         }
     }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -121,6 +117,7 @@ fun KakaoSignUpScreen(
     }
 }
 
+// 이름, 닉네임, 생일
 @Composable
 fun AdditionalInfoContent(
     focusManager: FocusManager,
@@ -136,10 +133,11 @@ fun AdditionalInfoContent(
     }
 
     Column {
+        // 이름
         ModeBasedTextField(
             mode = TextFieldMode.UserName,
             value = viewModel.name,
-            onValueChanged = { viewModel.name = it },
+            onValueChanged = { viewModel.updateName(it) },
             imeAction = ImeAction.Next
         )
         Text(
@@ -150,11 +148,12 @@ fun AdditionalInfoContent(
             else AppTheme.palette.gray.getColor(5)
         )
         Spacer(modifier = Modifier.height(12.dp))
+        // 닉네임
         ModeBasedTextField(
             mode = TextFieldMode.Nickname,
             value = viewModel.nickname,
             onCheckClick = { viewModel.checkNicknameAvailable() },
-            onValueChanged = { viewModel.nickname = it },
+            onValueChanged = { viewModel.updateNickname(it) },
             imeAction = ImeAction.Done
         )
         Text(
@@ -172,19 +171,23 @@ fun AdditionalInfoContent(
             else AppTheme.palette.gray.getColor(5)
         )
         Spacer(modifier = Modifier.height(12.dp))
+        // 생일
         SetBirthday(
             birthday = viewModel.birthday?.format(customDateFormat) ?: "생년월일을 입력해주세요",
             onClick = {
                 focusManager.clearFocus()
-                viewModel.showBirthdayPicker()
+                viewModel.showBirthdayPicker(true)
             }
         )
 
         if(viewModel.showBirthdayPicker){
             BirthdayBottomSheet(
-                onDismissRequest = { viewModel.showBirthdayPicker = false },
+                onDismissRequest = { viewModel.showBirthdayPicker(false) },
                 onDateChanged = { tempDay = it },
-                onClick = { viewModel.birthday = tempDay; viewModel.showBirthdayPicker = false }
+                onClick = {
+                    viewModel.updateBirthday(tempDay)
+                    viewModel.showBirthdayPicker(false)
+                }
             )
         }
     }
