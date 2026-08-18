@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -17,8 +18,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.media3.common.AudioAttributes
+import androidx.media3.common.C
+import androidx.media3.common.MediaItem
+import androidx.media3.common.Player
+import androidx.media3.exoplayer.ExoPlayer
 import com.example.pauze.ui.component.Dialog
 import com.example.pauze.ui.theme.AppTheme
 import com.example.pauze.ui.theme.bodyTextLgRegular
@@ -29,6 +36,7 @@ import kotlin.math.ceil
 @Composable
 fun PauzeVisualMeditationRunningScreen(
     totalSeconds: Int,
+    visualUrl: String?,
     showStopDialog: Boolean,
     onShowStopDialog: () -> Unit,
     onStopClick: () -> Unit,
@@ -41,6 +49,40 @@ fun PauzeVisualMeditationRunningScreen(
     }
     var isUsageRecorded by remember(totalSeconds) {
         mutableStateOf(false)
+    }
+
+    val context = LocalContext.current
+    val player = remember(visualUrl) {
+        visualUrl
+            ?.takeIf { it.isNotBlank() }
+            ?.let { url ->
+                ExoPlayer.Builder(context).build().apply {
+                    setAudioAttributes(
+                        AudioAttributes.Builder()
+                            .setUsage(C.USAGE_MEDIA)
+                            .setContentType(C.AUDIO_CONTENT_TYPE_MUSIC)
+                            .build(),
+                        true
+                    )
+                    setMediaItem(MediaItem.fromUri(url))
+                    repeatMode = Player.REPEAT_MODE_ONE
+                    prepare()
+                }
+            }
+    }
+
+    LaunchedEffect(player, showStopDialog) {
+        if (showStopDialog) {
+            player?.pause()
+        } else {
+            player?.play()
+        }
+    }
+
+    DisposableEffect(player) {
+        onDispose {
+            player?.release()
+        }
     }
 
     LaunchedEffect(totalSeconds, showStopDialog) {
