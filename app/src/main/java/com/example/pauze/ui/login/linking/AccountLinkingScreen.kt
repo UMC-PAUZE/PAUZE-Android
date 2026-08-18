@@ -73,45 +73,47 @@ fun AccountLinkingScreen(
             ){
                 focusManager.clearFocus()
             }
-            .padding(horizontal = 24.dp),
     ) {
         TopBar(
             "연동하기",
             onBackClick = { viewModel.backStack() }
         )
-        Spacer(modifier = Modifier.height(16.dp))
-        Text(
-            if(viewModel.phase == 0) "연동하기 위해\n이메일을 인증해주세요"
-            else "인증코드를 입력하고\n본인인증을 완료해주세요",
-            style = headingMdMedium,
-            color = AppTheme.palette.gray.getColor(2)
-        )
-        Spacer(modifier = Modifier.height(48.dp))
-        // 이메일
-        if(viewModel.phase == 0){
-            ModeBasedTextField(
-                mode = TextFieldMode.SetEmail,
-                value = viewModel.email,
-                onValueChanged = { viewModel.updateEmail(it) },
-                imeAction = ImeAction.Done,
-                onCheckClick = {
-                    viewModel.sendCodeForLinking()
-                    viewModel.updatePhase()
-                }
+        Column(
+            modifier = Modifier.padding(horizontal = 24.dp),
+        ) {
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                if(viewModel.phase == 0) "연동하기 위해\n이메일을 인증해주세요"
+                else "인증코드를 입력하고\n본인인증을 완료해주세요",
+                style = headingMdMedium,
+                color = AppTheme.palette.gray.getColor(2)
             )
-        // 인증 코드
-        } else {
-            isCompleted = EnterVerificationCode(viewModel, true)
-            Spacer(modifier = Modifier.weight(1f))
-            Button(
-                "완료",
-                onClick = {
-                    viewModel.linkAccount()
-                },
-                modifier = Modifier.fillMaxWidth().padding(bottom = 48.dp),
-                enabled = isCompleted,
-            )
+            Spacer(modifier = Modifier.height(48.dp))
+            // 이메일
+            if(viewModel.phase == 0){
+                ModeBasedTextField(
+                    mode = TextFieldMode.SetEmail,
+                    value = viewModel.email,
+                    onValueChanged = { viewModel.updateEmail(it) },
+                    imeAction = ImeAction.Done,
+                    onCheckClick = {
+                        viewModel.sendCodeForLinking()
+                        viewModel.updatePhase()
+                    }
+                )
+                // 인증 코드
+            } else {
+                isCompleted = EnterVerificationCode(viewModel, true)
+                Spacer(modifier = Modifier.weight(1f))
+                Button(
+                    "완료",
+                    onClick = {
+                        viewModel.linkAccount()
+                    },
+                    modifier = Modifier.fillMaxWidth().padding(bottom = 48.dp),
+                    enabled = isCompleted,
+                )
+            }
         }
-
     }
 }
