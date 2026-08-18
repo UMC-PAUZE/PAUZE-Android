@@ -10,6 +10,7 @@ import com.example.pauze.data.model.MyBookmarkListResultDto
 import kotlinx.coroutines.CancellationException
 import com.example.pauze.data.model.MyLikeListResultDto
 
+// 코루틴 취소는 요청 실패가 아니므로 예외 메시지로 변환하지 않고 호출부까지 전파한다.
 class CurationRepositoryImpl @Inject constructor(
     private val curationService: CurationService,
 ) : CurationRepository {
@@ -150,6 +151,7 @@ class CurationRepositoryImpl @Inject constructor(
         operation: String,
         cause: Exception,
     ): IllegalStateException {
+        // 공통 예외 형식을 유지하면서도 로그에서 실패한 API 작업을 구분할 수 있게 한다.
         return IllegalStateException(
             "$operation 중 오류가 발생했습니다: ${cause.message}",
             cause,

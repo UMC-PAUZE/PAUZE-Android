@@ -9,6 +9,7 @@ private const val CURATION_ROUTE = "curation"
 internal fun createCurationShareUrl(postId: Long): String =
     "https://$PAUZE_APP_LINK_HOST/$CURATION_ROUTE/$postId"
 
+// 외부 공유 링크와 앱 내부 커스텀 스킴이 동일한 상세 진입 규칙을 사용하도록 한 곳에서 검증한다.
 internal fun Uri.toCurationPostIdOrNull(): Long? {
     val postIdSegment = when {
         scheme == PAUZE_CUSTOM_SCHEME && host == CURATION_ROUTE -> {

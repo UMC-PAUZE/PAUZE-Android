@@ -8,7 +8,6 @@ import androidx.compose.runtime.setValue
 import com.example.pauze.data.model.BaseResponse
 import com.example.pauze.data.model.BaseUiState
 import com.example.pauze.data.repository.MyPageRepository
-import com.example.pauze.data.repository.UserProfileRepository
 import com.example.pauze.ui.BaseViewModel
 import com.google.gson.Gson
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -32,12 +31,14 @@ class ProfileEditViewModel @Inject constructor(
     uiState = BaseUiState(data = Unit)
 ) {
     var nickname by mutableStateOf("")
+        private set
     var bio by mutableStateOf("")
+        private set
     var profileImageUrl by mutableStateOf<String?>(null)
     var newProfileImageUri by mutableStateOf<Uri?>(null)
+    var birthday by mutableStateOf<String?>(null)
+        private set
     var loadError by mutableStateOf<String?>(null)
-    val birthday: kotlinx.datetime.LocalDate?
-        get() = UserProfileRepository.birthday
 
     init {
         launch {
@@ -45,10 +46,15 @@ class ProfileEditViewModel @Inject constructor(
             nickname = profile.nickname
             bio = profile.introduction ?: ""
             profileImageUrl = profile.profileImageUrl
+            birthday = profile.birth.takeIf { it.length == 8 }
+                ?.let { "${it.take(4)}.${it.substring(4, 6)}.${it.substring(6, 8)}" }
         }
     }
 
     fun onBackClick() = sendEffect(ProfileEditEffect.NavigateToBack)
+
+    fun updateNickname(newNickname: String) { nickname = newNickname }
+    fun updateBio(newBio: String) { bio = newBio }
 
     fun onImagePicked(uri: Uri) {
         val mimeType = context.contentResolver.getType(uri)

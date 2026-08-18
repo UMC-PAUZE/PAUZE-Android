@@ -1,4 +1,4 @@
-package com.example.pauze.ui.pauze
+package com.example.pauze.ui.pauze.visual
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -14,7 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 
-// 시각 안정 화면 단계
+// 한 화면 안에서 선택·카운트다운·실행 단계를 순차 전환하기 위한 상태다.
 enum class PauzeVisualStep {
     Start,
     SelectMethod,
@@ -23,7 +23,7 @@ enum class PauzeVisualStep {
     Running
 }
 
-// 시각 안정 방식
+// 시간 선택 흐름은 공유하되 실행 화면만 호흡과 명상으로 분기한다.
 enum class PauzeVisualMethod {
     BreathingGuide,
     Meditation
@@ -36,6 +36,7 @@ fun PauzeVisualScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
+    // 단계가 바뀌어도 사용자가 고른 방식과 시간을 유지해 이전 화면으로 돌아갈 수 있게 한다.
     var step by remember { mutableStateOf(PauzeVisualStep.SelectMethod) }
     var selectedMethod by remember { mutableStateOf<PauzeVisualMethod?>(null) }
     var selectedHour by remember { mutableStateOf(0) }
@@ -46,6 +47,7 @@ fun PauzeVisualScreen(
 
     val totalSeconds = selectedHour * 60 * 60 + selectedMinute * 60 + selectedSecond
 
+    // 다이얼로그 노출 요청은 일회성 Effect로 받아 화면 상태와 ViewModel의 역할을 분리한다.
     LaunchedEffect(viewModel.effect) {
         viewModel.effect.collect { effect ->
             when (effect) {
@@ -65,8 +67,9 @@ fun PauzeVisualScreen(
             onMethodSelect = { selectedMethod = it },
             isLoading = uiState.isLoading,
             hasError = selectedMethod == PauzeVisualMethod.BreathingGuide &&
-                uiState.error != null,
+                    uiState.error != null,
             onNextClick = {
+                // 실행 방식과 관계없이 공통 가이드 URL을 확보한 뒤 시간 선택으로 이동한다.
                 when (selectedMethod) {
                     PauzeVisualMethod.BreathingGuide -> {
                         viewModel.loadVisualGuide {
@@ -75,7 +78,9 @@ fun PauzeVisualScreen(
                     }
 
                     PauzeVisualMethod.Meditation -> {
-                        step = PauzeVisualStep.SelectTime
+                        viewModel.loadVisualGuide {
+                            step = PauzeVisualStep.SelectTime
+                        }
                     }
 
                     null -> Unit
@@ -106,6 +111,7 @@ fun PauzeVisualScreen(
         )
 
         PauzeVisualStep.Countdown -> Box(modifier = Modifier.fillMaxSize()) {
+            // 시간 선택 화면 위에 오버레이를 유지해 카운트다운 전후의 레이아웃 변화를 막는다.
             PauzeVisualTimeSelectScreen(
                 selectedHour = selectedHour,
                 selectedMinute = selectedMinute,
@@ -149,6 +155,7 @@ fun PauzeVisualScreen(
 
             PauzeVisualMethod.Meditation -> PauzeVisualMeditationRunningScreen(
                 totalSeconds = totalSeconds,
+                visualUrl = uiState.data.visualUrl,
                 showStopDialog = showStopDialog,
                 onShowStopDialog = viewModel::showStopDialog,
                 onStopClick = {
