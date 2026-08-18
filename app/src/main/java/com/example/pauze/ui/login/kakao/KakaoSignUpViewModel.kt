@@ -57,7 +57,7 @@ class KakaoSignUpViewModel @Inject constructor(
     fun checkNicknameAvailable(){
         launch(
             onSuccess = { result ->
-                if(result == null){
+                if(result == null || !result.available){
                     isNicknameAvailable = false
                     return@launch
                 }
@@ -113,7 +113,9 @@ class KakaoSignUpViewModel @Inject constructor(
     fun updateNickname(value: String) {
         nickname = value
     }
-
+    fun updateNicknameAvailability(value: Boolean?){
+        isNicknameAvailable = value
+    }
     fun updateBirthday(value: LocalDate?) {
         birthday = value
     }

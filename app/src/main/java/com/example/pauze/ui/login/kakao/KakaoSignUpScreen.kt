@@ -153,7 +153,10 @@ fun AdditionalInfoContent(
             mode = TextFieldMode.Nickname,
             value = viewModel.nickname,
             onCheckClick = { viewModel.checkNicknameAvailable() },
-            onValueChanged = { viewModel.updateNickname(it) },
+            onValueChanged = {
+                viewModel.updateNickname(it)
+                viewModel.updateNicknameAvailability(null)
+            },
             imeAction = ImeAction.Done
         )
         Text(
