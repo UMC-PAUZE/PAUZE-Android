@@ -1,25 +1,65 @@
 # PAUZE
-더 많이 감각하는 HSP를 위한 감정 안정 서비스 
+더 많이 감각하는 HSP를 위한 감정 안정 서비스
 <br><br>
 ### 👥 팀원 소개
 : 단/이다은(팀장), 서야/신한서, 쭈요/이주연, 하늘/박한을
 ### 🛠️ 기술 스택
 : Kotlin, MVVM, Jetpack Compose
+
+### 📚 주요 라이브러리
+#### 언어/기본
+- Kotlin stdlib: 2.3.20
+#### UI
+- Jetpack Compose (BOM 2024.09.00)
+- Activity Compose 1.13.0
+- Material 3 1.4.0
+- Navigation Compose 2.9.0
+- Lottie Compose 6.5.2
+#### 아키텍처
+- Lifecycle ViewModel Compose 2.9.0
+- Lifecycle ViewModel KTX: 2.10.0
+- Hilt Android: 2.5.8
+- Hilt Compiler: 2.5.8
+- Hilt Navigation Compose: 1.2.0
+- Datastore: 1.2.1
+#### 네트워크 및 데이터 직렬화
+- Retrofit2: 2.11.0
+- Retrofit Converter Json: 2.11.0
+- OkHttp3: 4.12.0
+- OkHttp3 Logging Interceptor: 4.12.0
+- Kotlin Serialization Json: 1.11.0
+#### 소셜 로그인
+- Kakao SDK v2-user: 2.11.0
+#### 이미지
+- Coil Compose 2.7.0
+#### 오디오
+- Media3 Exoplayer: 1.10.1
+#### 날짜 및 시간
+- Kotlinx DateTime 0.8.0
+- Datetime Wheel Picker 1.3.1
+#### 오픈소스 라이브러리
+- compose-datetime-wheel-picker by darkokoa
+
 ### 📁 폴더 구조
 ```text
 project
 ├── data
+│   ├── datasource
+│   ├── datastore
+│   ├── dummies
 │   ├── model
+│   ├── module
 │   ├── repository
-│   └── datasource
+│   └── service
 └── ui
-    ├── splash
-    ├── login
-    ├── home
-    ├── report
-    ├── pauze
+    ├── component
     ├── curation
-    └── mypage
+    ├── home
+    ├── login
+    ├── mypage
+    ├── pauze
+    ├── report
+    └── splash
 ```
 ___
 ### 📚 컨벤션 문서
@@ -60,3 +100,28 @@ ___
 3. 필요한 local.properties 또는 환경 변수를 설정한다
 4. 실행할 디바이스를 설정한다
 5. Run 버튼이나 Shift + F10을 눌러 애플리케이션을 실행한다
+
+### 🔗 참조
+- compose-date-time-picker<br>
+  https://github.com/darkokoa/compose-datetime-wheel-picker
+
+---
+### 📱구현 화면
+|     화면 이름      |          스크린 ID           |  담당자   |
+|:--------------:|:-------------------------:|:------:|
+|      스플래시      |       SplashScreen        | 쭈요/이주연  |
+|      온보딩       |     OnboardingScreen      | 쭈요/이주연  | 
+|      로그인       |        LoginScreen        | 단/이다은  | 
+|      회원가입      |       SignUpScreen        | 단/이다은  |
+|      홈화면       |        HomeScreen         | 단/이다은  |
+|    오늘의 컨디션     | PauzeTodayConditionScreen | 하늘/박한을 |
+|    Pauze 시작    |     PauzeStartScreen      | 쭈요/이주연 |
+|    즉각 호흡 화면    |   PauzeBreathingScreen    | 쭈요/이주연 |
+|    청각 안정 화면    |     PauzeSoundScreen      | 하늘/박한을 |
+|  청각 안정 소리 보관함  |   PauzeSoundStashScreen   | 하늘/박한을 |
+| 청각 안정 소리 재생 화면 |  PauzeSoundDetailScreen   | 하늘/박한을 |
+|    시각 안정 화면    |     PauzeVisualScreen     | 서야/신한서 |
+|   과한 에너지 소모    |    PauzeOverloadScreen    | 단/이다은  |
+|    예민함 리포트     |       ReportScreen        | 쭈요/이주연 |
+|     발견 화면      |    CurationBoardScreen    | 서야/신한서 |
+|     마이페이지      |       MyPageScreen        | 쭈요/이주연 |
