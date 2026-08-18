@@ -1,5 +1,6 @@
 package com.example.pauze.ui.login.signup
 
+import android.content.Context
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -16,6 +17,7 @@ import com.example.pauze.ui.theme.bodyTextSmRegular
 
 @Composable
 fun SetAndCheckEmail(
+    context: Context,
     viewModel: SignUpViewModel
 ): Boolean {
     var isFocused by remember { mutableStateOf(false) }
@@ -41,6 +43,15 @@ fun SetAndCheckEmail(
                 style = bodyTextSmRegular,
                 color = if(viewModel.isEmailExists == true) AppTheme.palette.secondary.getColor(4)
                     else AppTheme.palette.primary.getColor(4)
+            )
+        }
+
+        if(viewModel.showLinkDialog) {
+            AccountLinkingDialog(
+                onDismissRequest =  { viewModel.showLinkDialog = false },
+                onContinue = {
+                    viewModel.kakaoLogin(context)
+                }
             )
         }
     }

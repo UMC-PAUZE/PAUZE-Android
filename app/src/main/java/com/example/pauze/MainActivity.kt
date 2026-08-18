@@ -233,7 +233,7 @@ fun MainScreen(
     ) {
         innerPadding ->
         val goToLoginAndClearSession = {
-            TokenRepository.accessToken = null
+            TokenRepository.updateAccessToken(null)
             context.startActivity(
                 Intent(context, LoginActivity::class.java).apply {
                     flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK

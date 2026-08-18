@@ -1,15 +1,23 @@
 package com.example.pauze.ui.home
 
+import androidx.datastore.dataStore
+import androidx.lifecycle.viewModelScope
+import com.example.pauze.data.datastore.AuthDataStore
 import com.example.pauze.data.model.BaseUiState
+import com.example.pauze.data.model.Condition
 import com.example.pauze.data.model.GetTodayConditionResponseDto
 import com.example.pauze.data.model.HomeState
+import com.example.pauze.data.model.User
 import com.example.pauze.data.model.isToday
 import com.example.pauze.data.model.toCondition
+import com.example.pauze.data.repository.AuthRepository
 import com.example.pauze.data.repository.TodayConditionRepository
 import com.example.pauze.data.repository.TokenRepository
 import com.example.pauze.ui.BaseViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 sealed interface HomeEffect {
@@ -20,18 +28,20 @@ sealed interface HomeEffect {
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
-    private val repository: TodayConditionRepository
+    private val authRepository: AuthRepository,
+    private val conditionRepository: TodayConditionRepository
 ) : BaseViewModel<HomeEffect, HomeState>(
     uiState = BaseUiState(data = HomeState())
 ) {
-    init {
-        getCondition()
-    }
-
-    fun getCondition() {
+    fun getUserAndCondition(){
         launch {
             TokenRepository.isInitialized.first { it }
-            repository.getTodayCondition()?.toHomeState() ?: HomeState()
+            val user = async { authRepository.getUser() }
+            val condition = async { conditionRepository.getTodayCondition() }
+            toHomeState(
+                user.await(),
+                condition.await()
+            )
         }
     }
 
@@ -46,8 +56,11 @@ class HomeViewModel @Inject constructor(
         sendEffect(HomeEffect.MoveToReportScreen)
     }
 
-    private fun GetTodayConditionResponseDto.toHomeState() = HomeState(
-        condition = toCondition(),
-        isTodayConditionExists = isToday()
-    )
+    private fun toHomeState(user: User?, conditionDto: GetTodayConditionResponseDto?): HomeState {
+        return HomeState(
+            nickname = user?.nickname ?: "사용자",
+            condition = conditionDto?.toCondition(),
+            isTodayConditionExists = conditionDto?.isToday() ?: false
+        )
+    }
 }

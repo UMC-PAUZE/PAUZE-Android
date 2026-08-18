@@ -3,6 +3,7 @@ package com.example.pauze.ui.login
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -78,7 +79,7 @@ class LoginActivity : ComponentActivity() {
                         LoginScreen(this@LoginActivity, navController)
                     }
                     composable<LoginNavDestination.SignUp> {
-                        SignUpScreen(navController)
+                        SignUpScreen(this@LoginActivity, navController)
                     }
                     composable<LoginNavDestination.Policy> {
                         TermsAndPolicyScreen(navController)
@@ -90,7 +91,7 @@ class LoginActivity : ComponentActivity() {
                         KakaoSignUpScreen(navController)
                     }
                     composable<LoginNavDestination.Link> {
-                        AccountLinkingScreen(navController)
+                        AccountLinkingScreen(this@LoginActivity, navController)
                     }
                 }
             }

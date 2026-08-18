@@ -58,5 +58,5 @@ interface AuthService {
     @POST("auth/refresh")
     suspend fun refreshToken(@Body request: RefreshOrLogoutRequest): BaseResponse<Token>
     @POST("auth/logout")
-    suspend fun logout(@Body request: RefreshOrLogoutRequest?): BaseResponse<Unit>
+    suspend fun logout(@Body request: RefreshOrLogoutRequest): BaseResponse<Boolean>
 }

@@ -1,5 +1,7 @@
 package com.example.pauze.ui.login.signup
 
+import android.content.Context
+import android.content.Intent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -21,10 +23,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat.startActivity
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
+import com.example.pauze.MainActivity
 import com.example.pauze.ui.component.Button
 import com.example.pauze.ui.component.PhaseBar
 import com.example.pauze.ui.component.TopBar
@@ -36,6 +39,7 @@ import com.example.pauze.ui.theme.headingMdMedium
 
 @Composable
 fun SignUpScreen(
+    context: Context,
     navController: NavController,
     viewModel: SignUpViewModel = hiltViewModel()
 ){
@@ -70,8 +74,11 @@ fun SignUpScreen(
                 is SignUpEffect.NavigateToCompleted -> {
                     navController.navigate(LoginNavDestination.Completed(viewModel.name))
                 }
-                is SignUpEffect.NavigateToLink -> {
-                    navController.navigate(LoginNavDestination.Link)
+                is SignUpEffect.NavigateToHome -> {
+                    val intent = Intent(context, MainActivity::class.java).apply{
+                        flags = Intent.FLAG_ACTIVITY_CLEAR_TASK
+                    }
+                    startActivity(context, intent, null)
                 }
                 is SignUpEffect.ShowLinkDialog -> {
                     viewModel.showLinkDialog = true
@@ -127,7 +134,7 @@ fun SignUpScreen(
             )
             Spacer(modifier = Modifier.height(48.dp))
             isCompleted = when(viewModel.phase){
-                0 -> SetAndCheckEmail(viewModel)
+                0 -> SetAndCheckEmail(context, viewModel)
                 1 -> EnterVerificationCode(viewModel, false)
                 2 -> SetPwdContent(viewModel)
                 3 -> SetNameAndNickname(viewModel)
@@ -141,8 +148,12 @@ fun SignUpScreen(
             } else {
                 Spacer(modifier = Modifier.padding(horizontal = 24.dp).weight(1f))
                 Button(
-                    if(viewModel.phase == 4) "가입 완료하기" else "다음",
+                    if(viewModel.phase == 4 || (viewModel.isKakaoAccountExists && viewModel.phase == 2)) "가입 완료하기" else "다음",
                     onClick = {
+                        if(viewModel.isKakaoAccountExists && viewModel.phase == 2) {
+                            viewModel.linkAccount()
+                            return@Button
+                        }
                         if(isCompleted){
                             viewModel.updatePhase()
                         }

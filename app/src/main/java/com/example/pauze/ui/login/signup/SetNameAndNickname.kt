@@ -34,7 +34,10 @@ fun SetNameAndNickname(
         ModeBasedTextField(
             mode = TextFieldMode.UserName,
             value = viewModel.name,
-            onValueChanged = { viewModel.name = it },
+            onValueChanged = {
+                viewModel.name = it
+                viewModel.isNicknameAvailable = null
+            },
             imeAction = ImeAction.Next
         )
         Text(

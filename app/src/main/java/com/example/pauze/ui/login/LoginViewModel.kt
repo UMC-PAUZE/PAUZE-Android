@@ -1,6 +1,7 @@
 package com.example.pauze.ui.login
 
 import android.content.Context
+import android.util.Log
 import androidx.datastore.dataStore
 import androidx.lifecycle.viewModelScope
 import com.example.pauze.data.datastore.AuthDataStore
@@ -36,13 +37,14 @@ class LoginViewModel @Inject constructor(
                 if(result == null) return@launch
                 when(result){
                     is KakaoLoginResult.LoginSuccess -> {
-                        // 토큰 저장
                         viewModelScope.launch {
+                            // 토큰 저장
                             dataStore.saveAccessToken(result.accessToken)
                             dataStore.saveRefreshToken(result.refreshToken)
                             TokenRepository.updateAccessToken(result.accessToken)
+
+                            sendEffect(LoginEffect.NavigateToHome)
                         }
-                        sendEffect(LoginEffect.NavigateToHome)
                     }
                     is KakaoLoginResult.SignUp -> {
                         sendEffect(LoginEffect.NavigateToAdditionalScreen)
@@ -54,6 +56,9 @@ class LoginViewModel @Inject constructor(
                         return@launch
                     }
                 }
+            },
+            onFailure = {
+                return@launch
             }
         ) {
             repository.kakaoLogin(context)
@@ -64,13 +69,15 @@ class LoginViewModel @Inject constructor(
         launch(
             onSuccess = { result ->
                 if(result == null) return@launch
-                // 토큰 저장
                 viewModelScope.launch {
+                    // 토큰 저장
                     dataStore.saveAccessToken(result.accessToken)
                     dataStore.saveRefreshToken(result.refreshToken)
                     TokenRepository.updateAccessToken(result.accessToken)
+
+                    sendEffect(LoginEffect.NavigateToHome)
                 }
-                sendEffect(LoginEffect.NavigateToHome)
+
             },
             onFailure = { sendEffect(LoginEffect.IsLoginFailed) }
         ) {
@@ -78,9 +85,6 @@ class LoginViewModel @Inject constructor(
         }
     }
 
-    fun showLinkDialog(){
-        sendEffect(LoginEffect.ShowLinkDialog)
-    }
     fun toGuestMode(){
         sendEffect(LoginEffect.NavigateToHome)
     }

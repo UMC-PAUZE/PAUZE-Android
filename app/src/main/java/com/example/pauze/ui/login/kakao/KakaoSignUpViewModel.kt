@@ -13,13 +13,16 @@ import android.os.Looper
 import androidx.annotation.RequiresApi
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.datastore.dataStore
+import androidx.lifecycle.viewModelScope
 import com.example.pauze.data.datastore.AuthDataStore
 import com.example.pauze.data.model.BaseUiState
 import com.example.pauze.data.model.TermAgreement
 import com.example.pauze.data.repository.AuthRepository
+import com.example.pauze.data.repository.TokenRepository
 import com.example.pauze.ui.login.LoginNavDestination
 import com.example.pauze.ui.login.signup.SignUpEffect
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
 import javax.inject.Inject
 
@@ -70,8 +73,21 @@ class KakaoSignUpViewModel @Inject constructor(
 
     fun kakaoSignUp(){
         launch(
-            onSuccess = {
-                sendEffect(KakaoSignUpEffect.NavigateToCompleted)
+            onSuccess = { result ->
+                if(result == null) {
+                    return@launch
+                }
+                viewModelScope.launch {
+                    // 토큰 저장
+                    dataStore.saveAccessToken(result.accessToken)
+                    dataStore.saveRefreshToken(result.refreshToken)
+                    TokenRepository.updateAccessToken(result.accessToken)
+
+                    sendEffect(KakaoSignUpEffect.NavigateToCompleted)
+                }
+            },
+            onFailure = {
+                return@launch
             }
         ) {
             val accessToken = dataStore.getKakaoAccessToken() ?: return@launch null
