@@ -41,6 +41,7 @@ fun AccountInfoScreen(
 ){
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     var showWithdrawDialog by remember { mutableStateOf(false) }
+    var showLogoutDialog by remember { mutableStateOf(false) }
 
     val dateFormat = LocalDate.Format {
         year(); char('.'); char(' ')
@@ -53,6 +54,7 @@ fun AccountInfoScreen(
             when (effect) {
                 is AccountInfoEffect.NavigateToBack -> onBackClick()
                 is AccountInfoEffect.ShowWithdrawDialog -> showWithdrawDialog = true
+                is AccountInfoEffect.ShowLogoutDialog -> showLogoutDialog = true
                 is AccountInfoEffect.NavigateToLogout -> onLogoutClick()
                 is AccountInfoEffect.NavigateToWithdraw -> onWithdrawClick()
             }
@@ -109,6 +111,20 @@ fun AccountInfoScreen(
                     title = "회원 탈퇴",
                     titleColor = AppTheme.palette.secondary.getColor(4),
                     onClick = viewModel::onWithdrawClick
+                )
+            }
+
+            if(showLogoutDialog){
+                Dialog(
+                    title = "로그아웃 하시겠습니까?",
+                    content = "다시 로그인하면 이어서 사용할 수 있어요.",
+                    btnCancel = "아니오",
+                    btnContinue = "예",
+                    onDismissRequest = { showLogoutDialog = false },
+                    onContinue = {
+                        showLogoutDialog = false
+                        viewModel.onLogoutConfirm()
+                    }
                 )
             }
 
