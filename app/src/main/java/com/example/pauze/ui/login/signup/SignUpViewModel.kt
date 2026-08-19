@@ -258,6 +258,8 @@ class SignUpViewModel @Inject constructor(
     // 데이터 업데이트 함수
     fun updateEmail(value: String) {
         email = value
+        isKakaoAccountExists = false
+        showLinkDialog(false)
     }
     fun updateEmailExists(value: Boolean?){
         isEmailExists = value

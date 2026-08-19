@@ -42,12 +42,14 @@ fun EnterVerificationCode(
             value = if(isLinkingScreen) (viewModel as LinkingViewModel).code else (viewModel as SignUpViewModel).code,
             onValueChanged = {
                 if(isLinkingScreen){
-                    (viewModel as LinkingViewModel).updateCode(it)
-                    viewModel.updateIsVerified(null)
+                    val linkingViewModel = viewModel as LinkingViewModel
+                    linkingViewModel.updateCode(it)
+                    linkingViewModel.updateIsVerified(null)
                 }
                 else{
-                    (viewModel as SignUpViewModel).updateCode(it)
-                    viewModel.updateIsVerified(null)
+                    val signUpViewModel = viewModel as SignUpViewModel
+                    signUpViewModel.updateCode(it)
+                    signUpViewModel.updateIsVerified(null)
                 }
             },
             imeAction = ImeAction.Done,

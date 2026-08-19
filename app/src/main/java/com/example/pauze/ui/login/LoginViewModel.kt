@@ -116,6 +116,13 @@ class LoginViewModel @Inject constructor(
                     clearToken(dataStore)
                     sendEffect(LoginEffect.NavigateToHome)
                 }
+            },
+            onFailure = {
+                viewModelScope.launch {
+                    // 토큰 초기화
+                    clearToken(dataStore)
+                    sendEffect(LoginEffect.NavigateToHome)
+                }
             }
         ) {
             repository.logout()
