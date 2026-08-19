@@ -7,6 +7,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.example.pauze.data.model.BaseResponse
 import com.example.pauze.data.model.BaseUiState
+import com.example.pauze.data.repository.AuthRepository
 import com.example.pauze.data.repository.MyPageRepository
 import com.example.pauze.ui.BaseViewModel
 import com.google.gson.Gson
@@ -26,11 +27,15 @@ sealed interface ProfileEditEffect {
 @HiltViewModel
 class ProfileEditViewModel @Inject constructor(
     private val myPageRepository: MyPageRepository,
+    private val authRepository: AuthRepository,
     @ApplicationContext private val context: Context
 ) : BaseViewModel<ProfileEditEffect, Unit>(
     uiState = BaseUiState(data = Unit)
 ) {
     var nickname by mutableStateOf("")
+        private set
+    private var originalNickname: String = ""
+    var isNicknameAvailable by mutableStateOf<Boolean?>(null)
         private set
     var bio by mutableStateOf("")
         private set
@@ -40,10 +45,17 @@ class ProfileEditViewModel @Inject constructor(
         private set
     var loadError by mutableStateOf<String?>(null)
 
+    // 확인 다이얼로그
+    var showPhotoUploadedDialog by mutableStateOf(false)
+        private set
+    var showSavedDialog by mutableStateOf(false)
+        private set
+
     init {
         launch {
             val profile = myPageRepository.getProfile()
             nickname = profile.nickname
+            originalNickname = profile.nickname
             bio = profile.introduction ?: ""
             profileImageUrl = profile.profileImageUrl
             birthday = profile.birth.takeIf { it.length == 8 }
@@ -53,7 +65,26 @@ class ProfileEditViewModel @Inject constructor(
 
     fun onBackClick() = sendEffect(ProfileEditEffect.NavigateToBack)
 
-    fun updateNickname(newNickname: String) { nickname = newNickname }
+    fun updateNickname(newNickname: String) {
+        nickname = newNickname
+        isNicknameAvailable = null
+    }
+
+    fun checkNicknameAvailable(){
+        launch(
+            onSuccess = { result -> isNicknameAvailable = result?.available ?: false },
+            onFailure = { isNicknameAvailable = false }
+        ) {
+            authRepository.isNicknameAvailable(nickname)
+        }
+    }
+
+    val isNicknameValid: Boolean
+        get() = nickname == originalNickname || isNicknameAvailable == true
+
+    val isNicknameChanged: Boolean
+        get() = nickname != originalNickname
+
     fun updateBio(newBio: String) { bio = newBio }
 
     fun onImagePicked(uri: Uri) {
@@ -69,12 +100,14 @@ class ProfileEditViewModel @Inject constructor(
         }
         loadError = null
         newProfileImageUri = uri
+        showPhotoUploadedDialog = true
     }
+    fun dismissPhotoUploadedDialog() { showPhotoUploadedDialog = false }
 
     fun onSaveClick() {
         if (uiState.value.isLoading) return
         launch(
-            onSuccess = { sendEffect(ProfileEditEffect.NavigateToBack) },
+            onSuccess = { showSavedDialog = true },
             onFailure = { e ->
                 loadError = (e as? HttpException)?.let(::parseErrorMessage) ?: e.message ?: "저장에 실패했습니다."
             }
@@ -82,6 +115,10 @@ class ProfileEditViewModel @Inject constructor(
             val imageFile = newProfileImageUri?.let { uriToFile(it) }
             myPageRepository.updateProfile(nickname = nickname, introduction = bio, profileImage = imageFile)
         }
+    }
+    fun onSavedDialogConfirm(){
+        showSavedDialog = false
+        sendEffect(ProfileEditEffect.NavigateToBack)
     }
 
     private fun uriToFile(uri: Uri): File {

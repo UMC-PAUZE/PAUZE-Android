@@ -57,7 +57,8 @@ fun ModeBasedTextField(
     isError: Boolean = false,
     checkPasswordSame: () -> Boolean = { true },
     onCheckClick: () -> Unit = {},
-    checkClickValue: Boolean? = null
+    checkClickValue: Boolean? = null,
+    showCheckButton: Boolean = true
 ): Boolean {
     val focusManager = LocalFocusManager.current
     var isFocused by remember { mutableStateOf(false) }
@@ -212,9 +213,11 @@ fun ModeBasedTextField(
                             TextFieldMode.Nickname -> Row(
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                ActionButton(actions = Actions.EmailCheck) {
-                                    onCheckClick()
-                                    isFocused = false
+                                if (showCheckButton) {
+                                    ActionButton(actions = Actions.EmailCheck) {
+                                        onCheckClick()
+                                        isFocused = false
+                                    }
                                 }
                             }
                             else -> ActionButton(actions = Actions.Reset) { onValueChanged("") }
