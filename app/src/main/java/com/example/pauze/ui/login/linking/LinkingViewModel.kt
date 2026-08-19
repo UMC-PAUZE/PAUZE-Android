@@ -117,6 +117,7 @@ class LinkingViewModel @Inject constructor(
         }.start()
     }
 
+    // 데이터 업데이트 함수
     fun updateEmail(value: String) {
         email = value
     }
@@ -127,6 +128,8 @@ class LinkingViewModel @Inject constructor(
     fun updateIsVerified(value: Boolean?) {
         isVerified = value
     }
+
+    // 이펙트 전송
     fun sendEffectForTimer(){
         sendEffect(LinkingEffect.RestartVerifTimer)
     }

@@ -92,6 +92,7 @@ class LoginViewModel @Inject constructor(
         }
     }
 
+    // 데이터 업데이트 함수
     fun updateEmail(value: String) {
         email = value
     }
@@ -120,6 +121,7 @@ class LoginViewModel @Inject constructor(
             repository.logout()
         }
     }
+    // 이펙트 전송
     fun toSignUp(){
         sendEffect(LoginEffect.NavigateToSignUp)
     }

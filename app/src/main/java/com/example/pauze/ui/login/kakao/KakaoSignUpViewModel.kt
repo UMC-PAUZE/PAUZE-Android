@@ -106,6 +106,7 @@ class KakaoSignUpViewModel @Inject constructor(
         }
     }
 
+    // 데이터 업데이트
     fun updateName(value: String) {
         name = value
     }
@@ -132,6 +133,7 @@ class KakaoSignUpViewModel @Inject constructor(
         showBirthdayPicker = value
     }
 
+    // 이펙트 전송
     fun backStack(){
         sendEffect(KakaoSignUpEffect.BackStack)
     }

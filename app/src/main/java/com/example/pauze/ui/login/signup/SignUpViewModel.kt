@@ -255,6 +255,7 @@ class SignUpViewModel @Inject constructor(
         }
     }
 
+    // 데이터 업데이트 함수
     fun updateEmail(value: String) {
         email = value
     }
@@ -320,6 +321,7 @@ class SignUpViewModel @Inject constructor(
     fun showBirthdayPicker(value: Boolean){
         showBirthdayPicker = value
     }
+    // 이펙트 전송
     fun sendEffectForTimer(){
         sendEffect(SignUpEffect.RestartVerifTimer)
     }
