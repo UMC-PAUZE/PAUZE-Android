@@ -78,7 +78,6 @@ fun ModeBasedTextField(
                 width = 1.dp,
                 color = when {
                     isError -> AppTheme.palette.secondary.getColor(4)
-                    value == "" -> AppTheme.palette.gray.getColor(6)
                     (mode == TextFieldMode.UserName && (value.length == 1
                             || nameCheck
                             || value.trim() != value))
