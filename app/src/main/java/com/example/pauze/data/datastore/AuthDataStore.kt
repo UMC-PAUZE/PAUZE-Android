@@ -61,7 +61,7 @@ class AuthDataStore @Inject constructor(
             preferences.remove(REFRESH_TOKEN)
         }
     }
-    // 카카오 로그인
+    // 클라이언트 카카오 로그인
     fun kakaoLoginAndGetToken(context: Context) = callbackFlow{
         val callback: (OAuthToken?, Throwable?) -> Unit = { token, error ->
             if (error != null) {

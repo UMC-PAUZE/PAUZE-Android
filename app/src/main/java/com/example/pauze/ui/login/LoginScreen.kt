@@ -108,10 +108,6 @@ fun LoginScreen(
 ){
 
     val focusManager = LocalFocusManager.current
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-    var isLoginFailed by remember { mutableStateOf(false) }
-    var showLinkDialog by remember { mutableStateOf(false) }
 
     // 로그인 성공 여부 collect하기
     LaunchedEffect(viewModel.effect) {
@@ -131,12 +127,6 @@ fun LoginScreen(
                 }
                 is LoginEffect.NavigateToLinkPage -> {
                     navController.navigate(LoginNavDestination.Link)
-                }
-                is LoginEffect.IsLoginFailed -> {
-                    isLoginFailed = true
-                }
-                is LoginEffect.ShowLinkDialog -> {
-                    showLinkDialog = true
                 }
             }
         }
@@ -161,33 +151,40 @@ fun LoginScreen(
             contentDescription = "pauze app logo",
         )
         Spacer(modifier = Modifier.height(48.dp))
+        // 로컬 로그인
         ModeBasedTextField(
             mode = TextFieldMode.Email,
-            value = email,
-            onValueChanged = { email = it; isLoginFailed = false },
+            value = viewModel.email,
+            onValueChanged = {
+                viewModel.updateEmail(it)
+                viewModel.isLoginFailed(false)
+            },
             imeAction = ImeAction.Next,
-            isError = isLoginFailed
+            isError = viewModel.isLoginFailed
         )
-        if(isLoginFailed) LoginFailedText()
+        if(viewModel.isLoginFailed) LoginFailedText()
         Spacer(modifier = Modifier.height(12.dp))
         ModeBasedTextField(
             mode = TextFieldMode.Pwd,
-            value = password,
-            onValueChanged = { password = it; isLoginFailed = false },
+            value = viewModel.password,
+            onValueChanged = {
+                viewModel.updatePwd(it)
+                viewModel.isLoginFailed(false)
+            },
             imeAction = ImeAction.Done,
-            isError = isLoginFailed
+            isError = viewModel.isLoginFailed
         )
-        if(isLoginFailed) LoginFailedText()
+        if(viewModel.isLoginFailed) LoginFailedText()
         Spacer(modifier = Modifier.height(32.dp))
         Button(
             "로그인",
             onClick = {
-                if(email != "" && password != ""){
-                    viewModel.login(email, password)
+                if(viewModel.email != "" && viewModel.password != ""){
+                    viewModel.login(viewModel.email, viewModel.password)
                 }
             },
             modifier = Modifier.fillMaxWidth(),
-            enabled = email != "" && password != "",
+            enabled = viewModel.email != "" && viewModel.password != "",
         )
         Spacer(modifier = Modifier.height(12.dp))
         Row(
@@ -214,6 +211,7 @@ fun LoginScreen(
             )
         }
         Spacer(modifier = Modifier.height(12.dp))
+        // 카카오 로그인
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -240,12 +238,14 @@ fun LoginScreen(
 
         }
         Spacer(modifier = Modifier.height(12.dp))
+        // 게스트 모드
         Button(
             "게스트로 둘러보기",
             onClick = { viewModel.toGuestMode() },
             modifier = Modifier.fillMaxWidth()
         )
         Spacer(modifier = Modifier.height(20.dp))
+        // 회원가입
         Row(
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically
@@ -261,15 +261,16 @@ fun LoginScreen(
                 color = AppTheme.palette.gray.getColor(2)
             )
         }
-        if(showLinkDialog){
+        if(viewModel.showLinkDialog){
             AccountLinkingDialog(
-                onDismissRequest = { showLinkDialog = false },
-                onContinue = { viewModel.toLinkPage(); showLinkDialog = false }
+                onDismissRequest = { viewModel.showLinkDialog(false) },
+                onContinue = { viewModel.toLinkPage(); viewModel.showLinkDialog(false) }
             )
         }
     }
 }
 
+// 로그인 실패 시 보일 텍스트
 @Composable
 fun LoginFailedText(){
     Column(

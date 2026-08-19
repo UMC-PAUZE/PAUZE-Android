@@ -1,4 +1,4 @@
-package com.example.pauze.ui.login.component
+package com.example.pauze.ui.login.agreement
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth

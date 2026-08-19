@@ -29,6 +29,7 @@ import com.example.pauze.ui.theme.AppTheme
 import com.example.pauze.ui.theme.bodyTextMdRegular
 import com.example.pauze.ui.theme.headingMdBold
 
+// 회원가입 완료 스크린
 @Composable
 fun SignUpCompletedScreen(
     context: Context,

@@ -17,6 +17,7 @@ import com.example.pauze.ui.component.TextFieldMode
 import com.example.pauze.ui.theme.AppTheme
 import com.example.pauze.ui.theme.bodyTextSmRegular
 
+// 이름 및 닉네임
 @Composable
 fun SetNameAndNickname(
     viewModel: SignUpViewModel
@@ -31,13 +32,11 @@ fun SetNameAndNickname(
             focusManager.clearFocus()
         }
     ){
+        // 이름
         ModeBasedTextField(
             mode = TextFieldMode.UserName,
             value = viewModel.name,
-            onValueChanged = {
-                viewModel.name = it
-                viewModel.isNicknameAvailable = null
-            },
+            onValueChanged = { viewModel.updateName(it) },
             imeAction = ImeAction.Next
         )
         Text(
@@ -48,12 +47,16 @@ fun SetNameAndNickname(
             else AppTheme.palette.gray.getColor(5)
         )
         Spacer(modifier = Modifier.height(12.dp))
+        // 닉네임
         ModeBasedTextField(
             mode = TextFieldMode.Nickname,
             value = viewModel.nickname,
             onCheckClick = { viewModel.checkNicknameAvailable() },
             checkClickValue = viewModel.isNicknameAvailable,
-            onValueChanged = { viewModel.nickname = it },
+            onValueChanged = {
+                viewModel.updateNickname(it)
+                viewModel.updateNicknameAvailability(null)
+            },
             imeAction = ImeAction.Done
         )
         Text(

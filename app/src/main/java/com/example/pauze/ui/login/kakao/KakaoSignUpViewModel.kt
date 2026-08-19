@@ -20,6 +20,7 @@ import com.example.pauze.data.model.TermAgreement
 import com.example.pauze.data.repository.AuthRepository
 import com.example.pauze.data.repository.TokenRepository
 import com.example.pauze.ui.login.LoginNavDestination
+import com.example.pauze.ui.login.saveTokens
 import com.example.pauze.ui.login.signup.SignUpEffect
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
@@ -30,7 +31,6 @@ sealed interface KakaoSignUpEffect {
     object BackStack: KakaoSignUpEffect
     data class NavigateToPolicy(val isTermOfUse: Boolean): KakaoSignUpEffect
     object NavigateToCompleted: KakaoSignUpEffect
-    object ShowBirthdayPicker: KakaoSignUpEffect
 }
 
 @HiltViewModel
@@ -53,10 +53,11 @@ class KakaoSignUpViewModel @Inject constructor(
     var isAgreedToPolicy by mutableStateOf(isInitiallyAgreedToPolicy)
         private set
 
+    // 닉네임 사용 가능 여부
     fun checkNicknameAvailable(){
         launch(
             onSuccess = { result ->
-                if(result == null){
+                if(result == null || !result.available){
                     isNicknameAvailable = false
                     return@launch
                 }
@@ -71,6 +72,7 @@ class KakaoSignUpViewModel @Inject constructor(
         }
     }
 
+    // 카카오 회원가입
     fun kakaoSignUp(){
         launch(
             onSuccess = { result ->
@@ -78,11 +80,11 @@ class KakaoSignUpViewModel @Inject constructor(
                     return@launch
                 }
                 viewModelScope.launch {
-                    // 토큰 저장
-                    dataStore.saveAccessToken(result.accessToken)
-                    dataStore.saveRefreshToken(result.refreshToken)
-                    TokenRepository.updateAccessToken(result.accessToken)
-
+                    saveTokens(
+                        dataStore,
+                        result.accessToken,
+                        result.refreshToken
+                    )
                     sendEffect(KakaoSignUpEffect.NavigateToCompleted)
                 }
             },
@@ -104,6 +106,21 @@ class KakaoSignUpViewModel @Inject constructor(
         }
     }
 
+    // 데이터 업데이트
+    fun updateName(value: String) {
+        name = value
+    }
+
+    fun updateNickname(value: String) {
+        nickname = value
+    }
+    fun updateNicknameAvailability(value: Boolean?){
+        isNicknameAvailable = value
+    }
+    fun updateBirthday(value: LocalDate?) {
+        birthday = value
+    }
+
     fun updateIsAgreedToTerm(isAgreed: Boolean){
         isAgreedToTerm = isAgreed
     }
@@ -112,15 +129,16 @@ class KakaoSignUpViewModel @Inject constructor(
         isAgreedToPolicy = isAgreed
     }
 
+    fun showBirthdayPicker(value: Boolean) {
+        showBirthdayPicker = value
+    }
+
+    // 이펙트 전송
     fun backStack(){
         sendEffect(KakaoSignUpEffect.BackStack)
     }
 
     fun checkPolicy(isTermOfUse: Boolean){
         sendEffect(KakaoSignUpEffect.NavigateToPolicy(isTermOfUse))
-    }
-
-    fun showBirthdayPicker(){
-        sendEffect(KakaoSignUpEffect.ShowBirthdayPicker)
     }
 }

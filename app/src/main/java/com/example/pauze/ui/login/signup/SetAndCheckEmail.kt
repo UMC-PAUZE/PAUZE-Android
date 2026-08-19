@@ -15,6 +15,7 @@ import com.example.pauze.ui.login.component.AccountLinkingDialog
 import com.example.pauze.ui.theme.AppTheme
 import com.example.pauze.ui.theme.bodyTextSmRegular
 
+// 이메일
 @Composable
 fun SetAndCheckEmail(
     context: Context,
@@ -26,17 +27,16 @@ fun SetAndCheckEmail(
         isFocused = ModeBasedTextField(
             mode = TextFieldMode.SetEmail,
             value = viewModel.email,
-            onValueChanged = { viewModel.email = it },
+            onValueChanged = {
+                viewModel.updateEmail(it)
+                viewModel.updateEmailExists(null)
+            },
             imeAction = ImeAction.Done,
             onCheckClick = { viewModel.checkEmailAvailable() },
-            checkClickValue = (viewModel.isEmailExists == true && viewModel.emailAvailableStatus != "KAKAO")
+            checkClickValue = (viewModel.isEmailExists == true)
         )
 
-        if(viewModel.email.isEmpty()){
-            viewModel.isEmailExists = null
-        }
-
-        if(viewModel.isEmailExists != null && viewModel.emailAvailableStatus != "KAKAO" && viewModel.email.isNotEmpty() && !isFocused){
+        if(viewModel.isEmailExists != null && viewModel.email.isNotEmpty() && !isFocused){
             Text(
                 if(viewModel.isEmailExists == true) "이미 사용된 이메일입니다"
                 else "사용할 수 있는 이메일입니다",
@@ -48,7 +48,7 @@ fun SetAndCheckEmail(
 
         if(viewModel.showLinkDialog) {
             AccountLinkingDialog(
-                onDismissRequest =  { viewModel.showLinkDialog = false },
+                onDismissRequest =  { viewModel.showLinkDialog(false) },
                 onContinue = {
                     viewModel.kakaoLogin(context)
                 }

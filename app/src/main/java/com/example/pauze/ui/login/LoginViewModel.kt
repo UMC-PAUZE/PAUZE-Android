@@ -1,14 +1,14 @@
 package com.example.pauze.ui.login
 
 import android.content.Context
-import android.util.Log
-import androidx.datastore.dataStore
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.viewModelScope
 import com.example.pauze.data.datastore.AuthDataStore
 import com.example.pauze.data.model.BaseUiState
 import com.example.pauze.data.model.KakaoLoginResult
 import com.example.pauze.data.repository.AuthRepository
-import com.example.pauze.data.repository.TokenRepository
 import com.example.pauze.ui.BaseViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -20,8 +20,6 @@ sealed interface LoginEffect{
     object NavigateToAdditionalScreen: LoginEffect
     object NavigateToSignUp : LoginEffect
     object NavigateToLinkPage: LoginEffect
-    object IsLoginFailed: LoginEffect
-    object ShowLinkDialog: LoginEffect
 }
 @HiltViewModel
 class LoginViewModel @Inject constructor(
@@ -31,6 +29,11 @@ class LoginViewModel @Inject constructor(
 ): BaseViewModel<LoginEffect, Unit>(
     uiState = BaseUiState(data = Unit)
 ) {
+    var email by mutableStateOf("")
+    var password by mutableStateOf("")
+    var isLoginFailed by mutableStateOf(false)
+    var showLinkDialog by mutableStateOf(false)
+
     fun loginWithKakao(){
         launch(
             onSuccess = { result ->
@@ -38,10 +41,11 @@ class LoginViewModel @Inject constructor(
                 when(result){
                     is KakaoLoginResult.LoginSuccess -> {
                         viewModelScope.launch {
-                            // 토큰 저장
-                            dataStore.saveAccessToken(result.accessToken)
-                            dataStore.saveRefreshToken(result.refreshToken)
-                            TokenRepository.updateAccessToken(result.accessToken)
+                            saveTokens(
+                                dataStore,
+                                result.accessToken,
+                                result.refreshToken
+                            )
 
                             sendEffect(LoginEffect.NavigateToHome)
                         }
@@ -50,7 +54,7 @@ class LoginViewModel @Inject constructor(
                         sendEffect(LoginEffect.NavigateToAdditionalScreen)
                     }
                     is KakaoLoginResult.HasLocalAccount -> {
-                        sendEffect(LoginEffect.ShowLinkDialog)
+                        showLinkDialog = true
                     }
                     else -> {
                         return@launch
@@ -70,24 +74,61 @@ class LoginViewModel @Inject constructor(
             onSuccess = { result ->
                 if(result == null) return@launch
                 viewModelScope.launch {
-                    // 토큰 저장
-                    dataStore.saveAccessToken(result.accessToken)
-                    dataStore.saveRefreshToken(result.refreshToken)
-                    TokenRepository.updateAccessToken(result.accessToken)
+                    saveTokens(
+                        dataStore,
+                        result.accessToken,
+                        result.refreshToken
+                    )
 
                     sendEffect(LoginEffect.NavigateToHome)
                 }
 
             },
-            onFailure = { sendEffect(LoginEffect.IsLoginFailed) }
+            onFailure = {
+                isLoginFailed = true
+            }
         ) {
             repository.login(email, pwd)
         }
     }
 
-    fun toGuestMode(){
-        sendEffect(LoginEffect.NavigateToHome)
+    // 데이터 업데이트 함수
+    fun updateEmail(value: String) {
+        email = value
     }
+    fun updatePwd(value: String) {
+        password = value
+    }
+    fun showLinkDialog(showOrNot: Boolean){
+        showLinkDialog = showOrNot
+    }
+
+    fun isLoginFailed(result: Boolean){
+        isLoginFailed = result
+    }
+
+    fun toGuestMode(){
+        // 로그인 기록이 있다면 로그아웃 후 홈 화면으로 진입
+        launch(
+            onSuccess = {
+                viewModelScope.launch {
+                    // 토큰 초기화
+                    clearToken(dataStore)
+                    sendEffect(LoginEffect.NavigateToHome)
+                }
+            },
+            onFailure = {
+                viewModelScope.launch {
+                    // 토큰 초기화
+                    clearToken(dataStore)
+                    sendEffect(LoginEffect.NavigateToHome)
+                }
+            }
+        ) {
+            repository.logout()
+        }
+    }
+    // 이펙트 전송
     fun toSignUp(){
         sendEffect(LoginEffect.NavigateToSignUp)
     }

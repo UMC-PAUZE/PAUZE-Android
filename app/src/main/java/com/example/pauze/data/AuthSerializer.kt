@@ -1,18 +1,13 @@
 package com.example.pauze.data
 
-import android.util.Log
 import com.example.pauze.data.model.KakaoLoginResult
-import com.example.pauze.data.model.LocalLoginResult
 import com.example.pauze.data.model.SendCodeForSignUpResult
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.json.JsonContentPolymorphicSerializer
 import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.JsonNull
-import kotlinx.serialization.json.booleanOrNull
-import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonObject
-import kotlinx.serialization.json.jsonPrimitive
 
+// 회원가입 이메일 인증코드 발송 결과 파서
 object SendCodeForSignUpResultSerializer: JsonContentPolymorphicSerializer<SendCodeForSignUpResult>(SendCodeForSignUpResult::class){
     override fun selectDeserializer(element: JsonElement): DeserializationStrategy<SendCodeForSignUpResult>{
         val jsonObject = element.jsonObject
@@ -30,6 +25,7 @@ object SendCodeForSignUpResultSerializer: JsonContentPolymorphicSerializer<SendC
     }
 }
 
+// 앱 소셜 로그인(카카오) 결과 파서
 object KakaoLoginResultSerializer: JsonContentPolymorphicSerializer<KakaoLoginResult>(KakaoLoginResult::class){
     override fun selectDeserializer(element: JsonElement): DeserializationStrategy<KakaoLoginResult>{
         val jsonObject = element.jsonObject

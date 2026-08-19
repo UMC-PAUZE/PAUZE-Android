@@ -46,14 +46,15 @@ import com.example.pauze.ui.theme.bodyTextMdRegular
 import com.example.pauze.ui.theme.bodyTextSmMedium
 import com.example.pauze.ui.theme.bodyTextXlBold
 
+// 과한 에너지 소모 화면
 @Composable
 fun PauzeOverloadScreen(
     context: Context,
     navController: NavController,
     viewModel: PauzeOverloadViewModel = hiltViewModel()
 ){
-    val instantActions = viewModel.instantActions
-    val restGuideList = viewModel.restGuideList
+    val instantActions = viewModel.instantActions           // 지금 바로 할 수 있어요
+    val restGuideList = viewModel.restGuideList             // 쉼 가이드
 
     LaunchedEffect(viewModel.effect) {
         viewModel.effect.collect { effect ->
@@ -80,6 +81,7 @@ fun PauzeOverloadScreen(
         TopBar("과한 에너지 소모", onBackClick = viewModel::backStack)
         Column(modifier = Modifier.padding(horizontal = 24.dp)){
             Spacer(modifier = Modifier.height(24.dp))
+            // 지금 바로 할 수 있어요
             Text("지금 바로 할 수 있어요", style = bodyTextXlBold, color = AppTheme.palette.gray.getColor(2))
             Spacer(modifier = Modifier.height(16.dp))
             LazyRow {
@@ -88,6 +90,7 @@ fun PauzeOverloadScreen(
                 }
             }
             Spacer(modifier = Modifier.height(48.dp))
+            // 쉼 가이드
             Text("쉼 가이드", style = bodyTextXlBold, color = AppTheme.palette.gray.getColor(2))
             Spacer(modifier = Modifier.height(16.dp))
             LazyColumn(
@@ -99,6 +102,7 @@ fun PauzeOverloadScreen(
                         onCompleted = viewModel::onRestGuideCompleted
                     )
                 }
+                // 발견(큐레이션) 탭으로 이동
                 item {
                     Spacer(modifier = Modifier.height(48.dp))
                     NavigationButton(toWhere = Destination.Find, onClick = { viewModel.navigateToFind() })

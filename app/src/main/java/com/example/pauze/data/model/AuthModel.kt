@@ -5,17 +5,18 @@ import com.example.pauze.data.SendCodeForSignUpResultSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
+// 이메일 사용 가능 여부
 @Serializable
 data class EmailAvailableResult(
     val status: String,
     val email: String
 )
-
 @Serializable
 data class SendCodeForSignUpRequest(
     val email: String,
 )
 
+// 회원가입 이메일 인증코드 발송
 @Serializable(with = SendCodeForSignUpResultSerializer::class)
 sealed interface SendCodeForSignUpResult {
     @Serializable
@@ -38,6 +39,7 @@ sealed interface SendCodeForSignUpResult {
     ): SendCodeForSignUpResult
 }
 
+// 연동 이메일 인증코드 발송
 @Serializable
 data class SendCodeForLinkingRequest (
     val email: String,
@@ -50,6 +52,7 @@ data class SendCodeForLinkingResult (
     val nextStep: String
 )
 
+// 이메일 인증코드 검증
 @Serializable
 data class VerifyEmailRequest(
     val email: String,
@@ -61,12 +64,14 @@ data class VerifyEmailResult(
     val nextStep: String
 )
 
+// 닉네임 사용 가능 여부
 @Serializable
 data class NicknameAvailableResult(
     val available: Boolean,
     val nickname: String
 )
 
+// 로컬 회원가입
 @Serializable
 data class LocalSignUpRequest (
     val name: String,
@@ -83,6 +88,7 @@ data class LocalSignUpResult(
     val user: User
 )
 
+// 로컬 로그인
 @Serializable
 data class LocalLoginRequest(
     val email: String,
@@ -95,6 +101,7 @@ data class LocalLoginResult(
     val user: User,
 )
 
+// 카카오 회원가입
 @Serializable
 data class KakaoSignUpRequest(
     val name: String,
@@ -110,6 +117,7 @@ data class KakaoSignUpResult(
     val user: User
 )
 
+// 앱 소셜 로그인(카카오)
 @Serializable
 data class KakaoLoginRequest(
     val kakaoAccessToken: String
@@ -143,6 +151,7 @@ sealed interface KakaoLoginResult{
     ): KakaoLoginResult
 }
 
+// 카카오 계정 확인(로컬가입 연동)
 @Serializable
 data class ConfirmKakaoRequest(
     val email: String,
@@ -155,6 +164,7 @@ data class ConfirmKakaoResult(
     val nextStep: String
 )
 
+// 계정 연동
 @Serializable
 data class LinkAccountRequest(
     val direction: String,
@@ -169,6 +179,7 @@ data class LinkAccountResult(
     val user: User
 )
 
+// 토큰 갱신
 @Serializable
 data class RefreshOrLogoutRequest(
     val refreshToken: String

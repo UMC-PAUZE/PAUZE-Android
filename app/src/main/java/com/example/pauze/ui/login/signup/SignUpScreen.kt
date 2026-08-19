@@ -37,6 +37,7 @@ import com.example.pauze.ui.login.component.GetVerifCodeButton
 import com.example.pauze.ui.theme.AppTheme
 import com.example.pauze.ui.theme.headingMdMedium
 
+// 회원가입
 @Composable
 fun SignUpScreen(
     context: Context,
@@ -80,12 +81,6 @@ fun SignUpScreen(
                     }
                     startActivity(context, intent, null)
                 }
-                is SignUpEffect.ShowLinkDialog -> {
-                    viewModel.showLinkDialog = true
-                }
-                is SignUpEffect.ShowBirthdayPicker -> {
-                    viewModel.showBirthdayPicker = true
-                }
             }
         }
     }
@@ -106,6 +101,7 @@ fun SignUpScreen(
             onBackClick = { viewModel.backStack() }
         )
         Spacer(modifier = Modifier.height(4.dp))
+        // 페이즈 바
         Row(
             modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp)
         ) {
@@ -143,13 +139,14 @@ fun SignUpScreen(
             if(viewModel.phase == 0){
                 if(isCompleted){
                     Spacer(modifier = Modifier.height(12.dp))
-                    GetVerifCodeButton(viewModel, false)
+                    GetVerifCodeButton(viewModel)
                 }
             } else {
                 Spacer(modifier = Modifier.padding(horizontal = 24.dp).weight(1f))
                 Button(
                     if(viewModel.phase == 4 || (viewModel.isKakaoAccountExists && viewModel.phase == 2)) "가입 완료하기" else "다음",
                     onClick = {
+                        // Kakao -> Local 연동
                         if(viewModel.isKakaoAccountExists && viewModel.phase == 2) {
                             viewModel.linkAccount()
                             return@Button
@@ -157,6 +154,7 @@ fun SignUpScreen(
                         if(isCompleted){
                             viewModel.updatePhase()
                         }
+                        // 로컬 회원가입
                         if(viewModel.phase == 5) {
                             viewModel.signUp()
                         }
