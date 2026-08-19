@@ -1,5 +1,6 @@
 package com.example.pauze.ui.component
 
+import android.os.SystemClock
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -24,6 +25,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -45,34 +47,59 @@ import kotlinx.coroutines.delay
 private data class TimerOption(
     val label: String,
     val width: Dp,
-    val maximumTime: String?
+    val maximumTime: String?,
+    val durationMillis: Long?
 )
 
 private val timerOptions = listOf(
-    TimerOption(label = "없음", width = 50.dp, maximumTime = null),
-    TimerOption(label = "10분", width = 53.dp, maximumTime = "10:00"),
-    TimerOption(label = "30분", width = 53.dp, maximumTime = "30:00"),
-    TimerOption(label = "1시간", width = 58.dp, maximumTime = "1:00:00")
+    TimerOption(label = "없음", width = 50.dp, maximumTime = null, durationMillis = null),
+    TimerOption(label = "10분", width = 53.dp, maximumTime = "10:00", durationMillis = 10 * 60_000L),
+    TimerOption(label = "30분", width = 53.dp, maximumTime = "30:00", durationMillis = 30 * 60_000L),
+    TimerOption(label = "1시간", width = 58.dp, maximumTime = "1:00:00", durationMillis = 60 * 60_000L)
 )
 
 /** 소리 상세 화면 하단의 타이머와 재생 컨트롤입니다. */
 @Composable
 fun SoundPlay(
     modifier: Modifier = Modifier,
-    progress: Float = 0.35f,
-    currentTime: String = "03:32",
+    currentTime: String = "00:00",
     isPlaying: Boolean = false,
     isPlaybackAvailable: Boolean = true,
     usageSessionId: String = "",
     onUsageQualified: () -> Unit = {},
+    onTimerFinished: () -> Unit = {},
     onPreviousClick: () -> Unit = {},
     onPlayClick: () -> Unit = {},
     onNextClick: () -> Unit = {}
 ) {
-    var selectedTimerIndex by rememberSaveable { mutableIntStateOf(0) }
+    var selectedTimerIndex by rememberSaveable(usageSessionId) { mutableIntStateOf(0) }
+    var timerElapsedMs by rememberSaveable(usageSessionId) { mutableLongStateOf(0L) }
     var playedSeconds by rememberSaveable(usageSessionId) { mutableIntStateOf(0) }
     var isUsageRecorded by rememberSaveable(usageSessionId) { mutableStateOf(false) }
     val currentOnUsageQualified by rememberUpdatedState(onUsageQualified)
+    val currentOnTimerFinished by rememberUpdatedState(onTimerFinished)
+    val selectedTimer = timerOptions[selectedTimerIndex]
+    val selectedDurationMs = selectedTimer.durationMillis
+
+    LaunchedEffect(isPlaying, selectedTimerIndex) {
+        val durationMs = selectedDurationMs ?: return@LaunchedEffect
+        if (!isPlaying || timerElapsedMs >= durationMs) return@LaunchedEffect
+
+        var previousTickMs = SystemClock.elapsedRealtime()
+        while (isPlaying && timerElapsedMs < durationMs) {
+            delay(TIMER_UPDATE_INTERVAL_MS)
+
+            val currentTickMs = SystemClock.elapsedRealtime()
+            val playedSinceLastTickMs = currentTickMs - previousTickMs
+            previousTickMs = currentTickMs
+            timerElapsedMs = (timerElapsedMs + playedSinceLastTickMs).coerceAtMost(durationMs)
+
+            if (timerElapsedMs >= durationMs) {
+                currentOnTimerFinished()
+                break
+            }
+        }
+    }
 
     LaunchedEffect(isPlaying, isUsageRecorded) {
         while (isPlaying && !isUsageRecorded) {
@@ -84,6 +111,13 @@ fun SoundPlay(
             }
         }
     }
+
+    val displayedProgress = selectedDurationMs?.let { durationMs ->
+        (timerElapsedMs.toFloat() / durationMs.toFloat()).coerceIn(0f, 1f)
+    } ?: 1f
+    val displayedCurrentTime = selectedDurationMs?.let {
+        formatElapsedTime(timerElapsedMs)
+    } ?: currentTime
 
     Box(
         modifier = modifier
@@ -121,6 +155,13 @@ fun SoundPlay(
                         modifier = Modifier
                             .size(width = option.width, height = 34.dp)
                             .clip(CircleShape)
+                            .background(
+                                if (isSelected) {
+                                    AppTheme.palette.gray.getColor(3).copy(alpha = 0.4f)
+                                } else {
+                                    Color.Transparent
+                                }
+                            )
                             .border(
                                 BorderStroke(
                                     width = if (isSelected) 2.dp else 1.dp,
@@ -132,7 +173,12 @@ fun SoundPlay(
                                 ),
                                 shape = CircleShape
                             )
-                            .clickable { selectedTimerIndex = index },
+                            .clickable {
+                                if (selectedTimerIndex != index) {
+                                    selectedTimerIndex = index
+                                    timerElapsedMs = 0L
+                                }
+                            },
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
@@ -159,7 +205,7 @@ fun SoundPlay(
             ) {
                 Box(
                     modifier = Modifier
-                        .fillMaxWidth(progress.coerceIn(0f, 1f))
+                        .fillMaxWidth(displayedProgress)
                         .fillMaxSize()
                         .clip(CircleShape)
                         .background(AppTheme.palette.gray.getColor(1))
@@ -173,7 +219,7 @@ fun SoundPlay(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
-                    text = currentTime,
+                    text = displayedCurrentTime,
                     style = bodyTextSmRegular,
                     color = AppTheme.palette.gray.getColor(4)
                 )
@@ -205,7 +251,12 @@ fun SoundPlay(
                 Spacer(modifier = Modifier.width(28.dp))
 
                 IconButton(
-                    onClick = onPlayClick,
+                    onClick = {
+                        if (!isPlaying && selectedDurationMs != null && timerElapsedMs >= selectedDurationMs) {
+                            timerElapsedMs = 0L
+                        }
+                        onPlayClick()
+                    },
                     enabled = isPlaybackAvailable,
                     modifier = Modifier.size(64.dp)
                 ) {
@@ -235,3 +286,17 @@ fun SoundPlay(
 }
 
 private const val MINIMUM_USAGE_SECONDS = 60
+private const val TIMER_UPDATE_INTERVAL_MS = 250L
+
+private fun formatElapsedTime(elapsedMs: Long): String {
+    val totalSeconds = (elapsedMs / 1_000L).coerceAtLeast(0L)
+    val hours = totalSeconds / 3_600L
+    val minutes = (totalSeconds % 3_600L) / 60L
+    val seconds = totalSeconds % 60L
+
+    return if (hours > 0L) {
+        "%d:%02d:%02d".format(hours, minutes, seconds)
+    } else {
+        "%02d:%02d".format(minutes, seconds)
+    }
+}

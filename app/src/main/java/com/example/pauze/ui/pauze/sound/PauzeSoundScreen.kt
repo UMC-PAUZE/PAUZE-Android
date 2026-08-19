@@ -149,7 +149,7 @@ fun PauzeSoundScreen(
                     }
                 }
 
-                Spacer(modifier = Modifier.height(32.dp))
+                Spacer(modifier = Modifier.height(28.dp))
 
                 when {
                     state.isSoundListLoading && state.filteredSounds.isEmpty() -> {
