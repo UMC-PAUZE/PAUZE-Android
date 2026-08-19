@@ -8,7 +8,8 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
 data class PauzeVisualState(
-    val visualUrl: String? = null
+    val visualUrl: String? = null,
+    val breatheUrl: String? = null
 )
 
 sealed interface PauzeVisualEffect {
@@ -24,9 +25,33 @@ class PauzeVisualViewModel @Inject constructor(
     uiState = BaseUiState(data = PauzeVisualState())
 ) {
     fun loadVisualGuide(onReady: () -> Unit) {
-        val currentUrl = uiState.value.data.visualUrl
+        loadGuide(
+            currentUrl = uiState.value.data.visualUrl,
+            emptyUrlMessage = "시각 안정 가이드 URL이 비어 있습니다.",
+            getUrl = visualGuideRepository::getVisualUrl,
+            updateUrl = { state, url -> state.copy(visualUrl = url) },
+            onReady = onReady
+        )
+    }
 
-        // 이미 받은 URL을 재사용해 방식이나 단계를 다시 선택할 때 API를 반복 호출하지 않는다.
+    fun loadBreatheGuide(onReady: () -> Unit) {
+        loadGuide(
+            currentUrl = uiState.value.data.breatheUrl,
+            emptyUrlMessage = "호흡 가이드 URL이 비어 있습니다.",
+            getUrl = visualGuideRepository::getBreatheUrl,
+            updateUrl = { state, url -> state.copy(breatheUrl = url) },
+            onReady = onReady
+        )
+    }
+
+    private fun loadGuide(
+        currentUrl: String?,
+        emptyUrlMessage: String,
+        getUrl: suspend () -> String,
+        updateUrl: (PauzeVisualState, String) -> PauzeVisualState,
+        onReady: () -> Unit
+    ) {
+        // 방식별로 이미 받은 URL을 재사용해 단계 이동 시 API를 반복 호출하지 않는다.
         if (!currentUrl.isNullOrBlank()) {
             onReady()
             return
@@ -40,24 +65,24 @@ class PauzeVisualViewModel @Inject constructor(
         }
 
         launch(
-            onSuccess = { visualUrl ->
+            onSuccess = { guideUrl ->
                 updateData { state ->
-                    state.copy(visualUrl = visualUrl)
+                    updateUrl(state, guideUrl)
                 }
                 onReady()
             },
             onFailure = {
-                // 오디오를 불러오지 못해도 호흡 가이드 화면은 무음으로 제공한다.
+                // 오디오를 불러오지 못해도 선택한 가이드 화면은 무음으로 제공한다.
                 updateState { state ->
                     state.copy(error = null)
                 }
                 onReady()
             }
         ) {
-            visualGuideRepository.getVisualUrl()
+            getUrl()
                 .trim()
                 .takeIf { it.isNotEmpty() }
-                ?: throw IllegalStateException("시각 안정 가이드 URL이 비어 있습니다.")
+                ?: throw IllegalStateException(emptyUrlMessage)
         }
     }
 

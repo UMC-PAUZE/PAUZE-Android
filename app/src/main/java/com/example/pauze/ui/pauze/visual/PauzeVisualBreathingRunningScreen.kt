@@ -55,7 +55,7 @@ internal const val VISUAL_USAGE_RATIO = 0.4
 @Composable
 fun PauzeVisualBreathingRunningScreen(
     totalSeconds: Int,
-    visualUrl: String?,
+    breatheUrl: String?,
     showStopDialog: Boolean,
     onShowStopDialog: () -> Unit,
     onStopClick: () -> Unit,
@@ -75,8 +75,8 @@ fun PauzeVisualBreathingRunningScreen(
 
     val context = LocalContext.current
     // 가이드 음원이 없거나 로딩에 실패한 경우에도 호흡 타이머는 무음으로 계속 동작한다.
-    val player = remember(visualUrl) {
-        visualUrl
+    val player = remember(breatheUrl) {
+        breatheUrl
             ?.takeIf { it.isNotBlank() }
             ?.let { url ->
                 ExoPlayer.Builder(context).build().apply {

@@ -69,10 +69,9 @@ fun PauzeVisualScreen(
             hasError = selectedMethod == PauzeVisualMethod.BreathingGuide &&
                     uiState.error != null,
             onNextClick = {
-                // 실행 방식과 관계없이 공통 가이드 URL을 확보한 뒤 시간 선택으로 이동한다.
                 when (selectedMethod) {
                     PauzeVisualMethod.BreathingGuide -> {
-                        viewModel.loadVisualGuide {
+                        viewModel.loadBreatheGuide {
                             step = PauzeVisualStep.SelectTime
                         }
                     }
@@ -87,8 +86,16 @@ fun PauzeVisualScreen(
                 }
             },
             onRetryClick = {
-                viewModel.loadVisualGuide {
-                    step = PauzeVisualStep.SelectTime
+                when (selectedMethod) {
+                    PauzeVisualMethod.BreathingGuide -> viewModel.loadBreatheGuide {
+                        step = PauzeVisualStep.SelectTime
+                    }
+
+                    PauzeVisualMethod.Meditation -> viewModel.loadVisualGuide {
+                        step = PauzeVisualStep.SelectTime
+                    }
+
+                    null -> Unit
                 }
             },
             onBackClick = { step = PauzeVisualStep.Start }
@@ -138,7 +145,7 @@ fun PauzeVisualScreen(
         PauzeVisualStep.Running -> when (selectedMethod) {
             PauzeVisualMethod.BreathingGuide -> PauzeVisualBreathingRunningScreen(
                 totalSeconds = totalSeconds,
-                visualUrl = uiState.data.visualUrl,
+                breatheUrl = uiState.data.breatheUrl,
                 showStopDialog = showStopDialog,
                 onShowStopDialog = viewModel::showStopDialog,
                 onStopClick = {

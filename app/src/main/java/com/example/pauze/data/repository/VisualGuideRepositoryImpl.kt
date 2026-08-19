@@ -12,4 +12,9 @@ class VisualGuideRepositoryImpl @Inject constructor(
         service.getVisualGuide()
             .getOrThrow()
             .visualUrl
+
+    override suspend fun getBreatheUrl(): String =
+        service.getBreatheGuide()
+            .getOrThrow()
+            .breatheUrl
 }
