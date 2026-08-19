@@ -191,7 +191,6 @@ fun ProfileEditScreen(
         if(viewModel.showPhotoUploadedDialog){
             Dialog(
                 title = "사진 업로드 되었습니다",
-                content = "",
                 btnCancel = "확인",
                 onDismissRequest = viewModel::dismissPhotoUploadedDialog
             )
@@ -199,7 +198,6 @@ fun ProfileEditScreen(
         if (viewModel.showSavedDialog) {
             Dialog(
                 title = "저장되었습니다",
-                content = "",
                 btnCancel = "확인",
                 onDismissRequest = viewModel::onSavedDialogConfirm
             )

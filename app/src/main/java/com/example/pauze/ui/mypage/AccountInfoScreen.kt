@@ -117,7 +117,7 @@ fun AccountInfoScreen(
             if(showLogoutDialog){
                 Dialog(
                     title = "로그아웃 하시겠습니까?",
-                    content = "다시 로그인하면 이어서 사용할 수 있어요.",
+                    content = "로그아웃 시 컨텐츠 이용에 제한이 생길 수 있습니다.",
                     btnCancel = "아니오",
                     btnContinue = "예",
                     onDismissRequest = { showLogoutDialog = false },
