@@ -13,6 +13,8 @@ import javax.inject.Inject
 sealed interface MyPageEffect {
     object NavigateToEdit: MyPageEffect
     object NavigateToAccount: MyPageEffect
+    object OpenInquiry: MyPageEffect // 문의하기
+    object OpenPolicy: MyPageEffect // 방침
 }
 
 @HiltViewModel
@@ -66,6 +68,9 @@ class MyPageViewModel @Inject constructor(
     fun toggleOfflineContent() = updateSettings(
         UpdateSettingsRequest(stabilityContent = StabilityContentUpdate(offlineContentEnabled = !offlineContent))
     )
+
+    fun onInquiryClick() = sendEffect(MyPageEffect.OpenInquiry)
+    fun onPolicyClick() = sendEffect(MyPageEffect.OpenPolicy)
 
     private fun updateSettings(request: UpdateSettingsRequest) {
         val currentProfile = uiState.value.data.profile ?: return

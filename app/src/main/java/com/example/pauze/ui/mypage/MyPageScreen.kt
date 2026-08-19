@@ -55,6 +55,8 @@ import com.example.pauze.ui.theme.AppTheme
 import com.example.pauze.ui.theme.PAUZEAndroidTheme
 import com.example.pauze.ui.theme.bodyTextLgMedium
 
+// 문의 및 피드백
+private const val INQUIRY_URL = "https://walla.my/v/8sAHW459dJPZhZjZNRaR"
 
 @Composable
 fun MyPageScreen(
@@ -101,6 +103,10 @@ fun MyPageScreen(
             when (effect) {
                 is MyPageEffect.NavigateToEdit -> navController.navigate(MyPageNavDestination.ProfileEdit)
                 is MyPageEffect.NavigateToAccount -> navController.navigate(MyPageNavDestination.AccountInfo)
+                is MyPageEffect.OpenInquiry -> context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(INQUIRY_URL)))
+                is MyPageEffect.OpenPolicy -> context.startActivity(
+                    Intent(context, LoginActivity::class.java).putExtra("SHOW_POLICY_ONLY", true)
+                )
             }
         }
     }
@@ -247,12 +253,14 @@ fun MyPageScreen(
                     MySettings(
                         title = "문의 및 피드백",
                         icon = painterResource(R.drawable.ic_chat),
-                        variant = MySettingsVariant.Button
+                        variant = MySettingsVariant.Button,
+                        onClick = viewModel::onInquiryClick
                     )
                     MySettings(
                         title = "개인정보 처리방침",
                         icon = painterResource(R.drawable.ic_security),
-                        variant = MySettingsVariant.Button
+                        variant = MySettingsVariant.Button,
+                        onClick = viewModel::onPolicyClick
                     )
                 }
             }

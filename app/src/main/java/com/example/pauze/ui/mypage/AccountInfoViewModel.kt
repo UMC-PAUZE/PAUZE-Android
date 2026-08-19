@@ -16,6 +16,7 @@ import javax.inject.Inject
 sealed interface AccountInfoEffect {
     object NavigateToBack : AccountInfoEffect
     object ShowWithdrawDialog : AccountInfoEffect
+    object ShowLogoutDialog: AccountInfoEffect
     object NavigateToLogout : AccountInfoEffect
     object NavigateToWithdraw : AccountInfoEffect
 }
@@ -41,17 +42,17 @@ class AccountInfoViewModel @Inject constructor(
     }
 
     fun onBackClick() = sendEffect(AccountInfoEffect.NavigateToBack)
-    fun onLogoutClick(){
+    fun onLogoutClick() = sendEffect(AccountInfoEffect.ShowLogoutDialog)
+    fun onLogoutConfirm(){
         launch(
             onSuccess = {
                 viewModelScope.launch {
-                    // 토큰 초기화
                     authDataStore.clearToken()
                     TokenRepository.updateAccessToken(null)
-
                     sendEffect(AccountInfoEffect.NavigateToLogout)
                 }
-            }
+            },
+            onFailure = { e -> updateData { it.copy(loadError = e.message ?: "로그아웃에 실패했습니다") } }
         ) {
             authRepository.logout()
         }

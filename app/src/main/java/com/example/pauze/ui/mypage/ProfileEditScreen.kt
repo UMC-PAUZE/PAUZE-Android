@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
@@ -25,6 +26,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -33,12 +35,14 @@ import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
 import com.example.pauze.R
 import com.example.pauze.ui.component.Button
+import com.example.pauze.ui.component.Dialog
 import com.example.pauze.ui.component.ModeBasedTextField
 import com.example.pauze.ui.component.TextFieldMode
 import com.example.pauze.ui.component.TopBar
 import com.example.pauze.ui.component.SetBirthday
 import com.example.pauze.ui.theme.AppTheme
 import com.example.pauze.ui.theme.PAUZEAndroidTheme
+import com.example.pauze.ui.theme.bodyTextSmRegular
 
 @Composable
 fun ProfileEditScreen(
@@ -125,6 +129,17 @@ fun ProfileEditScreen(
                 }
             }
 
+            if (viewModel.imageError != null) {
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = viewModel.imageError ?: "",
+                    style = bodyTextSmRegular,
+                    color = AppTheme.palette.secondary.getColor(4),
+                    modifier = Modifier.fillMaxWidth(),
+                    textAlign = TextAlign.Center
+                )
+            }
+
             Spacer(modifier = Modifier.height(55.dp))
 
             Column(
@@ -136,10 +151,26 @@ fun ProfileEditScreen(
                 ModeBasedTextField(
                     mode = TextFieldMode.Nickname,
                     value = viewModel.nickname,
+                    onCheckClick = {viewModel.checkNicknameAvailable()},
+                    checkClickValue = viewModel.isNicknameAvailable,
+                    showCheckButton = viewModel.isNicknameChanged,
                     onValueChanged = { viewModel.updateNickname(it) },
                     imeAction = ImeAction.Next,
                     commentText = viewModel.loadError,
                     isError = viewModel.loadError != null
+                )
+                Text(
+                    when (viewModel.isNicknameAvailable) {
+                        true -> "사용 가능한 닉네임입니다"
+                        false -> "이미 사용된 닉네임입니다"
+                        else -> "10자 이내로 입력해주세요"
+                    },
+                    style = bodyTextSmRegular,
+                    color = if (viewModel.nickname.length > 10 || viewModel.isNicknameAvailable == false)
+                        AppTheme.palette.secondary.getColor(4)
+                    else if (viewModel.isNicknameAvailable == true)
+                        AppTheme.palette.primary.getColor(4)
+                    else AppTheme.palette.gray.getColor(5)
                 )
 
                 ModeBasedTextField(
@@ -161,12 +192,28 @@ fun ProfileEditScreen(
         Button(
             label = "저장하기",
             onClick = viewModel::onSaveClick,
-            enabled = viewModel.nickname.length >= 2,
+            enabled = viewModel.nickname.length in 2..10 && viewModel.isNicknameValid,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 24.dp)
                 .padding(top = 16.dp, bottom = 48.dp)
         )
+
+        // 다이얼로그
+        if(viewModel.showPhotoUploadedDialog){
+            Dialog(
+                title = "사진 업로드 되었습니다",
+                btnCancel = "확인",
+                onDismissRequest = viewModel::dismissPhotoUploadedDialog
+            )
+        }
+        if (viewModel.showSavedDialog) {
+            Dialog(
+                title = "저장되었습니다",
+                btnCancel = "확인",
+                onDismissRequest = viewModel::onSavedDialogConfirm
+            )
+        }
     }
 }
 

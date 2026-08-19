@@ -31,7 +31,7 @@ import org.intellij.lang.annotations.JdkConstants
 @Composable
 fun Dialog(
     title: String,
-    content: String,
+    content: String? = null,
     btnCancel: String,
     btnContinue: String = "",
     onDismissRequest: () -> Unit,
@@ -55,16 +55,18 @@ fun Dialog(
                 color = AppTheme.palette.gray.getColor(2),
                 textAlign = TextAlign.Center
             )
-            Spacer(modifier = Modifier.height(12.dp))
-            Text(
-                content,
-                style = bodyTextSmRegular,
-                color = AppTheme.palette.gray.getColor(2)
-            )
+            if (content != null) {
+                Spacer(modifier = Modifier.height(12.dp))
+                Text(
+                    content,
+                    style = bodyTextSmRegular,
+                    color = AppTheme.palette.gray.getColor(2)
+                )
+            }
             HorizontalDivider(
                 thickness = 1.dp,
                 color = AppTheme.palette.gray.getColor(5),
-                modifier = Modifier.padding(top = 12.dp,)
+                modifier = Modifier.padding(top = if (content != null) 12.dp else 20.dp)
             )
             Row(
                 modifier = Modifier.fillMaxWidth(),

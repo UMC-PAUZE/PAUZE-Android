@@ -1,5 +1,6 @@
 package com.example.pauze.ui.login.agreement
 
+import android.app.Activity
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -10,6 +11,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
@@ -20,13 +22,17 @@ import com.example.pauze.ui.theme.AppTheme
 @Composable
 fun TermsAndPolicyScreen(
     navController: NavController,
+    showAgreeButton: Boolean = true,
     viewModel: TermsAndPolicyViewModel = viewModel()
 ){
+    val context = LocalContext.current
+
     LaunchedEffect(viewModel.effect) {
         viewModel.effect.collect { effect ->
             when(effect){
                 is TermsAndPolicyEffect.BackStack -> {
-                    navController.popBackStack()
+                    if (showAgreeButton) navController.popBackStack()
+                    else (context as? Activity)?.finish()
                 }
                 is TermsAndPolicyEffect.NavigateToSignUp -> {
                     // 동의 후 돌아가기 버튼 클릭 시 해당하는 약관 동의 처리
@@ -59,11 +65,13 @@ fun TermsAndPolicyScreen(
         else{
             PrivacyPolicyScreen(Modifier.weight(1f))
         }
-        Button(
-            "동의하고 돌아가기",
-            onClick = { viewModel.backToSignUp(true) },
-            modifier = Modifier.fillMaxWidth().padding(top = 16.dp, start = 24.dp, end = 24.dp, bottom = 48.dp),
-            enabled = true
-        )
+        if (showAgreeButton) {
+            Button(
+                "동의하고 돌아가기",
+                onClick = { viewModel.backToSignUp(true) },
+                modifier = Modifier.fillMaxWidth().padding(top = 16.dp, start = 24.dp, end = 24.dp, bottom = 48.dp),
+                enabled = true
+            )
+        }
     }
 }

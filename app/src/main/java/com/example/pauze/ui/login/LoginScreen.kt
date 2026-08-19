@@ -71,10 +71,14 @@ class LoginActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        val showPolicyOnly = intent.getBooleanExtra("SHOW_POLICY_ONLY", false)
         setContent {
             MainPaletteTheme {
                 val navController = rememberNavController()
-                NavHost(navController = navController, startDestination = LoginNavDestination.Login){
+                NavHost(
+                    navController = navController,
+                    startDestination = if (showPolicyOnly) LoginNavDestination.Policy(isTermOfUse = false) else LoginNavDestination.Login
+                ){
                     composable<LoginNavDestination.Login> {
                         LoginScreen(this@LoginActivity, navController)
                     }
@@ -82,7 +86,7 @@ class LoginActivity : ComponentActivity() {
                         SignUpScreen(this@LoginActivity, navController)
                     }
                     composable<LoginNavDestination.Policy> {
-                        TermsAndPolicyScreen(navController)
+                        TermsAndPolicyScreen(navController, showAgreeButton = !showPolicyOnly)
                     }
                     composable<LoginNavDestination.Completed> {
                         SignUpCompletedScreen(context = this@LoginActivity)
