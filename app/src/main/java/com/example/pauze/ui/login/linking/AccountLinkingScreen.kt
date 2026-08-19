@@ -24,18 +24,17 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat.startActivity
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.pauze.MainActivity
 import com.example.pauze.ui.component.Button
 import com.example.pauze.ui.component.ModeBasedTextField
 import com.example.pauze.ui.component.TextFieldMode
 import com.example.pauze.ui.component.TopBar
-import com.example.pauze.ui.login.LoginNavDestination
 import com.example.pauze.ui.login.component.EnterVerificationCode
 import com.example.pauze.ui.theme.AppTheme
 import com.example.pauze.ui.theme.headingMdMedium
 
+// Local -> Kakao 연동 화면
 @Composable
 fun AccountLinkingScreen(
     context: Context,
@@ -43,7 +42,7 @@ fun AccountLinkingScreen(
     viewModel: LinkingViewModel = hiltViewModel()
 ){
     val focusManager = LocalFocusManager.current
-    var isVerified by remember { mutableStateOf(false) }
+    var isCompleted by remember { mutableStateOf(false) }
 
     LaunchedEffect(viewModel.effect) {
         viewModel.effect.collect { effect ->
@@ -74,43 +73,47 @@ fun AccountLinkingScreen(
             ){
                 focusManager.clearFocus()
             }
-            .padding(horizontal = 24.dp),
     ) {
         TopBar(
             "연동하기",
             onBackClick = { viewModel.backStack() }
         )
-        Spacer(modifier = Modifier.height(16.dp))
-        Text(
-            if(viewModel.phase == 0) "연동하기 위해\n이메일을 인증해주세요"
-            else "인증코드를 입력하고\n본인인증을 완료해주세요",
-            style = headingMdMedium,
-            color = AppTheme.palette.gray.getColor(2)
-        )
-        Spacer(modifier = Modifier.height(48.dp))
-        if(viewModel.phase == 0){
-            ModeBasedTextField(
-                mode = TextFieldMode.SetEmail,
-                value = viewModel.email,
-                onValueChanged = { viewModel.email = it },
-                imeAction = ImeAction.Done,
-                onCheckClick = {
-                    viewModel.sendCodeForLinking()
-                    viewModel.updatePhase()
-                }
+        Column(
+            modifier = Modifier.padding(horizontal = 24.dp),
+        ) {
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                if(viewModel.phase == 0) "연동하기 위해\n이메일을 인증해주세요"
+                else "인증코드를 입력하고\n본인인증을 완료해주세요",
+                style = headingMdMedium,
+                color = AppTheme.palette.gray.getColor(2)
             )
-        } else {
-            isVerified = EnterVerificationCode(viewModel, true)
-            Spacer(modifier = Modifier.weight(1f))
-            Button(
-                "완료",
-                onClick = {
-                    viewModel.linkAccount()
-                },
-                modifier = Modifier.fillMaxWidth().padding(bottom = 48.dp),
-                enabled = isVerified,
-            )
+            Spacer(modifier = Modifier.height(48.dp))
+            // 이메일
+            if(viewModel.phase == 0){
+                ModeBasedTextField(
+                    mode = TextFieldMode.SetEmail,
+                    value = viewModel.email,
+                    onValueChanged = { viewModel.updateEmail(it) },
+                    imeAction = ImeAction.Done,
+                    onCheckClick = {
+                        viewModel.sendCodeForLinking()
+                        viewModel.updatePhase()
+                    }
+                )
+                // 인증 코드
+            } else {
+                isCompleted = EnterVerificationCode(viewModel, true)
+                Spacer(modifier = Modifier.weight(1f))
+                Button(
+                    "완료",
+                    onClick = {
+                        viewModel.linkAccount()
+                    },
+                    modifier = Modifier.fillMaxWidth().padding(bottom = 48.dp),
+                    enabled = isCompleted,
+                )
+            }
         }
-
     }
 }

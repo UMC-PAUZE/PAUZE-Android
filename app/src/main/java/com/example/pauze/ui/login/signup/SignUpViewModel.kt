@@ -18,6 +18,7 @@ import com.example.pauze.data.model.TermAgreement
 import com.example.pauze.data.repository.AuthRepository
 import com.example.pauze.data.repository.TokenRepository
 import com.example.pauze.ui.login.LoginNavDestination
+import com.example.pauze.ui.login.saveTokens
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
@@ -29,8 +30,6 @@ sealed interface SignUpEffect {
     data class NavigateToPolicy(val isTermOfUse: Boolean): SignUpEffect
     object NavigateToCompleted: SignUpEffect
     object NavigateToHome: SignUpEffect
-    object ShowLinkDialog: SignUpEffect
-    object ShowBirthdayPicker: SignUpEffect
 }
 
 @HiltViewModel
@@ -43,29 +42,28 @@ class SignUpViewModel @Inject constructor(
 ){
     var phase by mutableIntStateOf(0)
 
-    // phase 0
+    // 페이즈 1
     var email by mutableStateOf("")
     var isEmailExists by mutableStateOf<Boolean?>(null)
     var isKakaoAccountExists by mutableStateOf(false)
-    var emailAvailableStatus by mutableStateOf("")
 
-    // phase 1
+    // 페이즈 2
     var code by mutableStateOf("")
     var time by mutableStateOf("00:00")
     private var countDownTimer: CountDownTimer? = null
     var isVerified by mutableStateOf<Boolean?>(null)
     var showLinkDialog by mutableStateOf(false)
 
-    // phase 2
+    // 페이즈 3
     var password by mutableStateOf("")
     var pwdCheck by mutableStateOf("")
 
-    // phase 3
+    // 페이즈 4
     var name by mutableStateOf("")
     var nickname by mutableStateOf("")
     var isNicknameAvailable by mutableStateOf<Boolean?>(null)
 
-    // phase 4
+    // 페이즈 5
     var birthday by mutableStateOf<LocalDate?>(null)
     var showBirthdayPicker by mutableStateOf(false)
     private val isInitiallyAgreedToTerm = savedStateHandle.toRoute<LoginNavDestination.SignUp>().isAgreedToTerm
@@ -75,6 +73,7 @@ class SignUpViewModel @Inject constructor(
     var isAgreedToPolicy by mutableStateOf(isInitiallyAgreedToPolicy)
         private set
 
+    // 이메일 사용 가능 여부
     fun checkEmailAvailable(){
         launch(
             onSuccess = { result ->
@@ -90,10 +89,9 @@ class SignUpViewModel @Inject constructor(
                     }
                     "KAKAO" -> {
                         isKakaoAccountExists = true
-                        sendEffect(SignUpEffect.ShowLinkDialog)
+                        showLinkDialog(true)
                     }
                 }
-                emailAvailableStatus = result.status
             },
             onFailure = {
                 return@launch
@@ -103,13 +101,14 @@ class SignUpViewModel @Inject constructor(
         }
     }
 
+    // 회원가입 이메일 인증코드 발송
     fun sendCodeForSignUp(){
         launch(
             onSuccess = { result ->
                 if(result == null) return@launch
                 when(result){
                     is SendCodeForSignUpResult.KakaoExists -> {
-                        sendEffect(SignUpEffect.ShowLinkDialog)
+                        println("카카오 계정 존재")
                     }
                     is SendCodeForSignUpResult.Success -> {
                         println("인증 코드 전송됨")
@@ -129,6 +128,7 @@ class SignUpViewModel @Inject constructor(
         }
     }
 
+    // 이메일 인증코드 검증
     fun verifyEmail(){
         launch(
             onSuccess = { result ->
@@ -147,6 +147,7 @@ class SignUpViewModel @Inject constructor(
         }
     }
 
+    // 닉네임 사용 가능 여부
     fun checkNicknameAvailable(){
         launch(
             onSuccess = { result ->
@@ -164,29 +165,7 @@ class SignUpViewModel @Inject constructor(
             repository.isNicknameAvailable(nickname)
         }
     }
-
-    fun linkAccount() {
-        launch(
-            onSuccess = { result ->
-                if(result == null) return@launch
-                viewModelScope.launch {
-                    // 토큰 저장
-                    dataStore.saveAccessToken(result.accessToken)
-                    dataStore.saveRefreshToken(result.refreshToken)
-                    TokenRepository.updateAccessToken(result.accessToken)
-
-                    navigateToHome()
-                }
-            },
-            onFailure = {
-                return@launch
-            }
-        ) {
-            val kakaoAccessToken = dataStore.getKakaoAccessToken() ?: ""
-            repository.linkAccount("KAKAO_TO_LOCAL", kakaoAccessToken, email, password)
-        }
-    }
-
+    // 로컬 회원가입
     fun signUp(){
         launch(
             onSuccess = { result ->
@@ -219,7 +198,7 @@ class SignUpViewModel @Inject constructor(
             )
         }
     }
-
+    // 클라이언트 카카오 로그인
     fun kakaoLogin(context: Context) {
         launch(
             onSuccess = {
@@ -235,6 +214,7 @@ class SignUpViewModel @Inject constructor(
         }
     }
 
+    // 카카오 계정 확인(로컬 가입 연동)
     fun confirmKakaoAccount(){
         launch(
             onSuccess = { result ->
@@ -252,12 +232,65 @@ class SignUpViewModel @Inject constructor(
         }
     }
 
+    // 계정 연동
+    fun linkAccount() {
+        launch(
+            onSuccess = { result ->
+                if(result == null) return@launch
+                viewModelScope.launch {
+                    saveTokens(
+                        dataStore,
+                        result.accessToken,
+                        result.refreshToken
+                    )
+                    navigateToHome()
+                }
+            },
+            onFailure = {
+                return@launch
+            }
+        ) {
+            val kakaoAccessToken = dataStore.getKakaoAccessToken() ?: return@launch null
+            repository.linkAccount("KAKAO_TO_LOCAL", kakaoAccessToken, email, password)
+        }
+    }
 
-
+    // 데이터 업데이트 함수
+    fun updateEmail(value: String) {
+        email = value
+        isKakaoAccountExists = false
+        showLinkDialog(false)
+    }
+    fun updateEmailExists(value: Boolean?){
+        isEmailExists = value
+    }
+    fun updateCode(value: String) {
+        code = value
+    }
+    fun updateName(value: String) {
+        name = value
+    }
+    fun updateNickname(value: String) {
+        nickname = value
+    }
+    fun updateNicknameAvailability(value: Boolean?){
+        isNicknameAvailable = value
+    }
+    fun updatePwd(value: String){
+        password = value
+    }
+    fun updatePwdCheck(value: String){
+        pwdCheck = value
+    }
+    fun updateBirthday(value: LocalDate?){
+        birthday = value
+    }
+    fun updateIsVerified(value: Boolean?) {
+        isVerified = value
+    }
     fun updateIsAgreedToTerm(isAgreed: Boolean){
         isAgreedToTerm = isAgreed
     }
-
     fun updateIsAgreedToPolicy(isAgreed: Boolean){
         isAgreedToPolicy = isAgreed
     }
@@ -284,6 +317,13 @@ class SignUpViewModel @Inject constructor(
             }
         }.start()
     }
+    fun showLinkDialog(value: Boolean){
+        showLinkDialog = value
+    }
+    fun showBirthdayPicker(value: Boolean){
+        showBirthdayPicker = value
+    }
+    // 이펙트 전송
     fun sendEffectForTimer(){
         sendEffect(SignUpEffect.RestartVerifTimer)
     }
@@ -295,8 +335,5 @@ class SignUpViewModel @Inject constructor(
     }
     fun navigateToHome(){
         sendEffect(SignUpEffect.NavigateToHome)
-    }
-    fun showBirthdayPicker(){
-        sendEffect(SignUpEffect.ShowBirthdayPicker)
     }
 }

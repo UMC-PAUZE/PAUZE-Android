@@ -38,7 +38,7 @@ abstract class BaseViewModel<EFFECT, DATA: Any?>(
         }
     }
 
-    // 로딩 및 예외 처리를 자동화한 공통 코루틴 launch 함수(GET)
+    // 로딩 및 예외 처리를 자동화한 공통 코루틴 launch 함수(화면에 디스플레이하는 데이터)
     protected fun launch(
         onFailure: ((Exception) -> Unit)? = null,
         block: suspend CoroutineScope.() -> DATA,
@@ -64,7 +64,7 @@ abstract class BaseViewModel<EFFECT, DATA: Any?>(
         }
     }
 
-    // 로딩 및 예외 처리를 자동화한 공통 코루틴 launch 함수(POST, PUT, DELETE)
+    // 로딩 및 예외 처리를 자동화한 공통 코루틴 launch 함수(그 외 데이터)
     protected fun <RESULT> launch(
         onSuccess: ((RESULT) -> Unit)? = null,
         onFailure: ((Exception) -> Unit)? = null,
