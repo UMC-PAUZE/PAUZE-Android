@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Text
@@ -65,6 +66,7 @@ fun EnterVerificationCode(
         if(!isFocused
             && (isLinkingScreen && (viewModel as LinkingViewModel).code != "" && viewModel.isVerified != null)
             || (!isLinkingScreen && (viewModel as SignUpViewModel).code != "" && viewModel.isVerified != null)){
+            Spacer(modifier = Modifier.height(4.dp))
             Text(
                 if((isLinkingScreen && (viewModel as LinkingViewModel).isVerified == true)
                     || (!isLinkingScreen && (viewModel as SignUpViewModel).isVerified == true)) "인증에 성공했습니다"
