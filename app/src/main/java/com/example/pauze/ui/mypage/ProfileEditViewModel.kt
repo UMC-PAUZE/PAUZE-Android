@@ -44,6 +44,8 @@ class ProfileEditViewModel @Inject constructor(
     var birthday by mutableStateOf<String?>(null)
         private set
     var loadError by mutableStateOf<String?>(null)
+    var imageError by mutableStateOf<String?>(null)
+        private set
 
     // 확인 다이얼로그
     var showPhotoUploadedDialog by mutableStateOf(false)
@@ -90,15 +92,15 @@ class ProfileEditViewModel @Inject constructor(
     fun onImagePicked(uri: Uri) {
         val mimeType = context.contentResolver.getType(uri)
         if (mimeType !in ALLOWED_IMAGE_MIME_TYPES) {
-            loadError = "PNG, JPEG 형식의 이미지만 업로드할 수 있습니다."
+            imageError = "PNG, JPEG 형식의 이미지만 업로드할 수 있습니다."
             return
         }
         val fileSize = context.contentResolver.openFileDescriptor(uri, "r")?.use { it.statSize } ?: 0L
         if (fileSize > MAX_IMAGE_SIZE_BYTES) {
-            loadError = "이미지는 5MB 이하로 업로드해주세요."
+            imageError = "이미지는 5MB 이하로 업로드해주세요."
             return
         }
-        loadError = null
+        imageError = null
         newProfileImageUri = uri
         showPhotoUploadedDialog = true
     }
