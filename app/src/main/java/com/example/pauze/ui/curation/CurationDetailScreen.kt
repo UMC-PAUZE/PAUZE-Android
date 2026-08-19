@@ -40,6 +40,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.pauze.R
 import com.example.pauze.data.dummies.dummyCurationPosts
 import com.example.pauze.data.model.CurationPost
@@ -140,9 +141,9 @@ fun CurationDetailScreen(
                     text = paragraph,
                     modifier = Modifier.fillMaxWidth(),
                     style = if (isSectionTitle) {
-                        bodyTextLgBold
+                        bodyTextLgBold.copy(letterSpacing = 0.5.sp)
                     } else {
-                        bodyTextMdRegular
+                        bodyTextMdRegular.copy(letterSpacing = 0.5.sp)
                     },
                     color = AppTheme.palette.gray.getColor(2),
                 )
@@ -150,7 +151,7 @@ fun CurationDetailScreen(
                 if (index < paragraphs.lastIndex) {
                     Spacer(
                         modifier = Modifier.height(
-                            if (isSectionTitle) 12.dp else 24.dp,
+                            if (isSectionTitle) 12.dp else 28.dp,
                         ),
                     )
                 }
