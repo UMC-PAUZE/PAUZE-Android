@@ -58,15 +58,6 @@ fun TopBar(
                             .padding(start = 24.dp)
                             .height(24.dp)
                     )
-                    Icon(
-                        painter = painterResource(R.drawable.ic_alarm),
-                        contentDescription = "알림",
-                        tint = AppTheme.palette.gray.getColor(2),
-                        modifier = Modifier
-                            .align(Alignment.CenterEnd)
-                            .padding(end = 24.dp)
-                            .size(24.dp)
-                    )
                 }
                 TopBarVariant.Default -> {
                     if (showBackButton) {
