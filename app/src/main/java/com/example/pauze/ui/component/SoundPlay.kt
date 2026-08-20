@@ -70,7 +70,9 @@ fun SoundPlay(
     onTimerFinished: () -> Unit = {},
     onPreviousClick: () -> Unit = {},
     onPlayClick: () -> Unit = {},
-    onNextClick: () -> Unit = {}
+    onNextClick: () -> Unit = {},
+    hasPreviousSound: Boolean = true,
+    hasNextSound: Boolean = true
 ) {
     var selectedTimerIndex by rememberSaveable(usageSessionId) { mutableIntStateOf(0) }
     var timerElapsedMs by rememberSaveable(usageSessionId) { mutableLongStateOf(0L) }
@@ -239,7 +241,11 @@ fun SoundPlay(
                 horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                IconButton(onClick = onPreviousClick, modifier = Modifier.size(48.dp)) {
+                IconButton(
+                    onClick = onPreviousClick,
+                    enabled = hasPreviousSound,
+                    modifier = Modifier.size(48.dp)
+                ) {
                     Icon(
                         painter = painterResource(R.drawable.sound_back),
                         contentDescription = "이전 소리",
@@ -272,7 +278,11 @@ fun SoundPlay(
 
                 Spacer(modifier = Modifier.width(28.dp))
 
-                IconButton(onClick = onNextClick, modifier = Modifier.size(48.dp)) {
+                IconButton(
+                    onClick = onNextClick,
+                    enabled = hasNextSound,
+                    modifier = Modifier.size(48.dp)
+                ) {
                     Icon(
                         painter = painterResource(R.drawable.sound_next),
                         contentDescription = "다음 소리",

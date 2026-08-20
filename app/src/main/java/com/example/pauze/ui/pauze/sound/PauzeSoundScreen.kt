@@ -73,9 +73,14 @@ fun PauzeSoundScreen(
         }
     }
 
-    val selectedSound = (
-        state.categorySounds.orEmpty() + state.sounds + state.likedSounds
-        ).firstOrNull { it.id == selectedSoundId }
+    val detailSounds = when (detailOrigin) {
+        SoundDestination.LIST -> state.filteredSounds
+        SoundDestination.STASH -> state.filteredStashSounds
+    }
+    val selectedSoundIndex = detailSounds.indexOfFirst { it.id == selectedSoundId }
+    val selectedSound = detailSounds.getOrNull(selectedSoundIndex)
+    val previousSound = detailSounds.getOrNull(selectedSoundIndex - 1)
+    val nextSound = detailSounds.getOrNull(selectedSoundIndex + 1)
     when {
         selectedSound != null -> {
             PauzeSoundDetailScreen(
@@ -84,6 +89,10 @@ fun PauzeSoundScreen(
                 onToggleBookmark = viewModel::toggleBookmark,
                 onUsageQualified = viewModel::recordCompletedUsage,
                 isDownloading = selectedSound.id in state.downloadingSoundIds,
+                onPreviousClick = { previousSound?.let { selectedSoundId = it.id } },
+                onNextClick = { nextSound?.let { selectedSoundId = it.id } },
+                hasPreviousSound = previousSound != null,
+                hasNextSound = nextSound != null,
                 onBackClick = {
                     selectedSoundId = null
                     viewModel.navigateTo(detailOrigin)
