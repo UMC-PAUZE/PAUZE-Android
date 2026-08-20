@@ -106,7 +106,7 @@ fun PauzeOverloadScreen(
                 item {
                     Spacer(modifier = Modifier.height(48.dp))
                     NavigationButton(toWhere = Destination.Find, onClick = { viewModel.navigateToFind() })
-                    Spacer(modifier = Modifier.height(40.dp))
+                    Spacer(modifier = Modifier.height(92.dp))
                 }
             }
         }
@@ -162,7 +162,7 @@ fun RestGuide(
             ){
                 Image(
                     modifier = Modifier.size(56.dp),
-                    painter = painterResource(R.drawable.ic_rest_guide),
+                    painter = painterResource(guide.image),
                     contentDescription = null
                 )
                 Spacer(modifier = Modifier.width(12.dp))

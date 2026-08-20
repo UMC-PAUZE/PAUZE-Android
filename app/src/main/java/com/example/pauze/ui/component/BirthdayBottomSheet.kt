@@ -1,5 +1,6 @@
 package com.example.pauze.ui.component
 
+import android.content.Context
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -8,6 +9,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -24,6 +27,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
+import androidx.core.content.getSystemService
 import com.example.pauze.R
 import com.example.pauze.ui.theme.AppTheme
 import com.example.pauze.ui.theme.bodyTextLgMedium
@@ -90,11 +94,13 @@ fun BirthdayBottomSheet(
 ){
     val borderShape = RoundedCornerShape(topStart = 56.dp, topEnd = 56.dp)
     ModalBottomSheet(
+        modifier = Modifier.fillMaxHeight(0.6f),
         onDismissRequest = onDismissRequest,
         containerColor = AppTheme.palette.gray.getColor(9),
         dragHandle = null,
         shape = borderShape,
-        scrimColor = Color(0xCC2D2E28)
+        scrimColor = Color(0xCC2D2E28),
+        contentWindowInsets = { WindowInsets(0.dp) }
     ) {
         Column(
             modifier = Modifier
@@ -121,6 +127,7 @@ fun BirthdayBottomSheet(
                 modifier = Modifier.fillMaxWidth(),
                 enabled = true
             )
+            Spacer(modifier = Modifier.height(16.dp))
         }
     }
 }

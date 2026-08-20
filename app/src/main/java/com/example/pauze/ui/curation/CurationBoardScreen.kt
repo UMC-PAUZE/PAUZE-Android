@@ -527,8 +527,8 @@ private fun CurationSearchFilter(
 
     Column(
         modifier = modifier.fillMaxWidth(),
-        verticalArrangement =
-            Arrangement.spacedBy(16.dp),
+        verticalArrangement = Arrangement.Top,
+        horizontalAlignment = Alignment.Start
     ) {
         BasicTextField(
             value = keyword,
@@ -619,6 +619,7 @@ private fun CurationSearchFilter(
             contentAlignment = Alignment.Center,
         ) {
             Row(
+                modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement =
                     Arrangement.spacedBy(8.dp),
                 verticalAlignment =
@@ -643,7 +644,9 @@ private fun CurationSearchFilter(
                                 category.categoryId,
                             )
                         },
-                        modifier = Modifier.size(
+                        modifier = Modifier
+                            .padding(top = 12.dp, start = 2.dp, end = 2.dp, bottom = 8.dp)
+                            .size(
                             width = chipWidth,
                             height = 34.dp,
                         ),

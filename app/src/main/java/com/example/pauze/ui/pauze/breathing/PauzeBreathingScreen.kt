@@ -26,7 +26,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.pauze.R
@@ -36,9 +35,7 @@ import com.example.pauze.ui.component.TopBar
 import com.example.pauze.ui.theme.*
 import androidx.compose.runtime.LaunchedEffect
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
 import com.example.pauze.data.model.BreathPhase
-import com.example.pauze.ui.pauze.PreviewPauzeUsageRepository
 import com.example.pauze.ui.pauze.component.PauzeBreathingCircle
 
 @Composable
@@ -177,6 +174,7 @@ fun PauzeBreathingScreen(
                     isActive = viewModel.breathState.phase == BreathPhase.EXHALE
                 )
             }
+            Spacer(modifier = Modifier.height(20.dp))
         }
     }
 
