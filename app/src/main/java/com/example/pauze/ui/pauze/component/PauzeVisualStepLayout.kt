@@ -76,7 +76,7 @@ fun PauzeVisualStepLayout(
                 onClick = onButtonClick
             )
 
-            Spacer(modifier = Modifier.height(48.dp))
+            Spacer(modifier = Modifier.height(72.dp))
         }
     }
 }

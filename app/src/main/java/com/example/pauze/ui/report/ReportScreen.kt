@@ -140,6 +140,7 @@ fun ReportScreen(
                         TriggerCard(viewModel.triggers)
                         viewModel.insight?.let { InsightCard(it) }
                     }
+                    Spacer(modifier = Modifier.height(40.dp))
                 }
             }
         }

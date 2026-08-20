@@ -123,6 +123,7 @@ fun MainScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ){
                     NavigationBarItem(
+                        modifier = Modifier.weight(1f),
                         selected = isSelected(navController, BottomNavDestination.Home),
                         onClick = {
                             navController.navigate(BottomNavDestination.Home){
@@ -147,6 +148,7 @@ fun MainScreen(
                         )
                     )
                     NavigationBarItem(
+                        modifier = Modifier.weight(1f),
                         selected = isSelected(navController, BottomNavDestination.Report),
                         onClick = {
                             navController.navigate(BottomNavDestination.Report){
@@ -169,6 +171,7 @@ fun MainScreen(
                         )
                     )
                     IconButton(
+                        modifier = Modifier.weight(1f),
                         onClick = {
                             context.startActivity(
                                 Intent(context, PauzeStartActivity::class.java).apply {
@@ -184,6 +187,7 @@ fun MainScreen(
                         )
                     }
                     NavigationBarItem(
+                        modifier = Modifier.weight(1f),
                         selected = isSelected(navController, BottomNavDestination.Find),
                         onClick = {
                             navController.navigate(BottomNavDestination.Find){
@@ -206,6 +210,7 @@ fun MainScreen(
                         )
                     )
                     NavigationBarItem(
+                        modifier = Modifier.weight(1f),
                         selected = isSelected(navController, BottomNavDestination.MyPage),
                         onClick = {
                             navController.navigate(BottomNavDestination.MyPage){

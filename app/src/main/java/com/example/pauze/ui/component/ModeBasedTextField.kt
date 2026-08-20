@@ -81,12 +81,13 @@ fun ModeBasedTextField(
                     (mode == TextFieldMode.UserName && (value.length == 1
                             || nameCheck
                             || value.trim() != value))
-                            || (mode == TextFieldMode.SetPwd
+                            || (mode == TextFieldMode.Pwd
                             && !isFocused
                             && (value.length > 1 && value.length < 8
-                            || !pwdCheck))
+                            || !pwdCheck)
+                            && value.isNotEmpty())
                             || (mode == TextFieldMode.Nickname && (nickNameCheck || checkClickValue == false))
-                            || (mode == TextFieldMode.SetPwd && !checkPasswordSame())
+                            || (mode == TextFieldMode.SetPwd && !checkPasswordSame() && value.isNotEmpty())
                             || ((mode == TextFieldMode.SetEmail && checkClickValue == true || mode == TextFieldMode.Verif && checkClickValue == false))
                                  -> AppTheme.palette.secondary.getColor(4)
                     (mode == TextFieldMode.Nickname

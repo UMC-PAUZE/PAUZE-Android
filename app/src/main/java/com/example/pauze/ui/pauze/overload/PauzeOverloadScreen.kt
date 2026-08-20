@@ -106,7 +106,7 @@ fun PauzeOverloadScreen(
                 item {
                     Spacer(modifier = Modifier.height(48.dp))
                     NavigationButton(toWhere = Destination.Find, onClick = { viewModel.navigateToFind() })
-                    Spacer(modifier = Modifier.height(40.dp))
+                    Spacer(modifier = Modifier.height(92.dp))
                 }
             }
         }
