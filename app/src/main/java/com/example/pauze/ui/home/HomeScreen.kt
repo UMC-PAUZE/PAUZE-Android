@@ -28,6 +28,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -49,8 +52,10 @@ import com.example.pauze.ui.component.Chips
 import com.example.pauze.ui.component.SensitivityScoreBar
 import com.example.pauze.ui.component.Destination
 import com.example.pauze.ui.component.NavigationButton
+import com.example.pauze.ui.component.LoginRequiredDialog
 import com.example.pauze.ui.component.TopBar
 import com.example.pauze.ui.component.TopBarVariant
+import com.example.pauze.ui.login.LoginActivity
 import com.example.pauze.ui.pauze.start.PauzeStartActivity
 import com.example.pauze.ui.pauze.condition.PauzeTodayConditionActivity
 import com.example.pauze.ui.theme.bodyTextLgBold
@@ -67,6 +72,7 @@ fun HomeScreen(
     viewModel: HomeViewModel = hiltViewModel()
 ){
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    var isLoginRequiredDialogVisible by rememberSaveable { mutableStateOf(false) }
 
     val bgPadding = 24
     val conditionBoxPadding = 16
@@ -146,7 +152,13 @@ fun HomeScreen(
                     Column {
                         Button(
                             "오늘의 컨디션 입력하기",
-                            onClick = { viewModel.moveToTodayCondition() },
+                            onClick = {
+                                if (TokenRepository.accessToken == null) {
+                                    isLoginRequiredDialogVisible = true
+                                } else {
+                                    viewModel.moveToTodayCondition()
+                                }
+                            },
                             modifier = Modifier.fillMaxWidth(),
                             enabled = true
                         )
@@ -169,6 +181,18 @@ fun HomeScreen(
                 Spacer(modifier = Modifier.height(12.dp))
             }
         }
+    }
+
+    if (isLoginRequiredDialogVisible) {
+        LoginRequiredDialog(
+            onLoginClick = {
+                isLoginRequiredDialogVisible = false
+                context.startActivity(Intent(context, LoginActivity::class.java))
+            },
+            onDismissRequest = {
+                isLoginRequiredDialogVisible = false
+            }
+        )
     }
 }
 
