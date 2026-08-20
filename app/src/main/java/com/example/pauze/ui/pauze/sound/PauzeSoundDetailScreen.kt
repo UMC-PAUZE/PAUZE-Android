@@ -38,6 +38,10 @@ fun PauzeSoundDetailScreen(
     onToggleBookmark: (String) -> Unit,
     onUsageQualified: () -> Unit,
     onBackClick: () -> Unit,
+    onPreviousClick: () -> Unit = {},
+    onNextClick: () -> Unit = {},
+    hasPreviousSound: Boolean = true,
+    hasNextSound: Boolean = true,
     modifier: Modifier = Modifier,
     isDownloading: Boolean = false
 ) {
@@ -210,6 +214,7 @@ fun PauzeSoundDetailScreen(
                 player?.pause()
                 onBackClick()
             },
+            onPreviousClick = onPreviousClick,
             onPlayClick = {
                 player?.let { currentPlayer ->
                     if (currentPlayer.isPlaying) {
@@ -222,6 +227,9 @@ fun PauzeSoundDetailScreen(
                     }
                 }
             },
+            onNextClick = onNextClick,
+            hasPreviousSound = hasPreviousSound,
+            hasNextSound = hasNextSound,
             modifier = Modifier
                 .align(Alignment.BottomCenter)
                 .fillMaxWidth()
