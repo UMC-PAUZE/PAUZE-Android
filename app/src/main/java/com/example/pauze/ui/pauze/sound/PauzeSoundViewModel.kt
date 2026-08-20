@@ -1,6 +1,5 @@
 package com.example.pauze.ui.pauze.sound
 
-import com.example.pauze.R
 import com.example.pauze.data.model.AudioGuideDto
 import com.example.pauze.data.model.AudioLikeToggleResultDto
 import com.example.pauze.data.model.BaseUiState
@@ -8,6 +7,7 @@ import com.example.pauze.data.model.PauzeSoundState
 import com.example.pauze.data.model.SoundCategory
 import com.example.pauze.data.model.SoundItem
 import com.example.pauze.data.model.SoundStashTab
+import com.example.pauze.data.model.soundImageResource
 import com.example.pauze.data.repository.AuthenticationRequiredException
 import com.example.pauze.data.repository.PauzeSoundRepository
 import com.example.pauze.data.repository.PauzeUsageRepository
@@ -544,11 +544,7 @@ private fun AudioGuideDto.toSoundItem(): SoundItem {
         category = categoryName,
         isLiked = isLiked,
         isBookmarked = false,
-        imageResId = if (audioTitle.contains("비", ignoreCase = true)) {
-            R.drawable.ic_rain
-        } else {
-            R.drawable.ic_empty_image
-        },
+        imageResId = soundImageResource(audioId),
         audioUrl = audioUrl,
         localFilePath = null
     )

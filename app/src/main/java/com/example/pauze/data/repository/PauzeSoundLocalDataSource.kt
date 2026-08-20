@@ -2,8 +2,8 @@ package com.example.pauze.data.repository
 
 import android.content.Context
 import android.net.Uri
-import com.example.pauze.R
 import com.example.pauze.data.model.SoundItem
+import com.example.pauze.data.model.soundImageResource
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.io.File
 import java.io.IOException
@@ -183,11 +183,7 @@ class PauzeSoundLocalDataSource @Inject constructor(
             category = category,
             isLiked = preferences.getBoolean(soundId.key(FIELD_IS_LIKED), false),
             isBookmarked = true,
-            imageResId = if (title.contains("비", ignoreCase = true)) {
-                R.drawable.ic_rain
-            } else {
-                R.drawable.ic_empty_image
-            },
+            imageResId = soundImageResource(soundId.toLongOrNull() ?: -1L),
             audioUrl = preferences.getString(soundId.key(FIELD_AUDIO_URL), "").orEmpty(),
             localFilePath = localFilePath
         )
