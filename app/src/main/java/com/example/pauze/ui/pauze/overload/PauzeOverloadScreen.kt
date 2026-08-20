@@ -64,7 +64,6 @@ fun PauzeOverloadScreen(
                 }
                 is PauzeOverloadEffect.NavigateToFind -> {
                     val intent = Intent(context, MainActivity::class.java).apply {
-                        flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
                         putExtra("Bottom Navigation Destination", "Find")
                     }
                     context.startActivity(intent)
