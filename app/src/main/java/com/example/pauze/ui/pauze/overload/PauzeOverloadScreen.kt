@@ -162,7 +162,7 @@ fun RestGuide(
             ){
                 Image(
                     modifier = Modifier.size(56.dp),
-                    painter = painterResource(R.drawable.ic_rest_guide),
+                    painter = painterResource(guide.image),
                     contentDescription = null
                 )
                 Spacer(modifier = Modifier.width(12.dp))
