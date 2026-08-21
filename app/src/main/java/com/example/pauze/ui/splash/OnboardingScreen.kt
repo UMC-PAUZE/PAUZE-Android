@@ -135,6 +135,7 @@ fun OnboardingPage(
             horizontalAlignment = Alignment.End,
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
+            Spacer(modifier = Modifier.height(16.dp))
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(4.dp)
@@ -184,5 +185,6 @@ fun OnboardingPage(
         Spacer(modifier = Modifier.weight(1f))
 
         Button(label = buttonText, onClick = onNextClick, modifier = Modifier.fillMaxWidth())
+        Spacer(modifier = Modifier.height(40.dp))
     }
 }

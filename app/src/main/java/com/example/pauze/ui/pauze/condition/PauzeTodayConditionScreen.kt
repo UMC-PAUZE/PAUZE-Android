@@ -95,13 +95,15 @@ fun PauzeTodayCondition(
             when (effect) {
                 TodayConditionEffect.ShowExitDialog -> showExitDialog = true
                 TodayConditionEffect.NavigateBack -> onExitClick()
-                TodayConditionEffect.NavigateToMainActivity -> {
-                    context.startActivity(
-                        Intent(context, MainActivity::class.java).apply {
-                            flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or
-                                Intent.FLAG_ACTIVITY_SINGLE_TOP
-                        }
-                    )
+                TodayConditionEffect.NavigateToHome -> {
+                    val intent = Intent(context, MainActivity::class.java)
+                    intent.putExtra("Bottom Navigation Destination", "Home")
+                    context.startActivity(intent)
+                }
+                TodayConditionEffect.NavigateToReport -> {
+                    val intent = Intent(context, MainActivity::class.java)
+                    intent.putExtra("Bottom Navigation Destination", "Report")
+                    context.startActivity(intent)
                 }
                 TodayConditionEffect.NavigateToPauzeStartActivity -> {
                     context.startActivity(
@@ -119,8 +121,8 @@ fun PauzeTodayCondition(
             score = conditionState.sensitivityScore,
             sensitivityLevel = conditionState.sensitivityLevel
                 ?: conditionState.sensitivityScore.toSensitivityLevel(),
-            onHomeClick = viewModel::navigateToMainActivity,
-            onDetailClick = viewModel::navigateToMainActivity,
+            onHomeClick = viewModel::navigateToHome,
+            onDetailClick = viewModel::navigateToReport,
             onPauzeStartClick = viewModel::navigateToPauzeStartActivity
         )
         return

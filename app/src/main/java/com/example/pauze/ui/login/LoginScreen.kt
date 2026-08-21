@@ -3,6 +3,7 @@ package com.example.pauze.ui.login
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -61,6 +62,7 @@ import com.example.pauze.ui.theme.bodyTextMdBold
 import com.example.pauze.ui.theme.bodyTextMdMedium
 import com.example.pauze.ui.theme.bodyTextSmRegular
 import com.example.pauze.ui.theme.bodyTextXlBold
+import com.kakao.sdk.common.util.Utility
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -69,6 +71,8 @@ class LoginActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        val keyHash = Utility.getKeyHash(this)
+        Log.d("KeyHash", keyHash)
         val showPolicyOnly = intent.getBooleanExtra("SHOW_POLICY_ONLY", false)
         setContent {
             MainPaletteTheme {
@@ -220,7 +224,8 @@ fun LoginScreen(
                 .background(
                     color = Color(0xFFFEE500),
                     shape = RoundedCornerShape(size = 100.dp))
-                .clickable{
+                .clickable {
+                    Log.d("카카오 로그인", "클릭됨")
                     viewModel.loginWithKakao()
                 }
                 .padding(horizontal = 28.dp, vertical = 18.dp),

@@ -71,12 +71,14 @@ class AuthDataStore @Inject constructor(
                 trySend(token.accessToken)
             }
         }
+        // 강제로 웹 로그인만 호출
+        UserApiClient.instance.loginWithKakaoAccount(context, callback = callback)
 
-        if (UserApiClient.instance.isKakaoTalkLoginAvailable(context)) {
-            UserApiClient.instance.loginWithKakaoTalk(context, callback = callback)
-        } else {
-            UserApiClient.instance.loginWithKakaoAccount(context, callback = callback)
-        }
+//        if (UserApiClient.instance.isKakaoTalkLoginAvailable(context)) {
+//            UserApiClient.instance.loginWithKakaoTalk(context, callback = callback)
+//        } else {
+//            UserApiClient.instance.loginWithKakaoAccount(context, callback = callback)
+//        }
 
         awaitClose {}
     }

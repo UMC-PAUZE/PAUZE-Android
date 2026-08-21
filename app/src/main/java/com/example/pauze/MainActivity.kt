@@ -71,6 +71,20 @@ class MainActivity : ComponentActivity() {
                             restoreState = true
                         }
                     }
+                    if(destination == "Home"){
+                        navController.navigate(BottomNavDestination.Home){
+                            popUpTo(BottomNavDestination.Home)
+                            launchSingleTop = true
+                            restoreState = true
+                        }
+                    }
+                    if(destination == "Report"){
+                        navController.navigate(BottomNavDestination.Report){
+                            popUpTo(BottomNavDestination.Report)
+                            launchSingleTop = true
+                            restoreState = true
+                        }
+                    }
                 }
                 MainScreen(
                     context = this,

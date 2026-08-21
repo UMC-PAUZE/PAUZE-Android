@@ -21,7 +21,8 @@ import retrofit2.HttpException
 sealed interface TodayConditionEffect {
     data object ShowExitDialog : TodayConditionEffect
     data object NavigateBack : TodayConditionEffect
-    data object NavigateToMainActivity : TodayConditionEffect
+    data object NavigateToHome : TodayConditionEffect
+    data object NavigateToReport : TodayConditionEffect
     data object NavigateToPauzeStartActivity : TodayConditionEffect
 }
 
@@ -143,8 +144,11 @@ class PauzeTodayConditionViewModel @Inject constructor(
         sendEffect(TodayConditionEffect.NavigateBack)
     }
 
-    fun navigateToMainActivity() {
-        sendEffect(TodayConditionEffect.NavigateToMainActivity)
+    fun navigateToHome() {
+        sendEffect(TodayConditionEffect.NavigateToHome)
+    }
+    fun navigateToReport(){
+        sendEffect(TodayConditionEffect.NavigateToReport)
     }
 
     fun navigateToPauzeStartActivity() {
