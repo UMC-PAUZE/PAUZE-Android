@@ -66,9 +66,10 @@ import com.example.pauze.ui.theme.bodyTextMdMedium
 import com.example.pauze.ui.theme.bodyTextSmRegular
 import com.example.pauze.ui.theme.headingSmBold
 import kotlinx.coroutines.launch
-import java.text.SimpleDateFormat
-import java.util.Locale
-import java.util.TimeZone
+import java.time.LocalDateTime
+import java.time.OffsetDateTime
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 
 @Composable
 fun CurationBoardScreen(
@@ -672,19 +673,21 @@ internal fun formatRelativeTime(
     currentTimeMillis: Long =
         System.currentTimeMillis(),
 ): String {
-    val dateFormat = SimpleDateFormat(
-        "yyyy-MM-dd'T'HH:mm:ss",
-        Locale.getDefault(),
-    ).apply {
-        isLenient = false
-        timeZone = TimeZone.getTimeZone(
-            "Asia/Seoul",
-        )
-    }
-
-    val createdAtMillis = runCatching {
-        dateFormat.parse(createdAt)?.time
-    }.getOrNull() ?: return createdAt
+    val createdAtMillis =
+        runCatching {
+            OffsetDateTime.parse(
+                createdAt,
+                DateTimeFormatter.ISO_OFFSET_DATE_TIME,
+            ).toInstant().toEpochMilli()
+        }.recoverCatching {
+            // 기존 시간대 없는 응답은 서울 현지 시각으로 해석한다.
+            LocalDateTime.parse(
+                createdAt,
+                DateTimeFormatter.ISO_LOCAL_DATE_TIME,
+            ).atZone(ZoneId.of("Asia/Seoul"))
+                .toInstant()
+                .toEpochMilli()
+        }.getOrNull() ?: return createdAt
 
     val difference = (
             currentTimeMillis - createdAtMillis
