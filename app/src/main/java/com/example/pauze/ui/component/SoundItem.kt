@@ -43,7 +43,7 @@ fun SoundItem(
     isDownloading: Boolean = false
 ) {
     val itemModifier = modifier
-        .width(312.dp)
+        .fillMaxWidth()
         .height(80.dp)
         .clip(RoundedCornerShape(24.dp))
         .background(AppTheme.palette.gray.getColor(8))

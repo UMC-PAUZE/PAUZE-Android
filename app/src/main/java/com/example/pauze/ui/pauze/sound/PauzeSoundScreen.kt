@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -47,6 +48,7 @@ import com.example.pauze.ui.theme.AppTheme
 import com.example.pauze.ui.theme.MainPaletteTheme
 import com.example.pauze.ui.theme.bodyTextMdMedium
 
+@OptIn(ExperimentalStdlibApi::class)
 @Composable
 fun PauzeSoundScreen(
     modifier: Modifier = Modifier,
@@ -112,7 +114,7 @@ fun PauzeSoundScreen(
             Column(
                 modifier = modifier
                     .fillMaxSize()
-                    .background(AppTheme.palette.base.getColor(0)),
+                    .background(AppTheme.palette.gray.getColor(9)),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 TopBar(
@@ -128,106 +130,109 @@ fun PauzeSoundScreen(
                         )
                     }
                 )
+                Column(
+                    modifier = Modifier.fillMaxWidth().
+                    padding(top = 12.dp, start = 24.dp, end = 24.dp)
+                ){
+                    SearchBar(
+                        query = state.searchQuery,
+                        onQueryChange = viewModel::updateSearchQuery,
+                        modifier = Modifier.fillMaxWidth().padding(top = 16.dp)
+                    )
 
-                SearchBar(
-                    query = state.searchQuery,
-                    onQueryChange = viewModel::updateSearchQuery,
-                    modifier = Modifier.padding(top = 16.dp)
-                )
-
-                Row(
-                    modifier = Modifier
-                        .width(312.dp)
-                        .padding(top = 12.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    SoundCategory.entries.forEach { category ->
-                        val chipWidth = when (category) {
-                            SoundCategory.ALL -> 50.dp
-                            SoundCategory.NATURE_SOUND -> 75.dp
-                            SoundCategory.ASMR -> 62.dp
-                            SoundCategory.NOISE -> 63.dp
-                        }
-
-                        Chips(
-                            text = category.displayName,
-                            isSelected = state.selectedCategory == category,
-                            onClick = { viewModel.selectCategory(category) },
-                            modifier = Modifier.size(width = chipWidth, height = 34.dp)
-                        )
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(28.dp))
-
-                when {
-                    state.isSoundListLoading && state.filteredSounds.isEmpty() -> {
-                        Box(
-                            modifier = Modifier
-                                .weight(1f)
-                                .width(312.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            CircularProgressIndicator(
-                                color = AppTheme.palette.primary.getColor(3)
-                            )
-                        }
-                    }
-
-                    errorMessage != null && state.filteredSounds.isEmpty() -> {
-                        SoundMessage(
-                            message = errorMessage,
-                            actionText = "다시 시도",
-                            onActionClick = viewModel::retry,
-                            modifier = Modifier
-                                .weight(1f)
-                                .width(312.dp)
-                        )
-                    }
-
-                    state.filteredSounds.isEmpty() -> {
-                        SoundMessage(
-                            message = if (state.searchQuery.isBlank()) {
-                                "등록된 소리가 없어요."
-                            } else {
-                                "검색 결과가 없어요."
-                            },
-                            modifier = Modifier
-                                .weight(1f)
-                                .width(312.dp)
-                        )
-                    }
-
-                    else -> {
-                        Column(
-                            modifier = Modifier
-                                .weight(1f)
-                                .width(312.dp)
-                        ) {
-                            errorMessage?.let { message ->
-                                Text(
-                                    text = message,
-                                    style = bodyTextMdMedium,
-                                    color = AppTheme.palette.primary.getColor(3),
-                                    modifier = Modifier.padding(bottom = 12.dp)
-                                )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        SoundCategory.entries.forEach { category ->
+                            val chipWidth = when (category) {
+                                SoundCategory.ALL -> 50.dp
+                                SoundCategory.NATURE_SOUND -> 75.dp
+                                SoundCategory.ASMR -> 62.dp
+                                SoundCategory.NOISE -> 63.dp
                             }
 
-                            SoundList(
-                                sounds = state.filteredSounds,
-                                downloadingSoundIds = state.downloadingSoundIds,
-                                hasNextPage = state.hasNextSoundsPage,
-                                isLoadingMore = state.isLoadingMoreSounds,
-                                onLoadMore = viewModel::loadMoreSounds,
-                                onItemClick = { sound ->
-                                    viewModel.openDetail(sound.id, SoundDestination.LIST)
-                                },
-                                onToggleLike = viewModel::toggleLike,
-                                onToggleBookmark = viewModel::toggleBookmark,
-                                modifier = Modifier.fillMaxSize()
+                            Chips(
+                                text = category.displayName,
+                                isSelected = state.selectedCategory == category,
+                                onClick = { viewModel.selectCategory(category) },
+                                modifier = Modifier.padding(top = 12.dp).size(width = chipWidth, height = 34.dp)
                             )
                         }
                     }
+
+                    Spacer(modifier = Modifier.height(28.dp))
+
+                    when {
+                        state.isSoundListLoading && state.filteredSounds.isEmpty() -> {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .weight(1f),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                CircularProgressIndicator(
+                                    color = AppTheme.palette.primary.getColor(3)
+                                )
+                            }
+                        }
+
+                        errorMessage != null && state.filteredSounds.isEmpty() -> {
+                            SoundMessage(
+                                message = errorMessage,
+                                actionText = "다시 시도",
+                                onActionClick = viewModel::retry,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .weight(1f)
+                            )
+                        }
+
+                        state.filteredSounds.isEmpty() -> {
+                            SoundMessage(
+                                message = if (state.searchQuery.isBlank()) {
+                                    "등록된 소리가 없어요."
+                                } else {
+                                    "검색 결과가 없어요."
+                                },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .weight(1f)
+                            )
+                        }
+
+                        else -> {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .weight(1f)
+                            ) {
+                                errorMessage?.let { message ->
+                                    Text(
+                                        text = message,
+                                        style = bodyTextMdMedium,
+                                        color = AppTheme.palette.primary.getColor(3),
+                                        modifier = Modifier.padding(bottom = 12.dp)
+                                    )
+                                }
+
+                                SoundList(
+                                    sounds = state.filteredSounds,
+                                    downloadingSoundIds = state.downloadingSoundIds,
+                                    hasNextPage = state.hasNextSoundsPage,
+                                    isLoadingMore = state.isLoadingMoreSounds,
+                                    onLoadMore = viewModel::loadMoreSounds,
+                                    onItemClick = { sound ->
+                                        viewModel.openDetail(sound.id, SoundDestination.LIST)
+                                    },
+                                    onToggleLike = viewModel::toggleLike,
+                                    onToggleBookmark = viewModel::toggleBookmark,
+                                    modifier = Modifier.fillMaxSize()
+                                )
+                            }
+                        }
+                }
+
                 }
             }
         }
@@ -277,7 +282,7 @@ fun SoundList(
     modifier: Modifier = Modifier
 ) {
     LazyColumn(
-        modifier = modifier,
+        modifier = modifier.fillMaxWidth(),
         contentPadding = PaddingValues(),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
@@ -364,6 +369,7 @@ internal object PreviewPauzeSoundRepository : PauzeSoundRepository {
     override suspend fun deleteDownloadedSound(soundId: String) = Unit
 }
 
+@OptIn(ExperimentalStdlibApi::class)
 private fun SoundItem.toAudioGuideDto(): AudioGuideDto = AudioGuideDto(
     audioId = id.toLongOrNull() ?: 0L,
     audioTitle = title,

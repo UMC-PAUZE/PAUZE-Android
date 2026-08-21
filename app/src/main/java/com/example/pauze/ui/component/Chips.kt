@@ -48,7 +48,7 @@ fun Chips(
             .background(
                 when {
                     isDisplayStyle -> AppTheme.palette.gray.getColor(8)
-                    isSelected -> AppTheme.palette.primary.getColor(3)
+                    isSelected -> AppTheme.palette.primary.getColor(4)
                     else -> Color.Transparent
                 }
             )
