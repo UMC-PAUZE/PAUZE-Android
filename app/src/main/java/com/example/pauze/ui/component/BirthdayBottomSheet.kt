@@ -16,10 +16,12 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -92,19 +94,23 @@ fun BirthdayBottomSheet(
     onDateChanged: (LocalDate) -> Unit,
     onClick: () -> Unit
 ){
+    val sheetState = rememberModalBottomSheetState(
+        skipPartiallyExpanded = true
+    )
     val borderShape = RoundedCornerShape(topStart = 56.dp, topEnd = 56.dp)
     ModalBottomSheet(
-        modifier = Modifier.fillMaxHeight(0.6f),
+        modifier = Modifier.wrapContentHeight(),
+        sheetState = sheetState,
         onDismissRequest = onDismissRequest,
         containerColor = AppTheme.palette.gray.getColor(9),
         dragHandle = null,
         shape = borderShape,
         scrimColor = Color(0xCC2D2E28),
-        contentWindowInsets = { WindowInsets(0.dp) }
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
+                .wrapContentHeight()
                 .background(
                     color = AppTheme.palette.gray.getColor(9),
                     shape = borderShape
